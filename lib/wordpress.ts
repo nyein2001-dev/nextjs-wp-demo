@@ -29,3 +29,7 @@ export async function getAllPosts(filterParams?: {
   const posts: Post[] = await response.json();
   return posts;
 }
+
+export async function getFeaturedMediaById(id:number): Promise<Feature {
+  
+}
