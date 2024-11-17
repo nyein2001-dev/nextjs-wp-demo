@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 import { Button } from "@/components/ui/button";
+import { MobileNav } from "@/components/nav/mobile-nav";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Main } from "@/components/craft";
 import { mainMenu, contentMenu } from "@/menu.config";
@@ -103,6 +104,7 @@ const Nav = ({ className, children, id }: NavProps) => {
           <Button asChild className="hidden sm:flex">
             <Link href="https://github.com/9d8dev/next-wp">Get Started</Link>
           </Button>
+          <MobileNav />
         </div>
       </div>
     </nav>
