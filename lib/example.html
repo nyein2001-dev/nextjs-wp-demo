@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Claim Form</title>
+    <style>
+
+
+.claim-options-container {
+    display: flex; 
+    gap: 20px;
+    justify-content: center;
+    margin-top: 15px;
+    flex-wrap: wrap; /* Allow wrapping for smaller screens */
+}
+
+.claim-option {
+    display: flex; 
+    align-items: center;
+    gap: 8px; 
+    flex: 1 1 150px; /* Ensure consistent width and allow wrapping */
+    max-width: 150px; /* Optional: Limit the maximum width */
+    box-sizing: border-box; /* Include padding and borders in the width */
+}
+
+@media (max-width: 600px) {
+    .claim-option {
+        flex: 1 1 100%; /* Full-width for smaller screens */
+    }
+}
+
+
+.hidden {
+    display: none;
+}
+</style>
+</head>
+<body>
+    <div class="container">
+        <h2>Select the type of Medical Claim:</h2>
+        <form id="medical-claim-form">
+            <div class="claim-options-container">
+                <div class="claim-option">
+                    <input type="checkbox" id="claim-daily-hospital" name="medical-claim" value="daily-hospital">
+                    <label for="claim-daily-hospital">Daily Hospital Income/Intensive Care Unit</label>
+                </div>
+                <div class="claim-option">
+                    <input type="checkbox" id="claim-accidental" name="medical-claim" value="accidental">
+                    <label for="claim-accidental">Accidental Medical Reimburse</label>
+                </div>
+                <div class="claim-option">
+                    <input type="checkbox" id="claim-surgical" name="medical-claim" value="surgical">
+                    <label for="claim-surgical">Surgical Expense Benefit</label>
+                </div>
+            </div>
+
+            <div id="daily-hospital-section" class="hidden">
+                <h3>Daily Hospital Income/Intensive Care Unit</h3>
+                <label for="hospital-soa">Hospital Statement of Account (SOA) *</label>
+                <input type="file" id="hospital-soa" name="hospital-soa">
+            </div>
+            
+            <div id="accidental-section" class="hidden">
+                <h3>Accidental Medical Reimburse</h3>
+                <label for="official-receipts">Official receipts *</label>
+                <input type="file" id="official-receipts" name="official-receipts">
+                
+                <label for="presentation-medicine">Presentation of medicine *</label>
+                <input type="file" id="presentation-medicine" name="presentation-medicine">
+            </div>
+
+            <div id="surgical-section" class="hidden">
+                <h3>Surgical Expense Benefit</h3>
+                <label for="attending-physician">Attending Physician’s Statement *</label>
+                <input type="file" id="attending-physician" name="attending-physician">
+                
+                <label for="record-operation">Record of Operation *</label>
+                <input type="file" id="record-operation" name="record-operation">
+
+                <label for="official-receipt">Official Receipt *</label>
+                <input type="file" id="official-receipt" name="official-receipt">
+            </div>
+        </form>
+
+        <div class="note">
+            <strong>Note:</strong> You may select multiple documents in this portion.
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("medical-claim-form");
+            const dailyHospitalSection = document.getElementById("daily-hospital-section");
+            const accidentalSection = document.getElementById("accidental-section");
+            const surgicalSection = document.getElementById("surgical-section");
+
+            form.addEventListener("change", function () {
+                // Show/hide sections based on checkboxes
+                dailyHospitalSection.classList.toggle("hidden", !document.getElementById("claim-daily-hospital").checked);
+                accidentalSection.classList.toggle("hidden", !document.getElementById("claim-accidental").checked);
+                surgicalSection.classList.toggle("hidden", !document.getElementById("claim-surgical").checked);
+            });
+        });
+    </script>
+</body>
+</html>
