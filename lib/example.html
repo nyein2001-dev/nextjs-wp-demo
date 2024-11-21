@@ -3,105 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Claim Form</title>
+    <title>Medical Claim UI</title>
     <style>
-
-
-.claim-options-container {
-    display: flex; 
-    gap: 20px;
-    justify-content: center;
-    margin-top: 15px;
-    flex-wrap: wrap; /* Allow wrapping for smaller screens */
-}
-
-.claim-option {
-    display: flex; 
-    align-items: center;
-    gap: 8px; 
-    flex: 1 1 150px; /* Ensure consistent width and allow wrapping */
-    max-width: 150px; /* Optional: Limit the maximum width */
-    box-sizing: border-box; /* Include padding and borders in the width */
-}
-
-@media (max-width: 600px) {
-    .claim-option {
-        flex: 1 1 100%; /* Full-width for smaller screens */
-    }
-}
-
-
-.hidden {
-    display: none;
-}
-</style>
+        details summary .icon::before {
+            content: "+";
+        }
+        details[open] summary .icon::before {
+            content: "-";
+        }
+    </style>
 </head>
-<body>
-    <div class="container">
-        <h2>Select the type of Medical Claim:</h2>
-        <form id="medical-claim-form">
-            <div class="claim-options-container">
-                <div class="claim-option">
-                    <input type="checkbox" id="claim-daily-hospital" name="medical-claim" value="daily-hospital">
-                    <label for="claim-daily-hospital">Daily Hospital Income/Intensive Care Unit</label>
-                </div>
-                <div class="claim-option">
-                    <input type="checkbox" id="claim-accidental" name="medical-claim" value="accidental">
-                    <label for="claim-accidental">Accidental Medical Reimburse</label>
-                </div>
-                <div class="claim-option">
-                    <input type="checkbox" id="claim-surgical" name="medical-claim" value="surgical">
-                    <label for="claim-surgical">Surgical Expense Benefit</label>
-                </div>
-            </div>
-
-            <div id="daily-hospital-section" class="hidden">
-                <h3>Daily Hospital Income/Intensive Care Unit</h3>
-                <label for="hospital-soa">Hospital Statement of Account (SOA) *</label>
-                <input type="file" id="hospital-soa" name="hospital-soa">
-            </div>
-            
-            <div id="accidental-section" class="hidden">
-                <h3>Accidental Medical Reimburse</h3>
-                <label for="official-receipts">Official receipts *</label>
-                <input type="file" id="official-receipts" name="official-receipts">
-                
-                <label for="presentation-medicine">Presentation of medicine *</label>
-                <input type="file" id="presentation-medicine" name="presentation-medicine">
-            </div>
-
-            <div id="surgical-section" class="hidden">
-                <h3>Surgical Expense Benefit</h3>
-                <label for="attending-physician">Attending Physician’s Statement *</label>
-                <input type="file" id="attending-physician" name="attending-physician">
-                
-                <label for="record-operation">Record of Operation *</label>
-                <input type="file" id="record-operation" name="record-operation">
-
-                <label for="official-receipt">Official Receipt *</label>
-                <input type="file" id="official-receipt" name="official-receipt">
-            </div>
-        </form>
-
-        <div class="note">
-            <strong>Note:</strong> You may select multiple documents in this portion.
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const form = document.getElementById("medical-claim-form");
-            const dailyHospitalSection = document.getElementById("daily-hospital-section");
-            const accidentalSection = document.getElementById("accidental-section");
-            const surgicalSection = document.getElementById("surgical-section");
-
-            form.addEventListener("change", function () {
-                // Show/hide sections based on checkboxes
-                dailyHospitalSection.classList.toggle("hidden", !document.getElementById("claim-daily-hospital").checked);
-                accidentalSection.classList.toggle("hidden", !document.getElementById("claim-accidental").checked);
-                surgicalSection.classList.toggle("hidden", !document.getElementById("claim-surgical").checked);
-            });
-        });
-    </script>
+<body style="font-family: Arial, sans-serif; margin: 0; padding: 16px; line-height: 1.5;">
+    <h2 style="font-size: 24px; margin-bottom: 16px;">Select the type of MEDICAL CLAIM:</h2>
+    <details style="margin-bottom: 16px;">
+        <summary style="font-weight: bold; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; position: relative; padding: 1px 16px;">
+            For Daily Hospital Income/Intensive Care Unit
+            <span style="display: flex; justify-content: center; align-items: center; width: 40px; height: 40px; border-radius: 50%; background-color: #1c345c; color: white; font-size: 24px; font-weight: bold;" class="icon"></span>
+        </summary>
+        <ul style="padding-left: 10; margin-top: 8px;">
+            <li style="display: flex; align-items: center; margin-bottom: 12px;">
+                <span style="display: inline-flex; justify-content: center; align-items: center; width: 12px; height: 12px; border-radius: 50%; background-color: #1c345c; color: white; font-size: 12px; margin-right: 8px;"></span>
+                Hospital Statement of Account with admission and discharge date
+            </li>
+        </ul>
+    </details>
+    <details style="margin-bottom: 16px;">
+        <summary style="font-weight: bold; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; position: relative; padding: 1px 16px;">
+            For Accidental Medical Reimbursement
+            <span style="display: flex; justify-content: center; align-items: center; width: 40px; height: 40px; border-radius: 50%; background-color: #1c345c; color: white; font-size: 24px; font-weight: bold;" class="icon"></span>
+        </summary>
+        <ul style="padding-left: 10; margin-top: 8px;">
+            <li style="display: flex; align-items: center; margin-bottom: 12px;">
+                <span style="display: inline-flex; justify-content: center; align-items: center; width: 12px; height: 12px; border-radius: 50%; background-color: #1c345c; color: white; font-size: 12px; margin-right: 8px;"></span>
+                Official receipts related to the treatment of the injury (expenses paid by the Life Insured, and not covered by any HMO/PhilHealth)
+            </li>
+            <li style="display: flex; align-items: center; margin-bottom: 12px;">
+                <span style="display: inline-flex; justify-content: center; align-items: center; width: 12px; height: 12px; border-radius: 50%; background-color: #1c345c; color: white; font-size: 12px; margin-right: 8px;"></span>
+                Prescription of the medicines used during treatment
+            </li>
+        </ul>
+    </details>
+    <details style="margin-bottom: 16px;">
+        <summary style="font-weight: bold; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; position: relative; padding: 1px 16px;">
+            For Surgical Expense
+            <span style="display: flex; justify-content: center; align-items: center; width: 40px; height: 40px; border-radius: 50%; background-color: #1c345c; color: white; font-size: 24px; font-weight: bold;" class="icon"></span>
+        </summary>
+        <ul style="padding-left: 10; margin-top: 8px;">
+            <li style="display: flex; align-items: center; margin-bottom: 12px;">
+                <span style="display: inline-flex; justify-content: center; align-items: center; width: 12px; height: 12px; border-radius: 50%; background-color: #1c345c; color: white; font-size: 12px; margin-right: 8px;"></span>
+                Attending Physician's Statement - <a href="#">Attending Physician's Statement - Daily Hospital Income, Surgical Expense, and Accidental Medical Reimbursement.pdf</a>
+            </li>
+            <li style="display: flex; align-items: center; margin-bottom: 12px;">
+                <span style="display: inline-flex; justify-content: center; align-items: center; width: 12px; height: 12px; border-radius: 50%; background-color: #1c345c; color: white; font-size: 12px; margin-right: 8px;"></span>
+                Record of operation
+            </li>
+            <li style="display: flex; align-items: center; margin-bottom: 12px;">
+                <span style="display: inline-flex; justify-content: center; align-items: center; width: 12px; height: 12px; border-radius: 50%; background-color: #1c345c; color: white; font-size: 12px; margin-right: 8px;"></span>
+                Official receipt related to the surgery or procedure (actually paid by the Life Insured, not covered by Philhealth/HMO)
+            </li>
+        </ul>
+    </details>
 </body>
 </html>
