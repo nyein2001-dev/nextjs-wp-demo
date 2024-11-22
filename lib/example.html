@@ -3,65 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Claim UI</title>
-    <style>
-        details summary .icon::before {
-            content: "+";
-        }
-        details[open] summary .icon::before {
-            content: "-";
-        }
-    </style>
+    <title>Medical Claim Form</title>
 </head>
-<body style="font-family: Arial, sans-serif; margin: 0; padding: 16px; line-height: 1.5;">
-    <h2 style="font-size: 24px; margin-bottom: 16px;">Select the type of MEDICAL CLAIM:</h2>
-    <details style="margin-bottom: 16px;">
-        <summary style="font-weight: bold; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; position: relative; padding: 1px 16px;">
-            For Daily Hospital Income/Intensive Care Unit
-            <span style="display: flex; justify-content: center; align-items: center; width: 40px; height: 40px; border-radius: 50%; background-color: #1c345c; color: white; font-size: 24px; font-weight: bold;" class="icon"></span>
-        </summary>
-        <ul style="padding-left: 10; margin-top: 8px;">
-            <li style="display: flex; align-items: center; margin-bottom: 12px;">
-                <span style="display: inline-flex; justify-content: center; align-items: center; width: 12px; height: 12px; border-radius: 50%; background-color: #1c345c; color: white; font-size: 12px; margin-right: 8px;"></span>
-                Hospital Statement of Account with admission and discharge date
-            </li>
-        </ul>
-    </details>
-    <details style="margin-bottom: 16px;">
-        <summary style="font-weight: bold; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; position: relative; padding: 1px 16px;">
-            For Accidental Medical Reimbursement
-            <span style="display: flex; justify-content: center; align-items: center; width: 40px; height: 40px; border-radius: 50%; background-color: #1c345c; color: white; font-size: 24px; font-weight: bold;" class="icon"></span>
-        </summary>
-        <ul style="padding-left: 10; margin-top: 8px;">
-            <li style="display: flex; align-items: center; margin-bottom: 12px;">
-                <span style="display: inline-flex; justify-content: center; align-items: center; width: 12px; height: 12px; border-radius: 50%; background-color: #1c345c; color: white; font-size: 12px; margin-right: 8px;"></span>
-                Official receipts related to the treatment of the injury (expenses paid by the Life Insured, and not covered by any HMO/PhilHealth)
-            </li>
-            <li style="display: flex; align-items: center; margin-bottom: 12px;">
-                <span style="display: inline-flex; justify-content: center; align-items: center; width: 12px; height: 12px; border-radius: 50%; background-color: #1c345c; color: white; font-size: 12px; margin-right: 8px;"></span>
-                Prescription of the medicines used during treatment
-            </li>
-        </ul>
-    </details>
-    <details style="margin-bottom: 16px;">
-        <summary style="font-weight: bold; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; position: relative; padding: 1px 16px;">
-            For Surgical Expense
-            <span style="display: flex; justify-content: center; align-items: center; width: 40px; height: 40px; border-radius: 50%; background-color: #1c345c; color: white; font-size: 24px; font-weight: bold;" class="icon"></span>
-        </summary>
-        <ul style="padding-left: 10; margin-top: 8px;">
-            <li style="display: flex; align-items: center; margin-bottom: 12px;">
-                <span style="display: inline-flex; justify-content: center; align-items: center; width: 12px; height: 12px; border-radius: 50%; background-color: #1c345c; color: white; font-size: 12px; margin-right: 8px;"></span>
-                Attending Physician's Statement - <a href="#">Attending Physician's Statement - Daily Hospital Income, Surgical Expense, and Accidental Medical Reimbursement.pdf</a>
-            </li>
-            <li style="display: flex; align-items: center; margin-bottom: 12px;">
-                <span style="display: inline-flex; justify-content: center; align-items: center; width: 12px; height: 12px; border-radius: 50%; background-color: #1c345c; color: white; font-size: 12px; margin-right: 8px;"></span>
-                Record of operation
-            </li>
-            <li style="display: flex; align-items: center; margin-bottom: 12px;">
-                <span style="display: inline-flex; justify-content: center; align-items: center; width: 12px; height: 12px; border-radius: 50%; background-color: #1c345c; color: white; font-size: 12px; margin-right: 8px;"></span>
-                Official receipt related to the surgery or procedure (actually paid by the Life Insured, not covered by Philhealth/HMO)
-            </li>
-        </ul>
-    </details>
+<body>
+<form id="medical-claim-form">
+<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <h2 style="color: #2c3e50; margin-bottom: 15px;">Select the type of Medical Claim:</h2>
+            <div style="display: flex; flex-wrap: nowrap; gap: 15px; margin-bottom: 20px;">
+                <label style="flex: 1 1 calc(33.333% - 10px); display: flex; align-items: center; background-color: #fff; border: 1px solid #bdc3c7; border-radius: 5px; padding: 10px; cursor: pointer; transition: background-color 0.3s ease;">
+                    <input type="checkbox" id="claim-daily-hospital" name="medical-claim" value="daily-hospital" style="margin-right: 10px;">
+                    <span>Daily Hospital Income/Intensive Care Unit</span>
+                </label>
+                <label style="flex: 1 1 calc(33.333% - 10px); display: flex; align-items: center; background-color: #fff; border: 1px solid #bdc3c7; border-radius: 5px; padding: 10px; cursor: pointer; transition: background-color 0.3s ease;">
+                    <input type="checkbox" id="claim-accidental" name="medical-claim" value="accidental" style="margin-right: 10px;">
+                    <span>Accidental Medical Reimburse</span>
+                </label>
+                <label style="flex: 1 1 calc(33.333% - 10px); display: flex; align-items: center; background-color: #fff; border: 1px solid #bdc3c7; border-radius: 5px; padding: 10px; cursor: pointer; transition: background-color 0.3s ease;">
+                    <input type="checkbox" id="claim-surgical" name="medical-claim" value="surgical" style="margin-right: 10px;">
+                    <span>Surgical Expense Benefit</span>
+                </label>
+            </div>
+
+            <div id="daily-hospital-section" style="background-color: #fff; border: 1px solid #bdc3c7; border-radius: 5px; padding: 20px; margin-bottom: 20px; display: none;">
+                <h3 style="color: #3498db; margin-bottom: 10px;">Daily Hospital Income/Intensive Care Unit</h3>
+                <label for="hospital-soa" style="display: block; margin-bottom: 5px;">Hospital Statement of Account (SOA) *</label>
+                <input type="file" id="hospital-soa" name="hospital-soa" required style="display: block; width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #bdc3c7; border-radius: 5px;">
+            </div>
+            
+            <div id="accidental-section" style="background-color: #fff; border: 1px solid #bdc3c7; border-radius: 5px; padding: 20px; margin-bottom: 20px; display: none;">
+                <h3 style="color: #3498db; margin-bottom: 10px;">Accidental Medical Reimburse</h3>
+                <label for="official-receipts" style="display: block; margin-bottom: 5px;">Official receipts *</label>
+                <input type="file" id="official-receipts" name="official-receipts" required style="display: block; width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #bdc3c7; border-radius: 5px;">
+                
+                <label for="presentation-medicine" style="display: block; margin-bottom: 5px;">Presentation of medicine *</label>
+                <input type="file" id="presentation-medicine" name="presentation-medicine" required style="display: block; width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #bdc3c7; border-radius: 5px;">
+            </div>
+
+            <div id="surgical-section" style="background-color: #fff; border: 1px solid #bdc3c7; border-radius: 5px; padding: 20px; margin-bottom: 20px; display: none;">
+                <h3 style="color: #3498db; margin-bottom: 10px;">Surgical Expense Benefit</h3>
+                <label for="attending-physician" style="display: block; margin-bottom: 5px;">Attending Physician's Statement *</label>
+                <input type="file" id="attending-physician" name="attending-physician" required style="display: block; width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #bdc3c7; border-radius: 5px;">
+                
+                <label for="record-operation" style="display: block; margin-bottom: 5px;">Record of Operation *</label>
+                <input type="file" id="record-operation" name="record-operation" required style="display: block; width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #bdc3c7; border-radius: 5px;">
+
+                <label for="official-receipt" style="display: block; margin-bottom: 5px;">Official Receipt *</label>
+                <input type="file" id="official-receipt" name="official-receipt" required style="display: block; width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #bdc3c7; border-radius: 5px;">
+            </div>
+
+            <div style="background-color: #ffeeba; border: 1px solid #ffc107; border-radius: 5px; padding: 10px; margin-bottom: 20px;">
+                <strong>Note:</strong> You may select multiple documents in this portion.
+            </div>
+
+        </form>
+        </div>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("medical-claim-form");
+
+        form.addEventListener("change", function (event) {
+            if (event.target.type === "checkbox") {
+                const sectionId = event.target.id.replace("claim-", "") + "-section";
+                const section = document.getElementById(sectionId);
+                
+                if (section) {
+                    section.style.display = event.target.checked ? "block" : "none";
+                }
+            }
+        });
+    });
+    </script>
 </body>
 </html>
