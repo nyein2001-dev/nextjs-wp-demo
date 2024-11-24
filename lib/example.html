@@ -252,7 +252,6 @@
                     }
                 });
 
-                // Check total size
                 let newTotalSize = totalFileSize + validFiles.reduce((sum, file) => sum + file.size, 0);
                 if (newTotalSize > MAX_TOTAL_SIZE) {
                     document.getElementById('totalSizeWarning').style.display = 'block';
