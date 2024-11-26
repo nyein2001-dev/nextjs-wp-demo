@@ -1,3 +1,40 @@
+try {
+    List<String> partialBenefitsFileNames = new ArrayList<>();
+    List<InputStream> partialBenefitsFileContents = new ArrayList<>();
+
+    List<String> governmentIdFileNames = new ArrayList<>();
+    List<InputStream> governmentIdFileContents = new ArrayList<>();
+
+    if (ServletFileUpload.isMultipartContent(request)) {
+        DiskFileItemFactory factory = new DiskFileItemFactory();
+        ServletFileUpload upload = new ServletFileUpload(factory);
+        List<FileItem> items = upload.parseRequest(request);
+
+        for (FileItem item : items) {
+            if (!item.isFormField()) {
+                String parameterName = item.getFieldName();
+
+                if ("partial-benefits-form".equals(parameterName)) {
+                    partialBenefitsFileNames.add(item.getName());
+                    partialBenefitsFileContents.add(item.getInputStream());
+                } else if ("valid-government-issued-id".equals(parameterName)) {
+                    governmentIdFileNames.add(item.getName());
+                    governmentIdFileContents.add(item.getInputStream());
+                }
+            }
+        }
+    }
+
+    CmsHtmlMail smToCs = new CmsHtmlMail();
+    List<EmailAttachment> attachments = new ArrayList<>();
+
+    // Attach all 'partial-benefits-form' files
+    for (int i = 0; i < partialBenefitsFileNames.size(); i++) {
+        String fileName = partialBenefitsFileNames.get(i);
+        InputStream fileContent = partialBenefitsFileContents.get(i);
+
+        // Save as a temporary file
+        File tempFile = File.createTempFile("PartialBenefitsForm_" + i, "_" + fileName);
         FileOutputStream fos = new FileOutputStream(tempFile);
         byte[] buffer = new byte[1024];
         int bytesRead;
@@ -5,3 +42,53 @@
             fos.write(buffer, 0, bytesRead);
         }
         fos.close();
+
+        EmailAttachment attachment = new EmailAttachment();
+        attachment.setPath(tempFile.getAbsolutePath());
+        attachment.setDisposition(EmailAttachment.ATTACHMENT);
+        attachments.add(attachment);
+        tempFile.deleteOnExit();
+    }
+
+    // Attach all 'valid-government-issued-id' files
+    for (int i = 0; i < governmentIdFileNames.size(); i++) {
+        String fileName = governmentIdFileNames.get(i);
+        InputStream fileContent = governmentIdFileContents.get(i);
+
+        // Save as a temporary file
+        File tempFile = File.createTempFile("GovernmentId_" + i, "_" + fileName);
+        FileOutputStream fos = new FileOutputStream(tempFile);
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        while ((bytesRead = fileContent.read(buffer)) != -1) {
+            fos.write(buffer, 0, bytesRead);
+        }
+        fos.close();
+
+        EmailAttachment attachment = new EmailAttachment();
+        attachment.setPath(tempFile.getAbsolutePath());
+        attachment.setDisposition(EmailAttachment.ATTACHMENT);
+        attachments.add(attachment);
+        tempFile.deleteOnExit();
+    }
+
+    // Attach all files to the email
+    for (EmailAttachment attachment : attachments) {
+        smToCs.attach(attachment);
+    }
+
+    smToCs.setHtml(mailContentUser);
+    smToCs.setSubject("MailSubject_" + policyNumber);
+    smToCs.setCharset("UTF-8");
+    smToCs.setFrom("we@regionalas.my");
+    smToCs.addTo(mailAddressUser);
+    smToCs.send();
+} catch (Exception e) {
+    e.printStackTrace();
+}
+
+
+<%
+    String name = "John Doe";
+    System.out.println("Debugging: The name is " + name);
+%>
