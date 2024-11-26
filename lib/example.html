@@ -88,7 +88,7 @@ try {
 }
 
 
-<%
-    String name = "John Doe";
-    System.out.println("Debugging: The name is " + name);
-%>
+StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    e.printStackTrace(pw);
+    String exceptionAsString = sw.toString();
