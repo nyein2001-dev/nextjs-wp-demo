@@ -1,94 +1,138 @@
-try {
-    List<String> partialBenefitsFileNames = new ArrayList<>();
-    List<InputStream> partialBenefitsFileContents = new ArrayList<>();
+<!DOCTYPE html>
+<html lang="en">
 
-    List<String> governmentIdFileNames = new ArrayList<>();
-    List<InputStream> governmentIdFileContents = new ArrayList<>();
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Country Dropdown</title>
+</head>
+<body>
+    <div class="country-dropdown" style="position: relative; width: 176px;">
+        <div class="country-dropdown-header" id="dropdown-header"
+            style="box-sizing: border-box; display: flex; flex-direction: row; justify-content: space-between; align-items: center; padding: 8px 20px; width: 100%; height: 36px; background: #FFFFFF; border: 2px solid #E5EAEF; border-radius: 50px; cursor: pointer;">
+            <div style="display: flex; align-items: center;">
+                <img src="https://flagcdn.com/w40/my.png" alt="Malaysia flag" class="country-flag" id="selected-flag"
+                    style="width: 24px; height: 17.14px; margin-right: 16px; border-radius: 3px;">
+                <span class="country-name" id="selected-country"
+                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Malaysia</span>
+            </div>
+            <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                style="width: 16px; height: 16px; transition: transform 0.3s ease;">
+                <path fill-rule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                    clip-rule="evenodd" />
+            </svg>
+        </div>
+        <div class="country-dropdown-list" id="dropdown-list"
+            style="position: absolute; top: 100%; left: 0; width: 100%; margin-top: 8px; background: #FFFFFF; border: 2px solid #E5EAEF; border-radius: 20px; overflow: hidden; display: none;">
+            <div class="country-option" data-country="Hong Kong" data-flag="hk"
+                data-url="https://www.prudential.com.hk/en/"
+                style="display: flex; align-items: center; padding: 8px 20px; cursor: pointer;">
+                <img src="https://flagcdn.com/w40/hk.png" alt="Hong Kong flag" class="country-flag"
+                    style="width: 24px; height: 17.14px; margin-right: 16px; border-radius: 3px;">
+                <span class="country-name"
+                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Hong
+                    Kong</span>
+            </div>
+            <div class="country-option" data-country="Malaysia" data-flag="my" data-url="https://www.prubsn.com.my/en/"
+                style="display: flex; align-items: center; padding: 8px 20px; cursor: pointer;">
+                <img src="https://flagcdn.com/w40/my.png" alt="Malaysia flag" class="country-flag"
+                    style="width: 24px; height: 17.14px; margin-right: 16px; border-radius: 3px;">
+                <span class="country-name"
+                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Malaysia</span>
+            </div>
+            <div class="country-option" data-country="Philippines" data-flag="ph"
+                data-url="https://www.prulifeuk.com.ph/en/"
+                style="display: flex; align-items: center; padding: 8px 20px; cursor: pointer;">
+                <img src="https://flagcdn.com/w40/ph.png" alt="Philippines flag" class="country-flag"
+                    style="width: 24px; height: 17.14px; margin-right: 16px; border-radius: 3px;">
+                <span class="country-name"
+                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Philippines</span>
+            </div>
+            <div class="country-option" data-country="Vietnam" data-flag="vn"
+                data-url="https://www.prudential.com.vn/vi/"
+                style="display: flex; align-items: center; padding: 8px 20px; cursor: pointer;">
+                <img src="https://flagcdn.com/w40/vn.png" alt="Vietnam flag" class="country-flag"
+                    style="width: 24px; height: 17.14px; margin-right: 16px; border-radius: 3px;">
+                <span class="country-name"
+                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Vietnam</span>
+            </div>
+        </div>
+    </div>
 
-    if (ServletFileUpload.isMultipartContent(request)) {
-        DiskFileItemFactory factory = new DiskFileItemFactory();
-        ServletFileUpload upload = new ServletFileUpload(factory);
-        List<FileItem> items = upload.parseRequest(request);
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdownHeader = document.getElementById('dropdown-header');
+            const dropdownList = document.getElementById('dropdown-list');
+            const selectedFlag = document.getElementById('selected-flag');
+            const selectedCountry = document.getElementById('selected-country');
+            const chevron = dropdownHeader.querySelector('.chevron');
 
-        for (FileItem item : items) {
-            if (!item.isFormField()) {
-                String parameterName = item.getFieldName();
+            function toggleDropdown() {
+                dropdownList.style.display = dropdownList.style.display === 'block' ? 'none' : 'block';
+                chevron.classList.toggle('open');
+            }
 
-                if ("partial-benefits-form".equals(parameterName)) {
-                    partialBenefitsFileNames.add(item.getName());
-                    partialBenefitsFileContents.add(item.getInputStream());
-                } else if ("valid-government-issued-id".equals(parameterName)) {
-                    governmentIdFileNames.add(item.getName());
-                    governmentIdFileContents.add(item.getInputStream());
+            dropdownHeader.addEventListener('click', toggleDropdown);
+
+            document.addEventListener('click', function (event) {
+                if (!dropdownHeader.contains(event.target) && !dropdownList.contains(event.target)) {
+                    dropdownList.style.display = 'none';
+                    chevron.classList.remove('open');
+                }
+            });
+
+            const countryOptions = document.querySelectorAll('.country-option');
+            countryOptions.forEach((option, index) => {
+                // Apply inline styles to each country option
+                option.style.display = 'flex';
+                option.style.alignItems = 'center';
+                option.style.padding = '8px 20px';
+                option.style.cursor = 'pointer';
+
+                option.addEventListener('mouseover', function () {
+                    option.style.backgroundColor = '#F5F7FA';
+                });
+                option.addEventListener('mouseout', function () {
+                    option.style.backgroundColor = '';
+                });
+
+                if (index !== countryOptions.length - 1) {
+                    option.style.borderBottom = '2px solid #E5EAEF';
+                }
+
+                option.addEventListener('click', function () {
+                    const country = this.dataset.country;
+                    const flag = this.dataset.flag;
+                    const url = this.dataset.url;
+
+                    selectedFlag.src = `https://flagcdn.com/w40/${flag}.png`;
+                    selectedFlag.alt = `${country} flag`;
+                    selectedCountry.textContent = country;
+
+                    toggleDropdown();
+                    window.location.href = url;
+                });
+            });
+
+            function setInitialCountry() {
+                const currentUrl = window.location.href;
+                const matchingOption = Array.from(countryOptions).find(option =>
+                    currentUrl.includes(option.dataset.url)
+                );
+
+                if (matchingOption) {
+                    selectedFlag.src = `https://flagcdn.com/w40/${matchingOption.dataset.flag}.png`;
+                    selectedFlag.alt = `${matchingOption.dataset.country} flag`;
+                    selectedCountry.textContent = matchingOption.dataset.country;
                 }
             }
-        }
-    }
 
-    CmsHtmlMail smToCs = new CmsHtmlMail();
-    List<EmailAttachment> attachments = new ArrayList<>();
-
-    // Attach all 'partial-benefits-form' files
-    for (int i = 0; i < partialBenefitsFileNames.size(); i++) {
-        String fileName = partialBenefitsFileNames.get(i);
-        InputStream fileContent = partialBenefitsFileContents.get(i);
-
-        // Save as a temporary file
-        File tempFile = File.createTempFile("PartialBenefitsForm_" + i, "_" + fileName);
-        FileOutputStream fos = new FileOutputStream(tempFile);
-        byte[] buffer = new byte[1024];
-        int bytesRead;
-        while ((bytesRead = fileContent.read(buffer)) != -1) {
-            fos.write(buffer, 0, bytesRead);
-        }
-        fos.close();
-
-        EmailAttachment attachment = new EmailAttachment();
-        attachment.setPath(tempFile.getAbsolutePath());
-        attachment.setDisposition(EmailAttachment.ATTACHMENT);
-        attachments.add(attachment);
-        tempFile.deleteOnExit();
-    }
-
-    // Attach all 'valid-government-issued-id' files
-    for (int i = 0; i < governmentIdFileNames.size(); i++) {
-        String fileName = governmentIdFileNames.get(i);
-        InputStream fileContent = governmentIdFileContents.get(i);
-
-        // Save as a temporary file
-        File tempFile = File.createTempFile("GovernmentId_" + i, "_" + fileName);
-        FileOutputStream fos = new FileOutputStream(tempFile);
-        byte[] buffer = new byte[1024];
-        int bytesRead;
-        while ((bytesRead = fileContent.read(buffer)) != -1) {
-            fos.write(buffer, 0, bytesRead);
-        }
-        fos.close();
-
-        EmailAttachment attachment = new EmailAttachment();
-        attachment.setPath(tempFile.getAbsolutePath());
-        attachment.setDisposition(EmailAttachment.ATTACHMENT);
-        attachments.add(attachment);
-        tempFile.deleteOnExit();
-    }
-
-    // Attach all files to the email
-    for (EmailAttachment attachment : attachments) {
-        smToCs.attach(attachment);
-    }
-
-    smToCs.setHtml(mailContentUser);
-    smToCs.setSubject("MailSubject_" + policyNumber);
-    smToCs.setCharset("UTF-8");
-    smToCs.setFrom("we@regionalas.my");
-    smToCs.addTo(mailAddressUser);
-    smToCs.send();
-} catch (Exception e) {
-    e.printStackTrace();
-}
+            setInitialCountry();
+        });
+    </script>
 
 
-StringWriter sw = new StringWriter();
-    PrintWriter pw = new PrintWriter(sw);
-    e.printStackTrace(pw);
-    String exceptionAsString = sw.toString();
+</body>
+
+</html>
