@@ -1,13 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Country Dropdown</title>
-</head>
 <body>
-    <div class="country-dropdown" style="position: relative; width: 176px;">
+    <div class="country-dropdown" style="position: relative; width: 176px; z-index: 1000;">
         <div class="country-dropdown-header" id="dropdown-header"
             style="box-sizing: border-box; display: flex; flex-direction: row; justify-content: space-between; align-items: center; padding: 8px 20px; width: 100%; height: 36px; background: #FFFFFF; border: 2px solid #E5EAEF; border-radius: 50px; cursor: pointer;">
             <div style="display: flex; align-items: center;">
@@ -24,7 +17,7 @@
             </svg>
         </div>
         <div class="country-dropdown-list" id="dropdown-list"
-            style="position: absolute; top: 100%; left: 0; width: 100%; margin-top: 8px; background: #FFFFFF; border: 2px solid #E5EAEF; border-radius: 20px; overflow: hidden; display: none;">
+            style="position: absolute; top: 100%; left: 0; width: 100%; margin-top: 8px; background: #FFFFFF; border: 2px solid #E5EAEF; border-radius: 20px; overflow: hidden; z-index: 9999; display: none;">
             <div class="country-option" data-country="Hong Kong" data-flag="hk"
                 data-url="https://www.prudential.com.hk/en/"
                 style="display: flex; align-items: center; padding: 8px 20px; cursor: pointer;">
@@ -131,8 +124,3 @@
             setInitialCountry();
         });
     </script>
-
-
-</body>
-
-</html>
