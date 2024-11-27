@@ -1,197 +1,88 @@
-    <style>
-        .country-dropdown {
-            position: relative;
-            width: 176px;
-            z-index: 2147483647;
-        }
-        .country-dropdown-header {
-    display: flex !important;
-    visibility: visible !important;
-}
-.country-dropdown-header {
-    z-index: 10000;
-}
-        .country-dropdown-header {
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 20px;
-            width: 100%;
-            height: 36px;
-            background: #FFFFFF;
-            border: 2px solid #E5EAEF;
-            border-radius: 50px;
-            cursor: pointer;
-        }
+function handleFileInput(fileInputId) {
+    const fileInput = document.getElementById(fileInputId);
+    const fileList = document.getElementById(`fileList-${fileInputId}`);
+    const removeAllButton = document.getElementById(`removeAllButton-${fileInputId}`);
+    const errorElement = document.getElementById(`error-${fileInputId}`);
+    let accumulatedFiles = []; // Array to store accumulated files
 
-        .country-dropdown-list {
-            position: fixed;
-            width: 176px;
-            margin-top: 8px;
-            background: #FFFFFF;
-            border: 2px solid #E5EAEF;
-            border-radius: 20px;
-            overflow: hidden;
-            display: none;
-            z-index: 9999;
-        }
+    fileInput.addEventListener('change', () => {
+        errorElement.style.display = 'none';
+        let currentFiles = Array.from(fileInput.files);
+        let validFiles = [];
+        let sizeExceeded = false;
 
-        .country-option {
-            display: flex;
-            align-items: center;
-            padding: 8px 20px;
-            cursor: pointer;
-        }
-
-        .country-option:not(:last-child) {
-            border-bottom: 2px solid #E5EAEF;
-        }
-
-        .country-option:hover {
-            background-color: #F5F7FA;
-        }
-
-        .country-flag {
-            width: 24px;
-            height: 17.14px;
-            margin-right: 16px;
-            border-radius: 3px;
-        }
-
-        .country-name {
-            font-style: italic;
-            font-weight: 400;
-            font-size: 14px;
-            line-height: 20px;
-            color: #1B365D;
-        }
-
-        .chevron {
-            width: 16px;
-            height: 16px;
-            transition: transform 0.3s ease;
-        }
-
-        .chevron.open {
-            transform: rotate(180deg);
-        }
-    </style>
-
-    <div class="country-dropdown">
-        <div class="country-dropdown-header" id="dropdown-header">
-            <div style="display: flex; align-items: center;">
-                <img src="https://flagcdn.com/w40/my.png" alt="Malaysia flag" class="country-flag" id="selected-flag">
-                <span class="country-name" id="selected-country">Malaysia</span>
-            </div>
-            <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd"
-                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                    clip-rule="evenodd" />
-            </svg>
-        </div>
-        <div class="country-dropdown-list" id="dropdown-list">
-            <div class="country-option" data-country="Hong Kong" data-flag="hk"
-                data-url="https://www.prudential.com.hk/en/">
-                <img src="https://flagcdn.com/w40/hk.png" alt="Hong Kong flag" class="country-flag">
-                <span class="country-name">Hong Kong</span>
-            </div>
-            <div class="country-option" data-country="Malaysia" data-flag="my" data-url="https://www.prubsn.com.my/en/">
-                <img src="https://flagcdn.com/w40/my.png" alt="Malaysia flag" class="country-flag">
-                <span class="country-name">Malaysia</span>
-            </div>
-            <div class="country-option" data-country="Philippines" data-flag="ph"
-                data-url="https://www.prulifeuk.com.ph/en/">
-                <img src="https://flagcdn.com/w40/ph.png" alt="Philippines flag" class="country-flag">
-                <span class="country-name">Philippines</span>
-            </div>
-            <div class="country-option" data-country="Vietnam" data-flag="vn"
-                data-url="https://www.prudential.com.vn/vi/">
-                <img src="https://flagcdn.com/w40/vn.png" alt="Vietnam flag" class="country-flag">
-                <span class="country-name">Vietnam</span>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const dropdownHeader = document.getElementById('dropdown-header');
-            const dropdownList = document.getElementById('dropdown-list');
-            const selectedFlag = document.getElementById('selected-flag');
-            const selectedCountry = document.getElementById('selected-country');
-            const chevron = dropdownHeader.querySelector('.chevron');
-
-            function toggleDropdown() {
-                const isOpen = dropdownList.style.display === 'block';
-                dropdownList.style.display = isOpen ? 'none' : 'block';
-                chevron.classList.toggle('open', !isOpen);
-
-                if (!isOpen) {
-                    const rect = dropdownHeader.getBoundingClientRect();
-                    dropdownList.style.left = `${rect.left}px`;
-                    dropdownList.style.top = `${rect.bottom + window.scrollY}px`;
-                }
+        // Check individual file size and for duplicate files
+        currentFiles.forEach(file => {
+            if (file.size > MAX_FILE_SIZE) {
+                sizeExceeded = true;
+                errorElement.textContent = `File "${file.name}" exceeds 5MB and was not added.`;
+                errorElement.style.display = 'block';
+            } else if (accumulatedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                errorElement.textContent = `File "${file.name}" is already uploaded and was not added again.`;
+                errorElement.style.display = 'block';
+            } else {
+                validFiles.push(file);
             }
-
-            dropdownHeader.addEventListener('click', toggleDropdown);
-
-            document.addEventListener('click', function (event) {
-                if (!dropdownHeader.contains(event.target) && !dropdownList.contains(event.target)) {
-                    dropdownList.style.display = 'none';
-                    chevron.classList.remove('open');
-                }
-            });
-
-
-            const countryOptions = document.querySelectorAll('.country-option');
-            countryOptions.forEach((option, index) => {
-                // Apply inline styles to each country option
-                option.style.display = 'flex';
-                option.style.alignItems = 'center';
-                option.style.padding = '8px 20px';
-                option.style.cursor = 'pointer';
-
-                option.addEventListener('mouseover', function () {
-                    option.style.backgroundColor = '#F5F7FA';
-                });
-                option.addEventListener('mouseout', function () {
-                    option.style.backgroundColor = '';
-                });
-
-                if (index !== countryOptions.length - 1) {
-                    option.style.borderBottom = '2px solid #E5EAEF';
-                }
-
-                option.addEventListener('click', function () {
-                    const country = this.dataset.country;
-                    const flag = this.dataset.flag;
-                    const url = this.dataset.url;
-
-                    selectedFlag.src = `https://flagcdn.com/w40/${flag}.png`;
-                    selectedFlag.alt = `${country} flag`;
-                    selectedCountry.textContent = country;
-
-                    toggleDropdown();
-                    window.location.href = url;
-                });
-            });
-
-            function setInitialCountry() {
-                const currentUrl = "Vietnam";
-                const matchingOption = Array.from(countryOptions).find(option =>
-                    currentUrl.includes(option.dataset.country)
-                );
-
-                if (matchingOption) {
-                    selectedFlag.src = `https://flagcdn.com/w40/${matchingOption.dataset.flag}.png`;
-                    selectedFlag.alt = `${matchingOption.dataset.country} flag`;
-                    selectedCountry.textContent = matchingOption.dataset.country;
-                }
-            }
-
-            setInitialCountry();
         });
 
+        let newTotalSize = totalFileSize + validFiles.reduce((sum, file) => sum + file.size, 0);
+        if (newTotalSize > MAX_TOTAL_SIZE) {
+            document.getElementById('totalSizeWarning').style.display = 'block';
+            return;
+        } else {
+            document.getElementById('totalSizeWarning').style.display = 'none';
+        }
 
-    </script>
+        totalFileSize = newTotalSize;
+
+        // Append new valid files to accumulated files
+        accumulatedFiles.push(...validFiles);
+
+        fileList.innerHTML = ''; // Clear file list for fresh render
+        removeAllButton.classList.remove('hidden');
+
+        accumulatedFiles.forEach((file, index) => {
+            const fileLabel = document.createElement('div');
+            fileLabel.className = 'file-label';
+
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                fileLabel.appendChild(img);
+            }
+
+            const fileInfo = document.createElement('div');
+            fileInfo.className = 'file-info';
+            fileInfo.innerHTML = `<span>${file.name}</span><small>${(file.size / 1024).toFixed(2)} KB</small>`;
+            fileLabel.appendChild(fileInfo);
+
+            const removeButton = document.createElement('button');
+            removeButton.className = 'remove-button';
+            removeButton.textContent = 'Remove';
+            removeButton.onclick = () => {
+                fileLabel.remove();
+                totalFileSize -= file.size;
+                accumulatedFiles.splice(index, 1); // Remove file from accumulated files
+                if (fileList.children.length === 0) {
+                    removeAllButton.classList.add('hidden');
+                    fileInput.value = '';
+                }
+            };
+            fileLabel.appendChild(removeButton);
+
+            fileList.appendChild(fileLabel);
+        });
+
+        // Clear the input to allow selecting the same file again
+        fileInput.value = '';
+    });
+
+    removeAllButton.addEventListener('click', () => {
+        // Clear accumulated files and reset UI
+        accumulatedFiles = [];
+        totalFileSize = 0;
+        fileList.innerHTML = '';
+        fileInput.value = '';
+        removeAllButton.classList.add('hidden');
+    });
+}
