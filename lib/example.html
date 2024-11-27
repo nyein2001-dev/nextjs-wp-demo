@@ -1,6 +1,4 @@
-
-<body>
-    <div class="country-dropdown" style="position: relative; width: 176px; z-index: 1000;">
+ <div class="country-dropdown" style="position: relative; width: 176px;">
         <div class="country-dropdown-header" id="dropdown-header"
             style="box-sizing: border-box; display: flex; flex-direction: row; justify-content: space-between; align-items: center; padding: 8px 20px; width: 100%; height: 36px; background: #FFFFFF; border: 2px solid #E5EAEF; border-radius: 50px; cursor: pointer;">
             <div style="display: flex; align-items: center;">
@@ -17,7 +15,7 @@
             </svg>
         </div>
         <div class="country-dropdown-list" id="dropdown-list"
-            style="position: absolute; top: 100%; left: 0; width: 100%; margin-top: 8px; background: #FFFFFF; border: 2px solid #E5EAEF; border-radius: 20px; overflow: hidden; z-index: 9999; display: none;">
+            style="position: fixed; display: none; background: #FFFFFF; border: 2px solid #E5EAEF; border-radius: 20px; overflow: hidden; z-index: 9999;">
             <div class="country-option" data-country="Hong Kong" data-flag="hk"
                 data-url="https://www.prudential.com.hk/en/"
                 style="display: flex; align-items: center; padding: 8px 20px; cursor: pointer;">
@@ -27,100 +25,24 @@
                     style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Hong
                     Kong</span>
             </div>
-            <div class="country-option" data-country="Malaysia" data-flag="my" data-url="https://www.prubsn.com.my/en/"
+            <div class="country-option" data-country="Hong Kong" data-flag="hk"
+                data-url="https://www.prudential.com.hk/en/"
                 style="display: flex; align-items: center; padding: 8px 20px; cursor: pointer;">
-                <img src="https://flagcdn.com/w40/my.png" alt="Malaysia flag" class="country-flag"
+                <img src="https://flagcdn.com/w40/hk.png" alt="Hong Kong flag" class="country-flag"
                     style="width: 24px; height: 17.14px; margin-right: 16px; border-radius: 3px;">
                 <span class="country-name"
-                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Malaysia</span>
+                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Hong
+                    Kong</span>
             </div>
-            <div class="country-option" data-country="Philippines" data-flag="ph"
-                data-url="https://www.prulifeuk.com.ph/en/"
+            <div class="country-option" data-country="Hong Kong" data-flag="hk"
+                data-url="https://www.prudential.com.hk/en/"
                 style="display: flex; align-items: center; padding: 8px 20px; cursor: pointer;">
-                <img src="https://flagcdn.com/w40/ph.png" alt="Philippines flag" class="country-flag"
+                <img src="https://flagcdn.com/w40/hk.png" alt="Hong Kong flag" class="country-flag"
                     style="width: 24px; height: 17.14px; margin-right: 16px; border-radius: 3px;">
                 <span class="country-name"
-                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Philippines</span>
+                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Hong
+                    Kong</span>
             </div>
-            <div class="country-option" data-country="Vietnam" data-flag="vn"
-                data-url="https://www.prudential.com.vn/vi/"
-                style="display: flex; align-items: center; padding: 8px 20px; cursor: pointer;">
-                <img src="https://flagcdn.com/w40/vn.png" alt="Vietnam flag" class="country-flag"
-                    style="width: 24px; height: 17.14px; margin-right: 16px; border-radius: 3px;">
-                <span class="country-name"
-                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Vietnam</span>
-            </div>
+            <!-- Other country options -->
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const dropdownHeader = document.getElementById('dropdown-header');
-            const dropdownList = document.getElementById('dropdown-list');
-            const selectedFlag = document.getElementById('selected-flag');
-            const selectedCountry = document.getElementById('selected-country');
-            const chevron = dropdownHeader.querySelector('.chevron');
-
-            function toggleDropdown() {
-                dropdownList.style.display = dropdownList.style.display === 'block' ? 'none' : 'block';
-                chevron.classList.toggle('open');
-            }
-
-            dropdownHeader.addEventListener('click', toggleDropdown);
-
-            document.addEventListener('click', function (event) {
-                if (!dropdownHeader.contains(event.target) && !dropdownList.contains(event.target)) {
-                    dropdownList.style.display = 'none';
-                    chevron.classList.remove('open');
-                }
-            });
-
-            const countryOptions = document.querySelectorAll('.country-option');
-            countryOptions.forEach((option, index) => {
-                // Apply inline styles to each country option
-                option.style.display = 'flex';
-                option.style.alignItems = 'center';
-                option.style.padding = '8px 20px';
-                option.style.cursor = 'pointer';
-
-                option.addEventListener('mouseover', function () {
-                    option.style.backgroundColor = '#F5F7FA';
-                });
-                option.addEventListener('mouseout', function () {
-                    option.style.backgroundColor = '';
-                });
-
-                if (index !== countryOptions.length - 1) {
-                    option.style.borderBottom = '2px solid #E5EAEF';
-                }
-
-                option.addEventListener('click', function () {
-                    const country = this.dataset.country;
-                    const flag = this.dataset.flag;
-                    const url = this.dataset.url;
-
-                    selectedFlag.src = `https://flagcdn.com/w40/${flag}.png`;
-                    selectedFlag.alt = `${country} flag`;
-                    selectedCountry.textContent = country;
-
-                    toggleDropdown();
-                    window.location.href = url;
-                });
-            });
-
-            function setInitialCountry() {
-                const currentUrl = window.location.href;
-                const matchingOption = Array.from(countryOptions).find(option =>
-                    currentUrl.includes(option.dataset.url)
-                );
-
-                if (matchingOption) {
-                    selectedFlag.src = `https://flagcdn.com/w40/${matchingOption.dataset.flag}.png`;
-                    selectedFlag.alt = `${matchingOption.dataset.country} flag`;
-                    selectedCountry.textContent = matchingOption.dataset.country;
-                }
-            }
-
-            setInitialCountry();
-        });
-    </script>
