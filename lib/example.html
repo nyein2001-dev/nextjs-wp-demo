@@ -1,24 +1,13 @@
     <style>
-        /* Reset some default styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-        }
-
-        /* Container styles */
         .country-dropdown {
             position: relative;
             width: 176px;
         }
 
-        /* Header styles */
         .country-dropdown-header {
+            box-sizing: border-box;
             display: flex;
+            flex-direction: row;
             justify-content: space-between;
             align-items: center;
             padding: 8px 20px;
@@ -30,17 +19,16 @@
             cursor: pointer;
         }
 
-        /* Dropdown list styles */
         .country-dropdown-list {
-            display: none;
             position: fixed;
             width: 176px;
+            margin-top: 8px;
             background: #FFFFFF;
             border: 2px solid #E5EAEF;
             border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            z-index: 1000000; /* Extremely high z-index */
+            display: none;
+            z-index: 9999;
         }
 
         .country-option {
@@ -48,15 +36,14 @@
             align-items: center;
             padding: 8px 20px;
             cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-
-        .country-option:hover {
-            background-color: #F5F7FA;
         }
 
         .country-option:not(:last-child) {
             border-bottom: 2px solid #E5EAEF;
+        }
+
+        .country-option:hover {
+            background-color: #F5F7FA;
         }
 
         .country-flag {
@@ -92,27 +79,31 @@
                 <span class="country-name" id="selected-country">Malaysia</span>
             </div>
             <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                <path fill-rule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                    clip-rule="evenodd" />
             </svg>
         </div>
-    </div>
-
-    <div class="country-dropdown-list" id="dropdown-list">
-        <div class="country-option" data-country="Hong Kong" data-flag="hk" data-url="https://www.prudential.com.hk/en/">
-            <img src="https://flagcdn.com/w40/hk.png" alt="Hong Kong flag" class="country-flag">
-            <span class="country-name">Hong Kong</span>
-        </div>
-        <div class="country-option" data-country="Malaysia" data-flag="my" data-url="https://www.prubsn.com.my/en/">
-            <img src="https://flagcdn.com/w40/my.png" alt="Malaysia flag" class="country-flag">
-            <span class="country-name">Malaysia</span>
-        </div>
-        <div class="country-option" data-country="Philippines" data-flag="ph" data-url="https://www.prulifeuk.com.ph/en/">
-            <img src="https://flagcdn.com/w40/ph.png" alt="Philippines flag" class="country-flag">
-            <span class="country-name">Philippines</span>
-        </div>
-        <div class="country-option" data-country="Vietnam" data-flag="vn" data-url="https://www.prudential.com.vn/vi/">
-            <img src="https://flagcdn.com/w40/vn.png" alt="Vietnam flag" class="country-flag">
-            <span class="country-name">Vietnam</span>
+        <div class="country-dropdown-list" id="dropdown-list">
+            <div class="country-option" data-country="Hong Kong" data-flag="hk"
+                data-url="https://www.prudential.com.hk/en/">
+                <img src="https://flagcdn.com/w40/hk.png" alt="Hong Kong flag" class="country-flag">
+                <span class="country-name">Hong Kong</span>
+            </div>
+            <div class="country-option" data-country="Malaysia" data-flag="my" data-url="https://www.prubsn.com.my/en/">
+                <img src="https://flagcdn.com/w40/my.png" alt="Malaysia flag" class="country-flag">
+                <span class="country-name">Malaysia</span>
+            </div>
+            <div class="country-option" data-country="Philippines" data-flag="ph"
+                data-url="https://www.prulifeuk.com.ph/en/">
+                <img src="https://flagcdn.com/w40/ph.png" alt="Philippines flag" class="country-flag">
+                <span class="country-name">Philippines</span>
+            </div>
+            <div class="country-option" data-country="Vietnam" data-flag="vn"
+                data-url="https://www.prudential.com.vn/vi/">
+                <img src="https://flagcdn.com/w40/vn.png" alt="Vietnam flag" class="country-flag">
+                <span class="country-name">Vietnam</span>
+            </div>
         </div>
     </div>
 
@@ -126,17 +117,14 @@
 
             function toggleDropdown() {
                 const isOpen = dropdownList.style.display === 'block';
-                
-                if (!isOpen) {
-                    const headerRect = dropdownHeader.getBoundingClientRect();
-                    dropdownList.style.top = `${headerRect.bottom + window.scrollY}px`;
-                    dropdownList.style.left = `${headerRect.left + window.scrollX}px`;
-                    dropdownList.style.display = 'block';
-                } else {
-                    dropdownList.style.display = 'none';
-                }
-                
+                dropdownList.style.display = isOpen ? 'none' : 'block';
                 chevron.classList.toggle('open', !isOpen);
+
+                if (!isOpen) {
+                    const rect = dropdownHeader.getBoundingClientRect();
+                    dropdownList.style.left = `${rect.left}px`;
+                    dropdownList.style.top = `${rect.bottom + window.scrollY}px`;
+                }
             }
 
             dropdownHeader.addEventListener('click', toggleDropdown);
@@ -148,24 +136,26 @@
                 }
             });
 
-            window.addEventListener('scroll', function() {
-                if (dropdownList.style.display === 'block') {
-                    const headerRect = dropdownHeader.getBoundingClientRect();
-                    dropdownList.style.top = `${headerRect.bottom + window.scrollY}px`;
-                    dropdownList.style.left = `${headerRect.left + window.scrollX}px`;
-                }
-            });
-
-            window.addEventListener('resize', function() {
-                if (dropdownList.style.display === 'block') {
-                    const headerRect = dropdownHeader.getBoundingClientRect();
-                    dropdownList.style.top = `${headerRect.bottom + window.scrollY}px`;
-                    dropdownList.style.left = `${headerRect.left + window.scrollX}px`;
-                }
-            });
 
             const countryOptions = document.querySelectorAll('.country-option');
-            countryOptions.forEach(option => {
+            countryOptions.forEach((option, index) => {
+                // Apply inline styles to each country option
+                option.style.display = 'flex';
+                option.style.alignItems = 'center';
+                option.style.padding = '8px 20px';
+                option.style.cursor = 'pointer';
+
+                option.addEventListener('mouseover', function () {
+                    option.style.backgroundColor = '#F5F7FA';
+                });
+                option.addEventListener('mouseout', function () {
+                    option.style.backgroundColor = '';
+                });
+
+                if (index !== countryOptions.length - 1) {
+                    option.style.borderBottom = '2px solid #E5EAEF';
+                }
+
                 option.addEventListener('click', function () {
                     const country = this.dataset.country;
                     const flag = this.dataset.flag;
@@ -181,9 +171,9 @@
             });
 
             function setInitialCountry() {
-                const currentUrl = window.location.href;
+                const currentUrl = "Vietnam";
                 const matchingOption = Array.from(countryOptions).find(option =>
-                    currentUrl.includes(option.dataset.url)
+                    currentUrl.includes(option.dataset.country)
                 );
 
                 if (matchingOption) {
@@ -195,4 +185,6 @@
 
             setInitialCountry();
         });
+
+
     </script>
