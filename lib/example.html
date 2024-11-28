@@ -1,6 +1,4 @@
-
-    <script>
-        let totalFileSize = 0;
+ let totalFileSize = 0;
         const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB per file
         const MAX_TOTAL_SIZE = 25 * 1024 * 1024; // 25MB total
 
@@ -89,6 +87,9 @@
 
                     fileList.appendChild(fileLabel);
                 });
+
+                // Clear the file input value after processing (important for re-uploading the same file)
+                fileInput.value = '';
             });
         }
 
@@ -118,4 +119,3 @@
         ];
 
         fileInputIds.forEach(id => handleFileInput(id));
-    </script>
