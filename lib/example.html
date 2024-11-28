@@ -1,115 +1,138 @@
-function handleFileInput(fileInputId) {
-    const fileInput = document.getElementById(fileInputId);
-    const fileList = document.getElementById(`fileList-${fileInputId}`);
-    const removeAllButton = document.getElementById(`removeAllButton-${fileInputId}`);
-    const errorElement = document.getElementById(`error-${fileInputId}`);
+<!DOCTYPE html>
+<html lang="en">
 
-    // Initialize the fileDataStore for this input ID if not already set
-    fileDataStore[fileInputId] = [];
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Country Dropdown</title>
+</head>
+<body>
+    <div class="country-dropdown" style="position: relative; width: 176px;">
+        <div class="country-dropdown-header" id="dropdown-header"
+            style="box-sizing: border-box; display: flex; flex-direction: row; justify-content: space-between; align-items: center; padding: 8px 20px; width: 100%; height: 36px; background: #FFFFFF; border: 2px solid #E5EAEF; border-radius: 50px; cursor: pointer;">
+            <div style="display: flex; align-items: center;">
+                <img src="https://flagcdn.com/w40/my.png" alt="Malaysia flag" class="country-flag" id="selected-flag"
+                    style="width: 24px; height: 17.14px; margin-right: 16px; border-radius: 3px;">
+                <span class="country-name" id="selected-country"
+                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Malaysia</span>
+            </div>
+            <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                style="width: 16px; height: 16px; transition: transform 0.3s ease;">
+                <path fill-rule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                    clip-rule="evenodd" />
+            </svg>
+        </div>
+        <div class="country-dropdown-list" id="dropdown-list"
+            style="position: absolute; top: 100%; left: 0; width: 100%; margin-top: 8px; background: #FFFFFF; border: 2px solid #E5EAEF; border-radius: 20px; overflow: hidden; display: none;">
+            <div class="country-option" data-country="Hong Kong" data-flag="hk"
+                data-url="https://www.prudential.com.hk/en/"
+                style="display: flex; align-items: center; padding: 8px 20px; cursor: pointer;">
+                <img src="https://flagcdn.com/w40/hk.png" alt="Hong Kong flag" class="country-flag"
+                    style="width: 24px; height: 17.14px; margin-right: 16px; border-radius: 3px;">
+                <span class="country-name"
+                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Hong
+                    Kong</span>
+            </div>
+            <div class="country-option" data-country="Malaysia" data-flag="my" data-url="https://www.prubsn.com.my/en/"
+                style="display: flex; align-items: center; padding: 8px 20px; cursor: pointer;">
+                <img src="https://flagcdn.com/w40/my.png" alt="Malaysia flag" class="country-flag"
+                    style="width: 24px; height: 17.14px; margin-right: 16px; border-radius: 3px;">
+                <span class="country-name"
+                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Malaysia</span>
+            </div>
+            <div class="country-option" data-country="Philippines" data-flag="ph"
+                data-url="https://www.prulifeuk.com.ph/en/"
+                style="display: flex; align-items: center; padding: 8px 20px; cursor: pointer;">
+                <img src="https://flagcdn.com/w40/ph.png" alt="Philippines flag" class="country-flag"
+                    style="width: 24px; height: 17.14px; margin-right: 16px; border-radius: 3px;">
+                <span class="country-name"
+                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Philippines</span>
+            </div>
+            <div class="country-option" data-country="Vietnam" data-flag="vn"
+                data-url="https://www.prudential.com.vn/vi/"
+                style="display: flex; align-items: center; padding: 8px 20px; cursor: pointer;">
+                <img src="https://flagcdn.com/w40/vn.png" alt="Vietnam flag" class="country-flag"
+                    style="width: 24px; height: 17.14px; margin-right: 16px; border-radius: 3px;">
+                <span class="country-name"
+                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Vietnam</span>
+            </div>
+        </div>
+    </div>
 
-    fileInput.addEventListener('change', () => {
-        errorElement.style.display = 'none';
-        const newFiles = Array.from(fileInput.files);
-        let validFiles = [];
-        let sizeExceeded = false;
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdownHeader = document.getElementById('dropdown-header');
+            const dropdownList = document.getElementById('dropdown-list');
+            const selectedFlag = document.getElementById('selected-flag');
+            const selectedCountry = document.getElementById('selected-country');
+            const chevron = dropdownHeader.querySelector('.chevron');
 
-        // Prevent duplicate files
-        const existingFiles = fileDataStore[fileInputId].map(file => file.name);
-
-        // Validate files
-        newFiles.forEach(file => {
-            if (existingFiles.includes(file.name)) {
-                errorElement.textContent = `Duplicate file "${file.name}" is not allowed.`;
-                errorElement.style.display = 'block';
-            } else if (file.size > MAX_FILE_SIZE) {
-                sizeExceeded = true;
-                errorElement.textContent = `File "${file.name}" exceeds 5MB and was not added.`;
-                errorElement.style.display = 'block';
-            } else {
-                validFiles.push(file);
+            function toggleDropdown() {
+                dropdownList.style.display = dropdownList.style.display === 'block' ? 'none' : 'block';
+                chevron.classList.toggle('open');
             }
-        });
 
-        // Check total size
-        const newTotalSize = totalFileSize + validFiles.reduce((sum, file) => sum + file.size, 0);
-        if (newTotalSize > MAX_TOTAL_SIZE) {
-            document.getElementById('totalSizeWarning').style.display = 'block';
-            return;
-        } else {
-            document.getElementById('totalSizeWarning').style.display = 'none';
-        }
+            dropdownHeader.addEventListener('click', toggleDropdown);
 
-        // Update total file size and fileDataStore
-        totalFileSize = newTotalSize;
-        fileDataStore[fileInputId] = [...fileDataStore[fileInputId], ...validFiles];
-
-        // **Keep files in input for submission**:
-        const dataTransfer = new DataTransfer();
-        fileDataStore[fileInputId].forEach(file => dataTransfer.items.add(file));
-        fileInput.files = dataTransfer.files; // Update input files to match `fileDataStore`
-
-        // Update file list UI
-        fileList.innerHTML = '';
-        removeAllButton.classList.remove('hidden');
-        fileDataStore[fileInputId].forEach(file => {
-            const fileLabel = document.createElement('div');
-            fileLabel.className = 'file-label';
-
-            if (file.type.startsWith('image/')) {
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(file);
-                fileLabel.appendChild(img);
-            }
-
-            const fileInfo = document.createElement('div');
-            fileInfo.className = 'file-info';
-            fileInfo.innerHTML = `<span>${file.name}</span><small>${(file.size / 1024).toFixed(2)} KB</small>`;
-            fileLabel.appendChild(fileInfo);
-
-            const removeButton = document.createElement('button');
-            removeButton.className = 'remove-button';
-            removeButton.textContent = 'Remove';
-            removeButton.onclick = () => {
-                fileLabel.remove();
-                totalFileSize -= file.size;
-
-                // Remove the file from fileDataStore
-                fileDataStore[fileInputId] = fileDataStore[fileInputId].filter(f => f.name !== file.name);
-
-                // Update the file input
-                const updatedDataTransfer = new DataTransfer();
-                fileDataStore[fileInputId].forEach(f => updatedDataTransfer.items.add(f));
-                fileInput.files = updatedDataTransfer.files;
-
-                if (fileDataStore[fileInputId].length === 0) {
-                    removeAllButton.classList.add('hidden');
-                    fileInput.value = '';
+            document.addEventListener('click', function (event) {
+                if (!dropdownHeader.contains(event.target) && !dropdownList.contains(event.target)) {
+                    dropdownList.style.display = 'none';
+                    chevron.classList.remove('open');
                 }
-            };
-            fileLabel.appendChild(removeButton);
+            });
 
-            fileList.appendChild(fileLabel);
+            const countryOptions = document.querySelectorAll('.country-option');
+            countryOptions.forEach((option, index) => {
+                // Apply inline styles to each country option
+                option.style.display = 'flex';
+                option.style.alignItems = 'center';
+                option.style.padding = '8px 20px';
+                option.style.cursor = 'pointer';
+
+                option.addEventListener('mouseover', function () {
+                    option.style.backgroundColor = '#F5F7FA';
+                });
+                option.addEventListener('mouseout', function () {
+                    option.style.backgroundColor = '';
+                });
+
+                if (index !== countryOptions.length - 1) {
+                    option.style.borderBottom = '2px solid #E5EAEF';
+                }
+
+                option.addEventListener('click', function () {
+                    const country = this.dataset.country;
+                    const flag = this.dataset.flag;
+                    const url = this.dataset.url;
+
+                    selectedFlag.src = `https://flagcdn.com/w40/${flag}.png`;
+                    selectedFlag.alt = `${country} flag`;
+                    selectedCountry.textContent = country;
+
+                    toggleDropdown();
+                    window.location.href = url;
+                });
+            });
+
+            function setInitialCountry() {
+                const currentUrl = "Vietnam";
+                const matchingOption = Array.from(countryOptions).find(option =>
+                    currentUrl.includes(option.dataset.country)
+                );
+
+                if (matchingOption) {
+                    selectedFlag.src = `https://flagcdn.com/w40/${matchingOption.dataset.flag}.png`;
+                    selectedFlag.alt = `${matchingOption.dataset.country} flag`;
+                    selectedCountry.textContent = matchingOption.dataset.country;
+                }
+            }
+
+            setInitialCountry();
         });
+    </script>
 
-        // Clear the file input value after processing
-        fileInput.value = '';
-    });
-}
 
-function removeAllFiles(id) {
-    const fileInput = document.getElementById(id);
-    const fileList = document.getElementById(`fileList-${id}`);
-    const removeAllButton = document.getElementById(`removeAllButton-${id}`);
+</body>
 
-    // Clear stored data and reset UI
-    totalFileSize -= fileDataStore[id].reduce((sum, file) => sum + file.size, 0);
-    fileDataStore[id] = [];
-
-    // Update the file input
-    const dataTransfer = new DataTransfer();
-    fileInput.files = dataTransfer.files; // Clear all files
-
-    fileList.innerHTML = '';
-    fileInput.value = ''; // Clear input value
-    removeAllButton.classList.add('hidden');
-}
+</html>
