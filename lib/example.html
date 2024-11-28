@@ -1,121 +1,115 @@
- let totalFileSize = 0;
-        const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB per file
-        const MAX_TOTAL_SIZE = 25 * 1024 * 1024; // 25MB total
+function handleFileInput(fileInputId) {
+    const fileInput = document.getElementById(fileInputId);
+    const fileList = document.getElementById(`fileList-${fileInputId}`);
+    const removeAllButton = document.getElementById(`removeAllButton-${fileInputId}`);
+    const errorElement = document.getElementById(`error-${fileInputId}`);
 
-        // To store files for each file input
-        const fileDataStore = {};
+    // Initialize the fileDataStore for this input ID if not already set
+    fileDataStore[fileInputId] = [];
 
-        function handleFileInput(fileInputId) {
-            const fileInput = document.getElementById(fileInputId);
-            const fileList = document.getElementById(`fileList-${fileInputId}`);
-            const removeAllButton = document.getElementById(`removeAllButton-${fileInputId}`);
-            const errorElement = document.getElementById(`error-${fileInputId}`);
+    fileInput.addEventListener('change', () => {
+        errorElement.style.display = 'none';
+        const newFiles = Array.from(fileInput.files);
+        let validFiles = [];
+        let sizeExceeded = false;
 
-            // Initialize the fileDataStore for this input ID if not already set
-            fileDataStore[fileInputId] = [];
+        // Prevent duplicate files
+        const existingFiles = fileDataStore[fileInputId].map(file => file.name);
 
-            fileInput.addEventListener('change', () => {
-                errorElement.style.display = 'none';
-                const newFiles = Array.from(fileInput.files);
-                let validFiles = [];
-                let sizeExceeded = false;
+        // Validate files
+        newFiles.forEach(file => {
+            if (existingFiles.includes(file.name)) {
+                errorElement.textContent = `Duplicate file "${file.name}" is not allowed.`;
+                errorElement.style.display = 'block';
+            } else if (file.size > MAX_FILE_SIZE) {
+                sizeExceeded = true;
+                errorElement.textContent = `File "${file.name}" exceeds 5MB and was not added.`;
+                errorElement.style.display = 'block';
+            } else {
+                validFiles.push(file);
+            }
+        });
 
-                // Prevent duplicate files
-                const existingFiles = fileDataStore[fileInputId].map(file => file.name);
+        // Check total size
+        const newTotalSize = totalFileSize + validFiles.reduce((sum, file) => sum + file.size, 0);
+        if (newTotalSize > MAX_TOTAL_SIZE) {
+            document.getElementById('totalSizeWarning').style.display = 'block';
+            return;
+        } else {
+            document.getElementById('totalSizeWarning').style.display = 'none';
+        }
 
-                // Validate files
-                newFiles.forEach(file => {
-                    if (existingFiles.includes(file.name)) {
-                        errorElement.textContent = `Duplicate file "${file.name}" is not allowed.`;
-                        errorElement.style.display = 'block';
-                    } else if (file.size > MAX_FILE_SIZE) {
-                        sizeExceeded = true;
-                        errorElement.textContent = `File "${file.name}" exceeds 5MB and was not added.`;
-                        errorElement.style.display = 'block';
-                    } else {
-                        validFiles.push(file);
-                    }
-                });
+        // Update total file size and fileDataStore
+        totalFileSize = newTotalSize;
+        fileDataStore[fileInputId] = [...fileDataStore[fileInputId], ...validFiles];
 
-                // Check total size
-                const newTotalSize = totalFileSize + validFiles.reduce((sum, file) => sum + file.size, 0);
-                if (newTotalSize > MAX_TOTAL_SIZE) {
-                    document.getElementById('totalSizeWarning').style.display = 'block';
-                    return;
-                } else {
-                    document.getElementById('totalSizeWarning').style.display = 'none';
+        // **Keep files in input for submission**:
+        const dataTransfer = new DataTransfer();
+        fileDataStore[fileInputId].forEach(file => dataTransfer.items.add(file));
+        fileInput.files = dataTransfer.files; // Update input files to match `fileDataStore`
+
+        // Update file list UI
+        fileList.innerHTML = '';
+        removeAllButton.classList.remove('hidden');
+        fileDataStore[fileInputId].forEach(file => {
+            const fileLabel = document.createElement('div');
+            fileLabel.className = 'file-label';
+
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                fileLabel.appendChild(img);
+            }
+
+            const fileInfo = document.createElement('div');
+            fileInfo.className = 'file-info';
+            fileInfo.innerHTML = `<span>${file.name}</span><small>${(file.size / 1024).toFixed(2)} KB</small>`;
+            fileLabel.appendChild(fileInfo);
+
+            const removeButton = document.createElement('button');
+            removeButton.className = 'remove-button';
+            removeButton.textContent = 'Remove';
+            removeButton.onclick = () => {
+                fileLabel.remove();
+                totalFileSize -= file.size;
+
+                // Remove the file from fileDataStore
+                fileDataStore[fileInputId] = fileDataStore[fileInputId].filter(f => f.name !== file.name);
+
+                // Update the file input
+                const updatedDataTransfer = new DataTransfer();
+                fileDataStore[fileInputId].forEach(f => updatedDataTransfer.items.add(f));
+                fileInput.files = updatedDataTransfer.files;
+
+                if (fileDataStore[fileInputId].length === 0) {
+                    removeAllButton.classList.add('hidden');
+                    fileInput.value = '';
                 }
+            };
+            fileLabel.appendChild(removeButton);
 
-                // Update total file size and fileDataStore
-                totalFileSize = newTotalSize;
-                fileDataStore[fileInputId] = [...fileDataStore[fileInputId], ...validFiles];
+            fileList.appendChild(fileLabel);
+        });
 
-                // Update file list UI
-                fileList.innerHTML = '';
-                removeAllButton.classList.remove('hidden');
-                fileDataStore[fileInputId].forEach(file => {
-                    const fileLabel = document.createElement('div');
-                    fileLabel.className = 'file-label';
+        // Clear the file input value after processing
+        fileInput.value = '';
+    });
+}
 
-                    if (file.type.startsWith('image/')) {
-                        const img = document.createElement('img');
-                        img.src = URL.createObjectURL(file);
-                        fileLabel.appendChild(img);
-                    }
+function removeAllFiles(id) {
+    const fileInput = document.getElementById(id);
+    const fileList = document.getElementById(`fileList-${id}`);
+    const removeAllButton = document.getElementById(`removeAllButton-${id}`);
 
-                    const fileInfo = document.createElement('div');
-                    fileInfo.className = 'file-info';
-                    fileInfo.innerHTML = `<span>${file.name}</span><small>${(file.size / 1024).toFixed(2)} KB</small>`;
-                    fileLabel.appendChild(fileInfo);
+    // Clear stored data and reset UI
+    totalFileSize -= fileDataStore[id].reduce((sum, file) => sum + file.size, 0);
+    fileDataStore[id] = [];
 
-                    const removeButton = document.createElement('button');
-                    removeButton.className = 'remove-button';
-                    removeButton.textContent = 'Remove';
-                    removeButton.onclick = () => {
-                        fileLabel.remove();
-                        totalFileSize -= file.size;
+    // Update the file input
+    const dataTransfer = new DataTransfer();
+    fileInput.files = dataTransfer.files; // Clear all files
 
-                        // Remove the file from fileDataStore
-                        fileDataStore[fileInputId] = fileDataStore[fileInputId].filter(f => f.name !== file.name);
-
-                        if (fileDataStore[fileInputId].length === 0) {
-                            removeAllButton.classList.add('hidden');
-                            fileInput.value = '';
-                        }
-                    };
-                    fileLabel.appendChild(removeButton);
-
-                    fileList.appendChild(fileLabel);
-                });
-
-                // Clear the file input value after processing (important for re-uploading the same file)
-                fileInput.value = '';
-            });
-        }
-
-        function removeAllFiles(id) {
-            const fileInput = document.getElementById(id);
-            const fileList = document.getElementById(`fileList-${id}`);
-            const removeAllButton = document.getElementById(`removeAllButton-${id}`);
-
-            // Clear stored data and reset UI
-            totalFileSize -= fileDataStore[id].reduce((sum, file) => sum + file.size, 0);
-            fileDataStore[id] = [];
-            fileList.innerHTML = '';
-            fileInput.value = ''; // Clear input value
-            removeAllButton.classList.add('hidden');
-        }
-
-        // Initialize handlers for all file inputs
-        const fileInputIds = [
-            'partial-benefits-form',
-            'valid-government-issued-id',
-            'hospital-soa',
-            'official-accidental-receipts',
-            'presentation-medicine',
-            'attending-physician',
-            'record-operation',
-            'official-receipt'
-        ];
-
-        fileInputIds.forEach(id => handleFileInput(id));
+    fileList.innerHTML = '';
+    fileInput.value = ''; // Clear input value
+    removeAllButton.classList.add('hidden');
+}
