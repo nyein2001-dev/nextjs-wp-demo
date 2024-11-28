@@ -132,7 +132,11 @@
         });
     </script>
 
-
+ for (let inputId in fileDataStore) {
+        fileDataStore[inputId].forEach((file, index) => {
+            formData.append(`${inputId}[]`, file);
+        });
+    }
 </body>
 
 </html>
