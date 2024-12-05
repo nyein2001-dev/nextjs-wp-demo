@@ -1,141 +1,267 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Country Dropdown</title>
-</head>
-<body>
-    <div class="country-dropdown" style="position: relative; width: 176px;">
-        <div class="country-dropdown-header" id="dropdown-header"
-            style="box-sizing: border-box; display: flex; flex-direction: row; justify-content: space-between; align-items: center; padding: 8px 20px; width: 100%; height: 36px; background: #FFFFFF; border: 2px solid #E5EAEF; border-radius: 50px; cursor: pointer;">
-            <div style="display: flex; align-items: center;">
-                <img src="https://flagcdn.com/w40/my.png" alt="Malaysia flag" class="country-flag" id="selected-flag"
-                    style="width: 24px; height: 17.14px; margin-right: 16px; border-radius: 3px;">
-                <span class="country-name" id="selected-country"
-                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Malaysia</span>
-            </div>
-            <svg class="chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                style="width: 16px; height: 16px; transition: transform 0.3s ease;">
-                <path fill-rule="evenodd"
-                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                    clip-rule="evenodd" />
-            </svg>
-        </div>
-        <div class="country-dropdown-list" id="dropdown-list"
-            style="position: absolute; top: 100%; left: 0; width: 100%; margin-top: 8px; background: #FFFFFF; border: 2px solid #E5EAEF; border-radius: 20px; overflow: hidden; display: none;">
-            <div class="country-option" data-country="Hong Kong" data-flag="hk"
-                data-url="https://www.prudential.com.hk/en/"
-                style="display: flex; align-items: center; padding: 8px 20px; cursor: pointer;">
-                <img src="https://flagcdn.com/w40/hk.png" alt="Hong Kong flag" class="country-flag"
-                    style="width: 24px; height: 17.14px; margin-right: 16px; border-radius: 3px;">
-                <span class="country-name"
-                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Hong
-                    Kong</span>
-            </div>
-            <div class="country-option" data-country="Malaysia" data-flag="my" data-url="https://www.prubsn.com.my/en/"
-                style="display: flex; align-items: center; padding: 8px 20px; cursor: pointer;">
-                <img src="https://flagcdn.com/w40/my.png" alt="Malaysia flag" class="country-flag"
-                    style="width: 24px; height: 17.14px; margin-right: 16px; border-radius: 3px;">
-                <span class="country-name"
-                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Malaysia</span>
-            </div>
-            <div class="country-option" data-country="Philippines" data-flag="ph"
-                data-url="https://www.prulifeuk.com.ph/en/"
-                style="display: flex; align-items: center; padding: 8px 20px; cursor: pointer;">
-                <img src="https://flagcdn.com/w40/ph.png" alt="Philippines flag" class="country-flag"
-                    style="width: 24px; height: 17.14px; margin-right: 16px; border-radius: 3px;">
-                <span class="country-name"
-                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Philippines</span>
-            </div>
-            <div class="country-option" data-country="Vietnam" data-flag="vn"
-                data-url="https://www.prudential.com.vn/vi/"
-                style="display: flex; align-items: center; padding: 8px 20px; cursor: pointer;">
-                <img src="https://flagcdn.com/w40/vn.png" alt="Vietnam flag" class="country-flag"
-                    style="width: 24px; height: 17.14px; margin-right: 16px; border-radius: 3px;">
-                <span class="country-name"
-                    style="font-style: italic; font-weight: 400; font-size: 14px; line-height: 20px; color: #1B365D;">Vietnam</span>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const dropdownHeader = document.getElementById('dropdown-header');
-            const dropdownList = document.getElementById('dropdown-list');
-            const selectedFlag = document.getElementById('selected-flag');
-            const selectedCountry = document.getElementById('selected-country');
-            const chevron = dropdownHeader.querySelector('.chevron');
-
-            function toggleDropdown() {
-                dropdownList.style.display = dropdownList.style.display === 'block' ? 'none' : 'block';
-                chevron.classList.toggle('open');
-            }
-
-            dropdownHeader.addEventListener('click', toggleDropdown);
-
-            document.addEventListener('click', function (event) {
-                if (!dropdownHeader.contains(event.target) && !dropdownList.contains(event.target)) {
-                    dropdownList.style.display = 'none';
-                    chevron.classList.remove('open');
-                }
-            });
-
-            const countryOptions = document.querySelectorAll('.country-option');
-            countryOptions.forEach((option, index) => {
-                // Apply inline styles to each country option
-                option.style.display = 'flex';
-                option.style.alignItems = 'center';
-                option.style.padding = '8px 20px';
-                option.style.cursor = 'pointer';
-
-                option.addEventListener('mouseover', function () {
-                    option.style.backgroundColor = '#F5F7FA';
-                });
-                option.addEventListener('mouseout', function () {
-                    option.style.backgroundColor = '';
-                });
-
-                if (index !== countryOptions.length - 1) {
-                    option.style.borderBottom = '2px solid #E5EAEF';
-                }
-
-                option.addEventListener('click', function () {
-                    const country = this.dataset.country;
-                    const flag = this.dataset.flag;
-                    const url = this.dataset.url;
-
-                    selectedFlag.src = `https://flagcdn.com/w40/${flag}.png`;
-                    selectedFlag.alt = `${country} flag`;
-                    selectedCountry.textContent = country;
-
-                    toggleDropdown();
-                    window.location.href = url;
-                });
-            });
-
-            function setInitialCountry() {
-                const currentUrl = "Vietnam";
-                const matchingOption = Array.from(countryOptions).find(option =>
-                    currentUrl.includes(option.dataset.country)
-                );
-
-                if (matchingOption) {
-                    selectedFlag.src = `https://flagcdn.com/w40/${matchingOption.dataset.flag}.png`;
-                    selectedFlag.alt = `${matchingOption.dataset.country} flag`;
-                    selectedCountry.textContent = matchingOption.dataset.country;
-                }
-            }
-
-            setInitialCountry();
-        });
-    </script>
-
- for (let inputId in fileDataStore) {
-        fileDataStore[inputId].forEach((file, index) => {
-            formData.append(`${inputId}[]`, file);
-        });
-    }
-</body>
-
-</html>
+<LocationContainer>
+    <FirstLevelValue><![CDATA[Johor]]></FirstLevelValue>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Batu Pahat]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Iskandar Puteri]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Johor Bahru]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Johor Bharu]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kulai]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kluang]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kota Tinggi]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Mersing]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Muar]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Pasir Gudang]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Segamat]]></ChildLevelValues>
+    </ChildContainer>
+</LocationContainer>
+<LocationContainer>
+    <FirstLevelValue><![CDATA[Kedah]]></FirstLevelValue>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Alor Setar]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Baling]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kota Setar]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kulim]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kuala Muda]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Pendang]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Sungai Petani]]></ChildLevelValues>
+    </ChildContainer>
+</LocationContainer>
+<LocationContainer>
+    <FirstLevelValue><![CDATA[Kelantan]]></FirstLevelValue>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kota Bharu]]></ChildLevelValues>
+    </ChildContainer>
+</LocationContainer>
+<LocationContainer>
+    <FirstLevelValue><![CDATA[KL & Selangor]]></FirstLevelValue>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Ampang Jaya]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Banting]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Gombak]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Hulu Langat]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Hulu Selangor]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kajang]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Klang]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Klang Valley]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kuala Langat]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kuala Lumpur]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kuala Selangor]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Lembah Kelang]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Petaling]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Petaling Jaya]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Putrajaya]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Selayang]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Sepang]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Shah Alam]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Subang Jaya]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Wilayah Persekutuan Putrajaya]]></ChildLevelValues>
+    </ChildContainer>
+</LocationContainer>
+<LocationContainer>
+    <FirstLevelValue><![CDATA[Melaka]]></FirstLevelValue>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Alor Gajah]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Jasin]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Melaka]]></ChildLevelValues>
+    </ChildContainer>
+</LocationContainer>
+<LocationContainer>
+    <FirstLevelValue><![CDATA[Negeri Sembilan]]></FirstLevelValue>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Bahau]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Seremban]]></ChildLevelValues>
+    </ChildContainer>
+</LocationContainer>
+<LocationContainer>
+    <FirstLevelValue><![CDATA[Pahang]]></FirstLevelValue>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Bentong]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kuantan]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kuala Lipis]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Mentakab]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Raub]]></ChildLevelValues>
+    </ChildContainer>
+</LocationContainer>
+<LocationContainer>
+    <FirstLevelValue><![CDATA[Perak]]></FirstLevelValue>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Ipoh]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kinta]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Manjung]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Sitiawan]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Taiping]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Teluk Intan]]></ChildLevelValues>
+    </ChildContainer>
+</LocationContainer>
+<LocationContainer>
+    <FirstLevelValue><![CDATA[Perlis]]></FirstLevelValue>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kangar]]></ChildLevelValues>
+    </ChildContainer>
+</LocationContainer>
+<LocationContainer>
+    <FirstLevelValue><![CDATA[Pulau Pinang]]></FirstLevelValue>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Bukit Mertajam]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Pulau Pinang]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Seberang Perai]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Seberang Perai Tengah (Bukit Mertajam)]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Seberang Perai Utara (Butterworth)]]></ChildLevelValues>
+    </ChildContainer>
+</LocationContainer>
+<LocationContainer>
+    <FirstLevelValue><![CDATA[Sabah]]></FirstLevelValue>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Beaufort / DL Mampakur]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kota Kinabalu]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Lahad Datu]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Labuan]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Sandakan]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Tamparuli]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Tawau]]></ChildLevelValues>
+    </ChildContainer>
+</LocationContainer>
+<LocationContainer>
+    <FirstLevelValue><![CDATA[Sarawak]]></FirstLevelValue>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Bintulu]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kuching]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Miri]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Padawan]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Saribas / Betong]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Sibu]]></ChildLevelValues>
+    </ChildContainer>
+</LocationContainer>
+<LocationContainer>
+    <FirstLevelValue><![CDATA[Terengganu]]></FirstLevelValue>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kemaman]]></ChildLevelValues>
+    </ChildContainer>
+    <ChildContainer>
+        <ChildLevelValues><![CDATA[Kuala Terengganu]]></ChildLevelValues>
+    </ChildContainer>
+</LocationContainer>
