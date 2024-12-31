@@ -4,9 +4,9 @@
 // import { Post } from "@/lib/wordpress.d";
 // import { cn } from "@/lib/utils";
 
-export default async function PostCard({ post }: { post: Post }) {
+// export default async function PostCard({ post }: { post: Post }) {
   //  const media = await getFeatu
-    return (<p>Hello</p>
+    //return (<p>Hello</p>
         // <Link
         //     href={`/posts/${post.slug}`}
         //     className={cn(
@@ -31,5 +31,5 @@ export default async function PostCard({ post }: { post: Post }) {
         //         ></div>
         //     </div>
         // </Link>
-    )
-}
+//     )
+// }
