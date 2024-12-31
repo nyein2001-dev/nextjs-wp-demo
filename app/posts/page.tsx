@@ -17,11 +17,11 @@ export default function OutputPage() {
                         <Image
                             src="/logo-prubsn.png"
                             alt="Company Logo"
-                            width={48}
-                            height={24}
+                            width={150}
+                            height={75}
                             className="mx-0"
                         />
-                        <div className="text-right">
+                        <div className="text-right w-[160px]">
                             <h1 className="text-xl font-bold text-gray-800">PruBSN Takaful Coverage Assessment Report</h1>
                             <div className="text-sm text-gray-600">Date: {new Date().toLocaleDateString()}</div>
                             <div className="text-sm text-gray-600">Reference: TKF-00000000000</div>
