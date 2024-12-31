@@ -1,15 +1,5 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+module.exports = {
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: process.env.WORDPRESS_HOSTNAME,
-        port: "",
-        pathname: "/**",
-      },
-    ],
+    domains: ['via.placeholder.com'],
   },
-};
-
-export default nextConfig;
+}
