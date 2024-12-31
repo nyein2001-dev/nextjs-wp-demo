@@ -30,6 +30,6 @@ export async function getAllPosts(filterParams?: {
   return posts;
 }
 
-export async function getFeaturedMediaById(id:number): Promise<Feature {
+export async function getFeaturedMediaById(id:number): Promise<Feature> {
   
 }
