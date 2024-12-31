@@ -2,7 +2,6 @@
 
 import { generatePDF } from '../../components/generatePDF'
 import Link from 'next/link'
-import Image from 'next/image'
 
 export default function OutputPage() {
 
@@ -14,12 +13,10 @@ export default function OutputPage() {
             >
                 <div className="max-w-5xl  px-2 md:px-4 mx-auto overflow-hidden">
                     <div className="flex justify-between items-center">
-                        <Image
+                         <img
                             src="/logo-prubsn.png"
-                            alt="Company Logo"
-                            width={150}
-                            height={75}
-                            className="mx-0"
+                            alt="Logo"
+                            className="h-12"
                         />
                         <div className="text-right w-[160px]">
                             <h1 className="text-xl font-bold text-gray-800">PruBSN Takaful Coverage Assessment Report</h1>
