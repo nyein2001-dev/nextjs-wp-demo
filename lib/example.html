@@ -1,23 +1,58 @@
-<div class="section floating-cta floating-cta-default">
-  <div class="floating-cta__wrapper">
-    <div class="floating-cta-icon">
-      <span class="icon-big icon default-icon-class"></span>
-      <span class="icon icon-close"></span>
-    </div>
-    <div class="floating-cta__content">
-      <a class="floating-cta__content--btn-default" href="#" title="Default CTA Text">
-        Default CTA Text
-      </a>
-      <div class="floating-cta__expand-link">
-        <a class="floating-cta__content--btn-icon" href="#" title="Expanded CTA Link 1">
-          <span class="icon">ExpandedIcon1</span>
-          Expanded CTA Link 1
-        </a>
-        <a class="floating-cta__content--btn-icon" href="#" title="Expanded CTA Link 2">
-          <span class="icon">ExpandedIcon2</span>
-          Expanded CTA Link 2
-        </a>
+<!-- Dropdown Section -->
+<c:if test="${content.value.Section5.value.SelectATopicLabel.isSet}">
+  <c:set var="isCheckRequireATopic" value="" />
+  <c:if test="${content.value.Section5.value.ValuesLabelContainerValidation.value.Title == 'Mandatory'}">
+    <c:set var="isCheckRequireATopic" 
+           value="required data-parsley-required-message='${content.value.Section5.value.ValuesLabelContainerValidation.value.ErrorMessageMandatoryField}'" />
+  </c:if>
+  <div class="input-text-field">
+    <div class="field-item">
+      <div class="custom-dropdown-select">
+        <div class="custom-dropdown-select__inner">
+          <label class="sr-only" for="selectTopic">${content.value.Section5.value.SelectATopicLabel}</label>
+          <select class="w-100 custom-dropdown" id="selectTopic" name="selectTopic" ${isCheckRequireATopic}>
+            <option disabled selected data-hidden="true" value="">${content.value.Section5.value.SelectATopicLabel}</option>
+            <c:forEach var="item" items="${content.value.Section5.value.ValuesLabelContainer}" varStatus="loop">
+              <option value="${loop.index}&&${item.value.Label}">${item.value.Label}</option>
+            </c:forEach>
+          </select>
+        </div>
       </div>
     </div>
   </div>
+</c:if>
+
+<!-- Payment Options Section -->
+<div class="payment-options d-none" data-payment-options>
+  <h2>How do you like to pay the premium? *</h2>
+  <fieldset>
+    <div class="radio-checkbox">
+      <label for="emailLink">
+        <input type="radio" id="emailLink" name="paymentMethod" value="Email">
+        Request a link (Email)
+      </label>
+    </div>
+    <div class="radio-checkbox">
+      <label for="paymentInquiry">
+        <input type="radio" id="paymentInquiry" name="paymentMethod" value="Inquiry">
+        Payment Inquiry
+      </label>
+    </div>
+  </fieldset>
 </div>
+
+(function(e, r) {
+  "use strict";
+  r(document).ready(function() {
+    var t = r("#selectTopic"),
+        i = r("[data-payment-options]");
+
+    // Add event listener to dropdown
+    t.on("change", function() {
+      var n = t.find("option:selected").text();
+      var isPayment = n === "Payments";
+
+      i.toggleClass("d-none", !isPayment);
+    });
+  });
+})(jQuery);
