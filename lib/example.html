@@ -40,57 +40,19 @@
     </div>
   </fieldset>
 </div>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const dropdown = document.getElementById('selectTopic');
+    const paymentOptions = document.getElementById('paymentOptions');
 
-(function(e, r) {
-  "use strict";
-  r(document).ready(function() {
-    var t = r("#selectTopic"),
-        i = r("[data-payment-options]");
+    dropdown.addEventListener('change', function () {
+      const selectedValue = dropdown.options[dropdown.selectedIndex]?.text;
 
-    // Add event listener to dropdown
-    t.on("change", function() {
-      var n = t.find("option:selected").text();
-      var isPayment = n === "Payments";
-
-      i.toggleClass("d-none", !isPayment);
+      if (selectedValue === 'Payments') {
+        paymentOptions.style.display = 'block';
+      } else {
+        paymentOptions.style.display = 'none';
+      }
     });
   });
-})(jQuery);
-
-
-function(e, l, c) {
-    "use strict";
-    c.r(l),
-        function(e, r) {
-            c.d(l, "default", function() {
-                return a
-            });
-            var t, n = c(10), i = c.n(n), o = c(11), s = c.n(o),
-                a = e(t = function() {
-                    function dropdownPaymentToggle() {
-                        i()(this, dropdownPaymentToggle)
-                    }
-                    return s()(dropdownPaymentToggle, [{
-                        key: "init",
-                        value: function() {
-                            this.dropdownChangeHandler()
-                        }
-                    }, {
-                        key: "dropdownChangeHandler",
-                        value: function() {
-                            var e = this.options.pluginName,
-                                t = this.$element.find("#selectTopic"),
-                                i = this.$element.find("[data-payment-options]");
-                            
-                            t.off("change.".concat(e)).on("change.".concat(e), function(e) {
-                                var n = t.find("option:selected").text(),
-                                    isPayment = "Payments" === n;
-
-                                i.toggleClass("d-none", !isPayment);
-                            })
-                        }
-                    }]), dropdownPaymentToggle
-                }()) || t
-        }.call(this, c(9).default, c(12))
-}
-
+</script>
