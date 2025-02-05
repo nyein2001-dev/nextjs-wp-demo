@@ -1,1 +1,14 @@
-if (t.is("[data-select-dropdown]")) { var selectedValue = t.val().trim(); if (selectedValue === "Payments") { $("[data-payment-options]").removeClass("d-none"); } else { $("[data-payment-options]").addClass("d-none"); } }
+.country-dropdown {
+    display: none;
+    position: relative;
+    width: 176px;
+    z-index: 100;
+}
+
+/* For medium and small devices */
+@media (max-width: 1024px) { /* Adjust the breakpoint as needed */
+    .country-dropdown {
+        width: 100%;
+        margin-bottom: 24px;
+    }
+}
