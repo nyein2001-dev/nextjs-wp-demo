@@ -1,14 +1,48 @@
-.country-dropdown {
-    display: none;
-    position: relative;
-    width: 176px;
-    z-index: 100;
-}
+function(e, l, c) {
+    "use strict";
+    c.r(l),
+        function(e, r) {
+            c.d(l, "default", function() {
+                return a
+            });
+            var t, n = c(10), i = c.n(n), o = c(11), s = c.n(o),
+                a = e(t = function() {
+                    function HospitalFilter() {
+                        i()(this, HospitalFilter)
+                    }
+                    return s()(HospitalFilter, [{
+                        key: "init",
+                        value: function() {
+                            this.filterHospitals()
+                        }
+                    }, {
+                        key: "filterHospitals",
+                        value: function() {
+                            var e = document.getElementById("selectTopic"),
+                                t = document.getElementById("selectTopic2"),
+                                i = document.getElementById("selectTopic3"),
+                                o = document.getElementById("first-name"),
+                                s = document.querySelector(".submit-form"),
+                                a = document.querySelectorAll(".row.pd-100-60");
 
-/* For medium and small devices */
-@media (max-width: 1024px) { /* Adjust the breakpoint as needed */
-    .country-dropdown {
-        width: 100%;
-        margin-bottom: 24px;
-    }
+                            s.addEventListener("click", function(l) {
+                                l.preventDefault();
+                                var c = e.value.toLowerCase(),
+                                    r = t.value.toLowerCase(),
+                                    n = i.value.toLowerCase(),
+                                    d = o.value.toLowerCase();
+
+                                a.forEach(function(e) {
+                                    var t = e.querySelector(".col-md-3:nth-child(1)").textContent.toLowerCase(),
+                                        i = e.querySelector(".col-md-3:nth-child(2)").textContent.toLowerCase(),
+                                        o = e.querySelector(".col-md-3:nth-child(3)").textContent.toLowerCase(),
+                                        s = e.querySelector(".col-md-2").textContent.toLowerCase(),
+                                        u = (!d || t.includes(d)) && (!c || i.includes(c)) && (!r || o.includes(r)) && (!n || s.includes(n));
+                                    e.style.display = u ? "flex" : "none";
+                                });
+                            });
+                        }
+                    }]), HospitalFilter
+                }()) || t
+        }.call(this, c(9).default, c(12))
 }
