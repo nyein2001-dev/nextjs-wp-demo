@@ -1,274 +1,135 @@
-<%@include file="../global/global.jsp"%>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all potential filter elements - using optional chaining to handle missing elements
+    const addressSelect = document?.getElementById('selectTopic');
+    const servicesSelect = document?.getElementById('selectTopic2');
+    const categorySelect = document?.getElementById('selectTopic3');
+    const hospitalNameInput = document?.getElementById('first-name');
+    const searchForm = document?.getElementById('hospitalSearchForm');
+    const resultsContainer = document?.getElementById('hospitalResults');
 
-<fmt:setLocale value="${cms.locale}" />
-<cms:bundle basename="com.prudential.v2.global.default">
-<cms:formatter var="content">
-    <c:if test="${cms.isEditMode}">
-        <c:out value='<div>' escapeXml="false" />
-    </c:if>
-    <c:choose>
-        <c:when test="${content.value.SectionTitleBold == ''}">
-            <c:if test="${cms.isEditMode}">
-                <div class="color-red"><fmt:message key = "label.default.Title"/></div>
-            </c:if>
-        </c:when>
-        <c:otherwise>
-            <div class="section pd-100-60 custom-gmap">
-                <div class="custom-map-container">
-                    <div class="container">
-                        <div class="section-title">
-                            <span class="section-title__bold">${content.value.SectionTitleBold}</span>
-                        </div>
-                    </div>
-                    <div class="container">
-                        <!-- Search Form -->
-                        <form id="hospitalSearchForm" class="hospital-search-form">
-                            <div class="row">
-                                <!-- Address Dropdown -->
-                                <c:if test="${content.value.Section.value.SelectATopicLabel.isSet}">
-                                    <c:if test="${fn:length(content.value.Section.valueList.ValuesLabelContainer) > 0}">
-                                        <c:set var="isCheckRequireATopic" value=""/>
-                                        <c:if test="${content.value.Section.value.ValuesLabelContainerValidation.value.Title == 'Mandatory'}">
-                                            <c:set var="isCheckRequireATopic" value="required data-parsley-required-message='${content.value.Section.value.ValuesLabelContainerValidation.value.ErrorMessageMandatoryField}'"/>
-                                        </c:if>
-                                        <div class="col-md-3">
-                                            <div class="input-text-field">
-                                                <div class="field-item">
-                                                    <div class="custom-dropdown-select">
-                                                        <div class="custom-dropdown-select__inner">
-                                                            <label class="sr-only" for="selectTopic">${content.value.Section.value.SelectATopicLabel}</label>
-                                                            <select class="w-100" data-select-dropdown data-style data-live-search="true" 
-                                                                    ${isCheckRequireATopic} id="selectTopic" name="selectTopic">
-                                                                <option disabled selected data-hidden="true" value="">${content.value.Section.value.SelectATopicLabel}</option>
-                                                                <c:forEach var="item" items="${content.value.Section.valueList.ValuesLabelContainer}" varStatus="loop">
-                                                                    <option value="${loop.index}&&${item.value.Label}">${item.value.Label}</option>
-                                                                </c:forEach>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </c:if>
-                                </c:if>
+    // Function to safely get dropdown value
+    function getDropdownValue(dropdown) {
+        if (!dropdown) return null; // Return null if dropdown doesn't exist
+        const value = dropdown.value;
+        if (!value) return null; // Return null if no value selected
+        return value.split('&&')[1] || ''; // Return actual value or empty string
+    }
 
-                                <!-- Services Dropdown -->
-                                <c:if test="${content.value.Section.value.SelectATopicLabel2.isSet}">
-                                    <c:if test="${fn:length(content.value.Section.valueList.ValuesLabelContainer2) > 0}">
-                                        <c:set var="isCheckRequireATopic" value=""/>
-                                        <c:if test="${content.value.Section.value.ValuesLabelContainerValidation2.value.Title == 'Mandatory'}">
-                                            <c:set var="isCheckRequireATopic" value="required data-parsley-required-message='${content.value.Section.value.ValuesLabelContainerValidation2.value.ErrorMessageMandatoryField}'"/>
-                                        </c:if>
-                                        <div class="col-md-3">
-                                            <div class="input-text-field">
-                                                <div class="field-item">
-                                                    <div class="custom-dropdown-select">
-                                                        <div class="custom-dropdown-select__inner">
-                                                            <label class="sr-only" for="selectTopic2">${content.value.Section.value.SelectATopicLabel2}</label>
-                                                            <select class="w-100" data-select-dropdown data-style data-live-search="true"
-                                                                    ${isCheckRequireATopic} id="selectTopic2" name="selectTopic2">
-                                                                <option disabled selected data-hidden="true" value="">${content.value.Section.value.SelectATopicLabel2}</option>
-                                                                <c:forEach var="item" items="${content.value.Section.valueList.ValuesLabelContainer2}" varStatus="loop">
-                                                                    <option value="${loop.index}&&${item.value.Label}">${item.value.Label}</option>
-                                                                </c:forEach>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </c:if>
-                                </c:if>
+    // Function to check if element exists and has content
+    function hasContent(element) {
+        return element && element.textContent.trim() !== '';
+    }
 
-                                <!-- Hospital Category Dropdown -->
-                                <c:if test="${content.value.Section.value.SelectATopicLabel3.isSet}">
-                                    <c:if test="${fn:length(content.value.Section.valueList.ValuesLabelContainer3) > 0}">
-                                        <c:set var="isCheckRequireATopic" value=""/>
-                                        <c:if test="${content.value.Section.value.ValuesLabelContainerValidation3.value.Title == 'Mandatory'}">
-                                            <c:set var="isCheckRequireATopic" value="required data-parsley-required-message='${content.value.Section.value.ValuesLabelContainerValidation3.value.ErrorMessageMandatoryField}'"/>
-                                        </c:if>
-                                        <div class="col-md-2">
-                                            <div class="input-text-field">
-                                                <div class="field-item">
-                                                    <div class="custom-dropdown-select">
-                                                        <div class="custom-dropdown-select__inner">
-                                                            <label class="sr-only" for="selectTopic3">${content.value.Section.value.SelectATopicLabel3}</label>
-                                                            <select class="w-100" data-select-dropdown data-style data-live-search="true"
-                                                                    ${isCheckRequireATopic} id="selectTopic3" name="selectTopic3">
-                                                                <option disabled selected data-hidden="true" value="">${content.value.Section.value.SelectATopicLabel3}</option>
-                                                                <c:forEach var="item" items="${content.value.Section.valueList.ValuesLabelContainer3}" varStatus="loop">
-                                                                    <option value="${loop.index}&&${item.value.Label}">${item.value.Label}</option>
-                                                                </c:forEach>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </c:if>
-                                </c:if>
+    // Function to filter hospitals
+    function filterHospitals() {
+        // Get filter values - only for elements that exist
+        const filters = {
+            address: addressSelect ? getDropdownValue(addressSelect) : null,
+            service: servicesSelect ? getDropdownValue(servicesSelect) : null,
+            category: categorySelect ? getDropdownValue(categorySelect) : null,
+            name: hospitalNameInput ? hospitalNameInput.value.toLowerCase().trim() : null
+        };
 
-                                <!-- Hospital Name Input -->
-                                <c:if test="${content.value.Section.value.HospitalLabel.isSet}">
-                                    <div class="col-md-3">
-                                        <div class="input-text-field">
-                                            <c:set var="isCheckRequireHospital" value=""/>
-                                            <c:set var="isCheckRegex" value=""/>
-                                            <c:if test="${content.value.Section.value.HospitalValidation.value.ValidationRegex.isSet}">
-                                                <c:set var="isCheckRegex" 
-                                                    value="data-parsley-pattern='${fn:trim(content.value.Section.value.HospitalValidation.value.ValidationRegex)}'
-                                                    data-parsley-pattern-message='${content.value.Section.value.HospitalValidation.value.ValidationErrorMessage}'"/>
-                                            </c:if>
-                                            <c:if test="${content.value.Section.value.HospitalValidation.value.Title == 'Mandatory'}">
-                                                <c:set var="isCheckRequireHospital" value="required data-parsley-required-message='${content.value.Section.value.HospitalValidation.value.ErrorMessageMandatoryField}'"/>
-                                            </c:if>
-                                            <div class="field-item">
-                                                <input class="field-input" type="text" name="first-name" id="first-name" 
-                                                    ${isCheckRegex} ${isCheckRequireHospital} placeholder=" "/>
-                                                <label class="field-placeholder" for="first-name">${content.value.Section.value.HospitalLabel}</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </c:if>
+        // Get all hospital rows
+        const hospitalRows = document.querySelectorAll('.hospital-row');
 
-                                <!-- Search and Reset Buttons -->
-                                <div class="col-md-1">
-                                    <button class="cta-primary submit-form" type="submit"><span>Search</span></button>
-                                </div>
-                            </div>
-                        </form>
+        hospitalRows.forEach(row => {
+            // Get all possible data elements
+            const elements = {
+                name: row.querySelector('.hospital-name'),
+                address: row.querySelector('.hospital-address'),
+                services: row.querySelector('.hospital-services'),
+                category: row.querySelector('.hospital-category')
+            };
 
-                        <!-- Results Header -->
-                        <div class="row pd-100-60 header-row">
-                            <div class="col-md-3">Hospital Name</div>
-                            <div class="col-md-3">Address</div>
-                            <div class="col-md-3">Services</div>
-                            <div class="col-md-2">Hospital Category</div>
-                            <div class="col-md-1">Deposit</div>
-                        </div>
+            // Check matches only for filters and elements that exist
+            let shouldShow = true;
 
-                        <!-- Results Container -->
-                        <div id="hospitalResults">
-                            <c:forEach var="item" items="${content.valueList.RegionContainer}">
-                                <c:if test="${item.valueList.LocationContainerWithinRegion != null}">
-                                    <c:forEach var="locationDetail" items="${item.valueList.LocationContainerWithinRegion}">
-                                        <div class="row pd-100-60 hospital-row">
-                                            <div class="col-md-3 hospital-name">
-                                                ${locationDetail.value.LocationLabel}
-                                            </div>
-                                            <div class="col-md-3 hospital-address">
-                                                ${locationDetail.value.Description}
-                                            </div>
-                                            <div class="col-md-3 hospital-services">
-                                                ${locationDetail.value.OpeningHours}
-                                            </div>
-                                            <div class="col-md-2 hospital-category">
-                                                ${locationDetail.value.Latitude}
-                                            </div>
-                                            <div class="col-md-1 hospital-deposit">
-                                                ${locationDetail.value.Longitude}
-                                            </div>
-                                        </div>
-                                    </c:forEach>
-                                </c:if>
-                            </c:forEach>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </c:otherwise>
-    </c:choose>
-
-    <c:if test="${not cms.element.inMemoryOnly && cms.edited}">
-        ${cms.reloadMarker}
-    </c:if>
-    <c:if test="${cms.isEditMode}">
-        <c:out value='</div>' escapeXml="false" />
-    </c:if>
-
-    <!-- JavaScript for filtering -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get filter elements
-            const addressSelect = document.getElementById('selectTopic');
-            const servicesSelect = document.getElementById('selectTopic2');
-            const categorySelect = document.getElementById('selectTopic3');
-            const hospitalNameInput = document.getElementById('first-name');
-            const searchForm = document.getElementById('hospitalSearchForm');
-            const resultsContainer = document.getElementById('hospitalResults');
-
-            // Function to filter hospitals
-            function filterHospitals() {
-                const selectedAddress = addressSelect.value.split('&&')[1] || '';
-                const selectedService = servicesSelect.value.split('&&')[1] || '';
-                const selectedCategory = categorySelect.value.split('&&')[1] || '';
-                const searchName = hospitalNameInput.value.toLowerCase().trim();
-
-                // Get all hospital rows
-                const hospitalRows = document.querySelectorAll('.hospital-row');
-
-                hospitalRows.forEach(row => {
-                    const hospitalName = row.querySelector('.hospital-name').textContent.toLowerCase();
-                    const address = row.querySelector('.hospital-address').textContent;
-                    const services = row.querySelector('.hospital-services').textContent;
-                    const category = row.querySelector('.hospital-category').textContent;
-
-                    // Check if the hospital matches all selected filters
-                    const matchesAddress = !selectedAddress || address.includes(selectedAddress);
-                    const matchesService = !selectedService || services.includes(selectedService);
-                    const matchesCategory = !selectedCategory || category.includes(selectedCategory);
-                    const matchesName = !searchName || hospitalName.includes(searchName);
-
-                    // Show/hide row based on filter matches
-                    if (matchesAddress && matchesService && matchesCategory && matchesName) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-
-                // Show "no results" message if needed
-                const visibleRows = document.querySelectorAll('.hospital-row[style="display: "]');
-                if (visibleRows.length === 0) {
-                    if (!document.getElementById('noResults')) {
-                        const noResults = document.createElement('div');
-                        noResults.id = 'noResults';
-                        noResults.className = 'row pd-100-60';
-                        noResults.innerHTML = '<div class="col-12 text-center">No hospitals found matching your criteria.</div>';
-                        resultsContainer.appendChild(noResults);
-                    }
-                } else {
-                    const noResults = document.getElementById('noResults');
-                    if (noResults) {
-                        noResults.remove();
-                    }
-                }
+            // Check hospital name
+            if (filters.name && hasContent(elements.name)) {
+                shouldShow = shouldShow && elements.name.textContent.toLowerCase().includes(filters.name);
             }
 
-            // Add form submit event listener
-            searchForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                filterHospitals();
-            });
-
-            // Optional: Add reset functionality
-            function resetFilters() {
-                searchForm.reset();
-                const hospitalRows = document.querySelectorAll('.hospital-row');
-                hospitalRows.forEach(row => row.style.display = '');
-                const noResults = document.getElementById('noResults');
-                if (noResults) {
-                    noResults.remove();
-                }
+            // Check address
+            if (filters.address && hasContent(elements.address)) {
+                shouldShow = shouldShow && elements.address.textContent.includes(filters.address);
             }
 
-            // Add reset button if needed
-            const resetButton = document.createElement('button');
-            resetButton.className = 'cta-secondary';
-            resetButton.innerHTML = '<span>Reset</span>';
-            resetButton.onclick = resetFilters;
-            document.querySelector('.submit-form').parentNode.appendChild(resetButton);
+            // Check services
+            if (filters.service && hasContent(elements.services)) {
+                shouldShow = shouldShow && elements.services.textContent.includes(filters.service);
+            }
+
+            // Check category
+            if (filters.category && hasContent(elements.category)) {
+                shouldShow = shouldShow && elements.category.textContent.includes(filters.category);
+            }
+
+            // Show/hide row based on matches
+            row.style.display = shouldShow ? '' : 'none';
         });
-    </script>
-</cms:formatter>
-</cms:bundle>
+
+        // Handle no results
+        showNoResultsMessage(hospitalRows);
+    }
+
+    // Function to show/hide no results message
+    function showNoResultsMessage(hospitalRows) {
+        const visibleRows = Array.from(hospitalRows).filter(row => row.style.display !== 'none');
+        const noResultsElement = document.getElementById('noResults');
+
+        if (visibleRows.length === 0) {
+            if (!noResultsElement) {
+                const noResults = document.createElement('div');
+                noResults.id = 'noResults';
+                noResults.className = 'row pd-100-60';
+                noResults.innerHTML = '<div class="col-12 text-center">No hospitals found matching your criteria.</div>';
+                resultsContainer?.appendChild(noResults);
+            }
+        } else if (noResultsElement) {
+            noResultsElement.remove();
+        }
+    }
+
+    // Add event listeners only for elements that exist
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            filterHospitals();
+        });
+    }
+
+    // Function to reset filters
+    function resetFilters() {
+        // Reset only existing elements
+        if (searchForm) searchForm.reset();
+        if (addressSelect) addressSelect.selectedIndex = 0;
+        if (servicesSelect) servicesSelect.selectedIndex = 0;
+        if (categorySelect) categorySelect.selectedIndex = 0;
+        if (hospitalNameInput) hospitalNameInput.value = '';
+
+        // Show all rows
+        const hospitalRows = document.querySelectorAll('.hospital-row');
+        hospitalRows.forEach(row => row.style.display = '');
+
+        // Remove no results message if it exists
+        const noResults = document.getElementById('noResults');
+        if (noResults) noResults.remove();
+    }
+
+    // Add reset button if search form exists
+    if (searchForm) {
+        const resetButton = document.createElement('button');
+        resetButton.className = 'cta-secondary';
+        resetButton.type = 'button'; // Prevent form submission
+        resetButton.innerHTML = '<span>Reset</span>';
+        resetButton.onclick = resetFilters;
+        
+        const submitButton = document.querySelector('.submit-form');
+        if (submitButton?.parentNode) {
+            submitButton.parentNode.appendChild(resetButton);
+        }
+    }
+});
+</script>
