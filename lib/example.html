@@ -1,5 +1,491 @@
-https://www.prulife
-uk.com.ph/en/policy
--services-informatio
-n/premium-payment
--facilities/
+<%@include file="../global/global.jsp"%>
+
+<fmt:setLocale value="${cms.locale}" />
+<cms:bundle basename="com.prudential.v2.global.default">
+<cms:formatter var="content">
+    <c:if test="${cms.isEditMode}">
+        <c:out value='<div>' escapeXml="false" />
+    </c:if>
+    <c:choose>
+        <c:when test="${content.value.SectionTitleBold == ''}">
+            <c:if test="${cms.isEditMode}">
+                <div class="color-red"><fmt:message key = "label.default.Title"/></div>
+            </c:if>
+        </c:when>
+        <c:otherwise>
+            <!-- Add custom styles for autocomplete -->
+            <style>
+                .autocomplete-container {
+                    position: relative;
+                }
+
+                .autocomplete-list {
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                    right: 0;
+                    background: white;
+                    border: 1px solid #ddd;
+                    border-top: none;
+                    max-height: 200px;
+                    overflow-y: auto;
+                    z-index: 1000;
+                    display: none;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }
+
+                .autocomplete-item {
+                    padding: 10px;
+                    cursor: pointer;
+                    transition: background-color 0.2s;
+                }
+
+                .autocomplete-item:hover,
+                .autocomplete-item.selected {
+                    background-color: #f5f5f5;
+                }
+
+                .field-item {
+                    position: relative;
+                }
+            </style>
+
+            <div class="section pd-100-60 custom-gmap">
+                <div class="custom-map-container">
+                    <div class="container">
+                        <div class="section-title">
+                            <span class="section-title__bold">${content.value.SectionTitleBold}</span>
+                        </div>
+                    </div>
+                    <div class="container">
+                        <!-- Search Form -->
+                        <form id="hospitalSearchForm" class="hospital-search-form">
+                            <div class="row">
+                                <!-- Address Dropdown -->
+                                <c:if test="${content.value.Section.value.SelectATopicLabel.isSet}">
+                                    <c:if test="${fn:length(content.value.Section.valueList.ValuesLabelContainer) > 0}">
+                                        <c:set var="isCheckRequireATopic" value=""/>
+                                        <c:if test="${content.value.Section.value.ValuesLabelContainerValidation.value.Title == 'Mandatory'}">
+                                            <c:set var="isCheckRequireATopic" value="required data-parsley-required-message='${content.value.Section.value.ValuesLabelContainerValidation.value.ErrorMessageMandatoryField}'"/>
+                                        </c:if>
+                                        <div class="col-md-3">
+                                            <div class="input-text-field">
+                                                <div class="field-item">
+                                                    <div class="custom-dropdown-select">
+                                                        <div class="custom-dropdown-select__inner">
+                                                            <label class="sr-only" for="selectTopic">${content.value.Section.value.SelectATopicLabel}</label>
+                                                            <select class="w-100" data-select-dropdown data-style data-live-search="true" 
+                                                                    ${isCheckRequireATopic} id="selectTopic" name="selectTopic">
+                                                                <option disabled selected data-hidden="true" value="">${content.value.Section.value.SelectATopicLabel}</option>
+                                                                <c:forEach var="item" items="${content.value.Section.valueList.ValuesLabelContainer}" varStatus="loop">
+                                                                    <option value="${loop.index}&&${item.value.Label}">${item.value.Label}</option>
+                                                                </c:forEach>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </c:if>
+                                </c:if>
+
+                                <!-- Services Dropdown -->
+                                <c:if test="${content.value.Section.value.SelectATopicLabel2.isSet}">
+                                    <c:if test="${fn:length(content.value.Section.valueList.ValuesLabelContainer2) > 0}">
+                                        <c:set var="isCheckRequireATopic" value=""/>
+                                        <c:if test="${content.value.Section.value.ValuesLabelContainerValidation2.value.Title == 'Mandatory'}">
+                                            <c:set var="isCheckRequireATopic" value="required data-parsley-required-message='${content.value.Section.value.ValuesLabelContainerValidation2.value.ErrorMessageMandatoryField}'"/>
+                                        </c:if>
+                                        <div class="col-md-3">
+                                            <div class="input-text-field">
+                                                <div class="field-item">
+                                                    <div class="custom-dropdown-select">
+                                                        <div class="custom-dropdown-select__inner">
+                                                            <label class="sr-only" for="selectTopic2">${content.value.Section.value.SelectATopicLabel2}</label>
+                                                            <select class="w-100" data-select-dropdown data-style data-live-search="true"
+                                                                    ${isCheckRequireATopic} id="selectTopic2" name="selectTopic2">
+                                                                <option disabled selected data-hidden="true" value="">${content.value.Section.value.SelectATopicLabel2}</option>
+                                                                <c:forEach var="item" items="${content.value.Section.valueList.ValuesLabelContainer2}" varStatus="loop">
+                                                                    <option value="${loop.index}&&${item.value.Label}">${item.value.Label}</option>
+                                                                </c:forEach>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </c:if>
+                                </c:if>
+
+                                <!-- Hospital Category Dropdown -->
+                                <c:if test="${content.value.Section.value.SelectATopicLabel3.isSet}">
+                                    <c:if test="${fn:length(content.value.Section.valueList.ValuesLabelContainer3) > 0}">
+                                        <c:set var="isCheckRequireATopic" value=""/>
+                                        <c:if test="${content.value.Section.value.ValuesLabelContainerValidation3.value.Title == 'Mandatory'}">
+                                            <c:set var="isCheckRequireATopic" value="required data-parsley-required-message='${content.value.Section.value.ValuesLabelContainerValidation3.value.ErrorMessageMandatoryField}'"/>
+                                        </c:if>
+                                        <div class="col-md-2">
+                                            <div class="input-text-field">
+                                                <div class="field-item">
+                                                    <div class="custom-dropdown-select">
+                                                        <div class="custom-dropdown-select__inner">
+                                                            <label class="sr-only" for="selectTopic3">${content.value.Section.value.SelectATopicLabel3}</label>
+                                                            <select class="w-100" data-select-dropdown data-style data-live-search="true"
+                                                                    ${isCheckRequireATopic} id="selectTopic3" name="selectTopic3">
+                                                                <option disabled selected data-hidden="true" value="">${content.value.Section.value.SelectATopicLabel3}</option>
+                                                                <c:forEach var="item" items="${content.value.Section.valueList.ValuesLabelContainer3}" varStatus="loop">
+                                                                    <option value="${loop.index}&&${item.value.Label}">${item.value.Label}</option>
+                                                                </c:forEach>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </c:if>
+                                </c:if>
+
+                                <!-- Hospital Name Input with Autocomplete -->
+                                <c:if test="${content.value.Section.value.HospitalLabel.isSet}">
+                                    <div class="col-md-3">
+                                        <div class="input-text-field">
+                                            <c:set var="isCheckRequireHospital" value=""/>
+                                            <c:set var="isCheckRegex" value=""/>
+                                            <c:if test="${content.value.Section.value.HospitalValidation.value.ValidationRegex.isSet}">
+                                                <c:set var="isCheckRegex" 
+                                                    value="data-parsley-pattern='${fn:trim(content.value.Section.value.HospitalValidation.value.ValidationRegex)}'
+                                                    data-parsley-pattern-message='${content.value.Section.value.HospitalValidation.value.ValidationErrorMessage}'"/>
+                                            </c:if>
+                                            <c:if test="${content.value.Section.value.HospitalValidation.value.Title == 'Mandatory'}">
+                                                <c:set var="isCheckRequireHospital" value="required data-parsley-required-message='${content.value.Section.value.HospitalValidation.value.ErrorMessageMandatoryField}'"/>
+                                            </c:if>
+                                            <div class="field-item">
+                                                <div class="autocomplete-container">
+                                                    <input class="field-input" type="text" name="first-name" id="first-name" 
+                                                        ${isCheckRegex} ${isCheckRequireHospital} placeholder=" "/>
+                                                    <div class="autocomplete-list"></div>
+                                                </div>
+                                                <label class="field-placeholder" for="first-name">${content.value.Section.value.HospitalLabel}</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </c:if>
+
+                                <!-- Search and Reset Buttons -->
+                                <div class="col-md-1">
+                                    <button class="cta-primary submit-form" type="submit"><span>Search</span></button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <!-- Results Header -->
+                        <div class="row pd-100-60 header-row">
+                            <div class="col-md-3">Hospital Name</div>
+                            <div class="col-md-3">Address</div>
+                            <div class="col-md-3">Services</div>
+                            <div class="col-md-2">Hospital Category</div>
+                            <div class="col-md-1">Deposit</div>
+                        </div>
+
+                        <!-- Results Container -->
+                        <div id="hospitalResults">
+                            <c:forEach var="item" items="${content.valueList.RegionContainer}">
+                                <c:if test="${item.valueList.LocationContainerWithinRegion != null}">
+                                    <c:forEach var="locationDetail" items="${item.valueList.LocationContainerWithinRegion}">
+                                        <div class="row pd-100-60 hospital-row">
+                                            <div class="col-md-3 hospital-name">
+                                                ${locationDetail.value.LocationLabel}
+                                            </div>
+                                            <div class="col-md-3 hospital-address">
+                                                ${locationDetail.value.Description}
+                                            </div>
+                                            <div class="col-md-3 hospital-services">
+                                                ${locationDetail.value.OpeningHours}
+                                            </div>
+                                            <div class="col-md-2 hospital-category">
+                                                ${locationDetail.value.Latitude}
+                                            </div>
+                                            <div class="col-md-1 hospital-deposit">
+                                                ${locationDetail.value.Longitude}
+                                            </div>
+                                        </div>
+                                    </c:forEach>
+                                </c:if>
+                            </c:forEach>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </c:otherwise>
+    </c:choose>
+
+    <c:if test="${not cms.element.inMemoryOnly && cms.edited}">
+        ${cms.reloadMarker}
+    </c:if>
+    <c:if test="${cms.isEditMode}">
+        <c:out value='</div>' escapeXml="false" />
+    </c:if>
+
+    <!-- JavaScript for filtering and autocomplete -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Cache DOM elements
+    const addressSelect = document.getElementById('selectTopic');
+    const servicesSelect = document.getElementById('selectTopic2');
+    const categorySelect = document.getElementById('selectTopic3');
+    const hospitalNameInput = document.getElementById('first-name');
+    const searchForm = document.getElementById('hospitalSearchForm');
+    const resultsContainer = document.getElementById('hospitalResults');
+    const autocompleteList = document.querySelector('.autocomplete-list');
+
+    // Initialize autocomplete state
+    let currentFocus = -1;
+    let debounceTimer;
+
+    // Function to safely get dropdown value
+    function getDropdownValue(dropdown) {
+        if (!dropdown) return null;
+        const value = dropdown.value;
+        if (!value) return null;
+        return value.split('&&')[1] || '';
+    }
+
+    // Function to check if element exists and has content
+    function hasContent(element) {
+        return element && element.textContent.trim() !== '';
+    }
+
+    // Get all hospital names from existing rows
+    function getAllHospitalNames() {
+        const hospitals = document.querySelectorAll('.hospital-name');
+        return Array.from(hospitals)
+            .map(hospital => hospital.textContent.trim())
+            .filter(name => name !== '');
+    }
+
+    // Filter hospital names based on input
+    function filterHospitalNames(searchTerm) {
+        if (!searchTerm) return [];
+        searchTerm = searchTerm.toLowerCase();
+        return getAllHospitalNames().filter(name => 
+            name.toLowerCase().includes(searchTerm)
+        );
+    }
+
+    // Show autocomplete suggestions
+    function showSuggestions(suggestions) {
+        // Clear previous suggestions
+        autocompleteList.innerHTML = '';
+        currentFocus = -1;
+
+        if (!suggestions.length) {
+            autocompleteList.style.display = 'none';
+            return;
+        }
+
+        suggestions.forEach((suggestion, index) => {
+            const div = document.createElement('div');
+            div.className = 'autocomplete-item';
+            div.innerHTML = suggestion;
+            div.dataset.index = index;
+
+            div.addEventListener('click', function(e) {
+                hospitalNameInput.value = this.textContent;
+                autocompleteList.style.display = 'none';
+                hospitalNameInput.focus();
+            });
+
+            div.addEventListener('mouseover', function() {
+                removeActive();
+                currentFocus = parseInt(this.dataset.index);
+                addActive();
+            });
+
+            autocompleteList.appendChild(div);
+        });
+
+        autocompleteList.style.display = 'block';
+    }
+
+    // Remove active class from all items
+    function removeActive() {
+        const items = autocompleteList.getElementsByClassName('autocomplete-item');
+        Array.from(items).forEach(item => item.classList.remove('selected'));
+    }
+
+    // Add active class to current item
+    function addActive() {
+        const items = autocompleteList.getElementsByClassName('autocomplete-item');
+        if (!items || !items.length) return;
+
+        removeActive();
+        if (currentFocus >= items.length) currentFocus = 0;
+        if (currentFocus < 0) currentFocus = items.length - 1;
+        items[currentFocus].classList.add('selected');
+        items[currentFocus].scrollIntoView({ block: 'nearest' });
+    }
+
+    // Filter hospitals based on all criteria
+    function filterHospitals() {
+        const filters = {
+            address: addressSelect ? getDropdownValue(addressSelect) : null,
+            service: servicesSelect ? getDropdownValue(servicesSelect) : null,
+            category: categorySelect ? getDropdownValue(categorySelect) : null,
+            name: hospitalNameInput ? hospitalNameInput.value.toLowerCase().trim() : null
+        };
+
+        const hospitalRows = document.querySelectorAll('.hospital-row');
+        let visibleCount = 0;
+
+        hospitalRows.forEach(row => {
+            const elements = {
+                name: row.querySelector('.hospital-name'),
+                address: row.querySelector('.hospital-address'),
+                services: row.querySelector('.hospital-services'),
+                category: row.querySelector('.hospital-category')
+            };
+
+            let shouldShow = true;
+
+            // Apply each filter if it has a value
+            if (filters.name && hasContent(elements.name)) {
+                shouldShow = shouldShow && elements.name.textContent.toLowerCase().includes(filters.name);
+            }
+            if (filters.address && hasContent(elements.address)) {
+                shouldShow = shouldShow && elements.address.textContent.includes(filters.address);
+            }
+            if (filters.service && hasContent(elements.services)) {
+                shouldShow = shouldShow && elements.services.textContent.includes(filters.service);
+            }
+            if (filters.category && hasContent(elements.category)) {
+                shouldShow = shouldShow && elements.category.textContent.includes(filters.category);
+            }
+
+            row.style.display = shouldShow ? '' : 'none';
+            if (shouldShow) visibleCount++;
+        });
+
+        // Handle no results message
+        showNoResultsMessage(visibleCount);
+    }
+
+    // Show/hide no results message
+    function showNoResultsMessage(visibleCount) {
+        let noResults = document.getElementById('noResults');
+        
+        if (visibleCount === 0) {
+            if (!noResults) {
+                noResults = document.createElement('div');
+                noResults.id = 'noResults';
+                noResults.className = 'row pd-100-60';
+                noResults.innerHTML = '<div class="col-12 text-center">No hospitals found matching your criteria.</div>';
+                resultsContainer.appendChild(noResults);
+            }
+        } else if (noResults) {
+            noResults.remove();
+        }
+    }
+
+    // Reset all filters
+    function resetFilters() {
+        if (searchForm) searchForm.reset();
+        if (addressSelect) addressSelect.selectedIndex = 0;
+        if (servicesSelect) servicesSelect.selectedIndex = 0;
+        if (categorySelect) categorySelect.selectedIndex = 0;
+        if (hospitalNameInput) hospitalNameInput.value = '';
+
+        // Show all rows
+        const hospitalRows = document.querySelectorAll('.hospital-row');
+        hospitalRows.forEach(row => row.style.display = '');
+
+        // Remove no results message
+        const noResults = document.getElementById('noResults');
+        if (noResults) noResults.remove();
+
+        // Hide autocomplete list
+        autocompleteList.style.display = 'none';
+    }
+
+    // Event Listeners
+    if (hospitalNameInput) {
+        // Input event for autocomplete
+        hospitalNameInput.addEventListener('input', function(e) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const suggestions = filterHospitalNames(this.value);
+                showSuggestions(suggestions);
+            }, 300);
+        });
+
+        // Keyboard navigation
+        hospitalNameInput.addEventListener('keydown', function(e) {
+            const items = autocompleteList.getElementsByClassName('autocomplete-item');
+            
+            switch(e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    currentFocus++;
+                    addActive();
+                    break;
+
+                case 'ArrowUp':
+                    e.preventDefault();
+                    currentFocus--;
+                    addActive();
+                    break;
+
+                case 'Enter':
+                    e.preventDefault();
+                    if (currentFocus > -1 && items[currentFocus]) {
+                        hospitalNameInput.value = items[currentFocus].textContent;
+                        autocompleteList.style.display = 'none';
+                    }
+                    break;
+
+                case 'Escape':
+                    autocompleteList.style.display = 'none';
+                    currentFocus = -1;
+                    break;
+            }
+        });
+
+        // Focus out event
+        hospitalNameInput.addEventListener('blur', function(e) {
+            // Delay hiding to allow click events to fire
+            setTimeout(() => {
+                autocompleteList.style.display = 'none';
+            }, 200);
+        });
+    }
+
+    // Form submit event
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            filterHospitals();
+        });
+
+        // Add reset button
+        const resetButton = document.createElement('button');
+        resetButton.className = 'cta-secondary';
+        resetButton.type = 'button';
+        resetButton.innerHTML = '<span>Reset</span>';
+        resetButton.onclick = resetFilters;
+        
+        const submitButton = document.querySelector('.submit-form');
+        if (submitButton?.parentNode) {
+            submitButton.parentNode.appendChild(resetButton);
+        }
+    }
+
+    // Close autocomplete when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.autocomplete-container')) {
+            autocompleteList.style.display = 'none';
+            currentFocus = -1;
+        }
+    });
+});
+</script>
+</cms:formatter>
+</cms:bundle>
