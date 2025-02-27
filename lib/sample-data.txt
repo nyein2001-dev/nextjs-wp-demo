@@ -1,0 +1,52 @@
+Hospital Sample Data for Malaysia
+Hospital Name (Provider)	Hospital Address	Hospital Services	Hospital Category	Deposit (Yes/No)
+1. Kuala Lumpur General Hospital	Jalan Pahang, 50586 Kuala Lumpur	Emergency, Surgery, Maternity, Cardiology, Pediatrics	Public	No
+2. Penang Adventist Hospital	465 Jalan Burma, 10350 Penang	Oncology, Orthopedics, Cardiology, Neurology, General Surgery	Private	Yes
+3. Selangor Medical Centre	Persiaran Kewajipan, 41200 Selangor	Dermatology, ENT, Ophthalmology, Dentistry, Radiology	Private	Yes
+4. Johor Specialist Hospital	39 Jalan Abdul Samad, 80100 Johor Bahru	Cardiology, Neurology, Orthopedics, Pediatrics, Emergency	Private	Yes
+5. Ipoh General Hospital	Jalan Hospital, 30450 Ipoh	Emergency, Surgery, Maternity, Psychiatry, Radiology	Public	No
+6. Malacca General Hospital	Jalan Mufti Haji Khalil, 75400 Malacca	Emergency, Pediatrics, Orthopedics, Cardiology, Neurology	Public	No
+7. Seremban Specialist Hospital	Jalan Toman 1, 70200 Seremban	Oncology, Cardiology, Neurology, Orthopedics, General Surgery	Private	Yes
+8. Kuching General Hospital	Jalan Tun Ahmad Zaidi, 93400 Kuching	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+9. Sabah Women and Children Hospital	Jalan Lintas, 88300 Kota Kinabalu	Pediatrics, Maternity, Neonatology, Gynecology, Emergency	Public	No
+10. Alor Setar Medical Centre	Jalan Langgar, 05400 Alor Setar	Cardiology, Neurology, Orthopedics, Dermatology, ENT	Private	Yes
+11. Taiping General Hospital	Jalan Taming Sari, 34000 Taiping	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+12. Batu Pahat Specialist Hospital	Jalan Kluang, 83000 Batu Pahat	Oncology, Cardiology, Neurology, Orthopedics, General Surgery	Private	Yes
+13. Sungai Petani Medical Centre	Jalan Kuala Ketil, 08000 Sungai Petani	Cardiology, Neurology, Orthopedics, Dermatology, ENT	Private	Yes
+14. Klang General Hospital	Jalan Tengku Kelana, 41000 Klang	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+15. Kota Bharu Medical Centre	Jalan Hamzah, 15050 Kota Bharu	Cardiology, Neurology, Orthopedics, Dermatology, ENT	Private	Yes
+16. Miri General Hospital	Jalan Cahaya, 98000 Miri	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+17. Sibu Specialist Hospital	Jalan Oya, 96000 Sibu	Oncology, Cardiology, Neurology, Orthopedics, General Surgery	Private	Yes
+18. Kuantan Medical Centre	Jalan Teluk Sisek, 25200 Kuantan	Cardiology, Neurology, Orthopedics, Dermatology, ENT	Private	Yes
+19. Tawau General Hospital	Jalan Chen Fook, 91000 Tawau	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+20. Sandakan Specialist Hospital	Jalan Leila, 90000 Sandakan	Oncology, Cardiology, Neurology, Orthopedics, General Surgery	Private	Yes
+21. Putrajaya Hospital	Presint 7, 62250 Putrajaya	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+22. Subang Jaya Medical Centre	Jalan SS12/1A, 47500 Subang Jaya	Cardiology, Neurology, Orthopedics, Dermatology, ENT	Private	Yes
+23. Shah Alam General Hospital	Jalan Masjid, 40000 Shah Alam	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+24. Melaka Specialist Hospital	Jalan Parameswara, 75000 Melaka	Oncology, Cardiology, Neurology, Orthopedics, General Surgery	Private	Yes
+25. Seri Manjung Medical Centre	Jalan Lumut, 32040 Seri Manjung	Cardiology, Neurology, Orthopedics, Dermatology, ENT	Private	Yes
+26. Kulim General Hospital	Jalan Mahang, 09000 Kulim	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+27. Bintulu Specialist Hospital	Jalan Tanjung Kidurong, 97000 Bintulu	Oncology, Cardiology, Neurology, Orthopedics, General Surgery	Private	Yes
+28. Kuala Terengganu Medical Centre	Jalan Sultan Mahmud, 20400 Kuala Terengganu	Cardiology, Neurology, Orthopedics, Dermatology, ENT	Private	Yes
+29. Kangar General Hospital	Jalan Kolam, 01000 Kangar	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+30. Teluk Intan Medical Centre	Jalan Changkat Jong, 36000 Teluk Intan	Cardiology, Neurology, Orthopedics, Dermatology, ENT	Private	Yes
+31. Lahad Datu General Hospital	Jalan Segama, 91100 Lahad Datu	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+32. Cameron Highlands Hospital	Jalan Besar, 39000 Cameron Highlands	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+33. Labuan General Hospital	Jalan OKK Awang Besar, 87000 Labuan	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+34. Temerloh Medical Centre	Jalan Bahaman, 28000 Temerloh	Cardiology, Neurology, Orthopedics, Dermatology, ENT	Private	Yes
+35. Bentong General Hospital	Jalan Tras, 28700 Bentong	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+36. Raub Medical Centre	Jalan Lipis, 27600 Raub	Cardiology, Neurology, Orthopedics, Dermatology, ENT	Private	Yes
+37. Jerantut General Hospital	Jalan Tengku Arif, 27000 Jerantut	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+38. Kuala Lipis Medical Centre	Jalan Bukit Betong, 27200 Kuala Lipis	Cardiology, Neurology, Orthopedics, Dermatology, ENT	Private	Yes
+39. Rompin General Hospital	Jalan Dato Ali, 26800 Rompin	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+40. Pekan Medical Centre	Jalan Sultan Ahmad, 26600 Pekan	Cardiology, Neurology, Orthopedics, Dermatology, ENT	Private	Yes
+41. Muar General Hospital	Jalan Salleh, 84000 Muar	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+42. Segamat Medical Centre	Jalan Genuang, 85000 Segamat	Cardiology, Neurology, Orthopedics, Dermatology, ENT	Private	Yes
+43. Tangkak General Hospital	Jalan Payamas, 84900 Tangkak	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+44. Pontian Medical Centre	Jalan Alsagoff, 82000 Pontian	Cardiology, Neurology, Orthopedics, Dermatology, ENT	Private	Yes
+45. Kluang General Hospital	Jalan Hospital, 86000 Kluang	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+46. Batu Gajah Medical Centre	Jalan Pusing, 31000 Batu Gajah	Cardiology, Neurology, Orthopedics, Dermatology, ENT	Private	Yes
+47. Tapah General Hospital	Jalan Besar, 35000 Tapah	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+48. Bagan Serai Medical Centre	Jalan Taiping, 34300 Bagan Serai	Cardiology, Neurology, Orthopedics, Dermatology, ENT	Private	Yes
+49. Parit Buntar General Hospital	Jalan Taiping, 34200 Parit Buntar	Emergency, Surgery, Maternity, Pediatrics, Radiology	Public	No
+50. Gerik Medical Centre	Jalan Kuala Kangsar, 33300 Gerik	Cardiology, Neurology, Orthopedics, Dermatology, ENT	Private	Yes
