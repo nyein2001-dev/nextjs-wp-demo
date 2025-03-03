@@ -1,120 +1,338 @@
-<ValuesLabelContainer2>
-    <Label><![CDATA[Emergency Care]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Surgery]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Internal Medicine]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Pediatrics]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Obstetrics]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Gynecology]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Orthopedics]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Cardiology]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Nephrology]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Urology]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Ophthalmology]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Neurology]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Oncology]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Fertility Centre]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Plastic Surgery]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Neurosurgery]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Gastroenterology]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Cardiac Surgery]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Cardiac Rehabilitation]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Pediatric Cardiology]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Infectious Diseases]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[General Surgery]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Burns Unit]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Hepatology]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Hematology]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Neonatal Care]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Pediatric Surgery]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Chinese Medicine]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Acupuncture]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Diagnostic Services]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Health Screening]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[General Practice]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Specialist Consultation]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Maternity]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Dermatology]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[ENT (Ear, Nose, Throat)]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Dentistry]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Radiology]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Psychiatry]]></Label>
-</ValuesLabelContainer2>
-<ValuesLabelContainer2>
-    <Label><![CDATA[Neonatology]]></Label>
-</ValuesLabelContainer2>
+document.addEventListener('DOMContentLoaded', function () {
+    // Cache DOM elements
+    const locationSelect = document.getElementById('selectTopic');
+    const serviceTypeSelect = document.getElementById('selectTopic2');
+    const categorySelect = document.getElementById('selectTopic3');
+    const hospitalNameInput = document.getElementById('first-name');
+    const searchForm = document.getElementById('hospitalSearchForm');
+    const resultsContainer = document.getElementById('hospitalResults');
+    const autocompleteList = document.querySelector('.autocomplete-list');
+
+    // Initialize state
+    let currentFocus = -1;
+    let debounceTimer;
+
+    // Get all hospital names from existing rows
+    function getAllHospitalNames() {
+        const hospitals = document.querySelectorAll('.hospital-name');
+        return Array.from(hospitals)
+            .map(hospital => hospital.textContent.trim())
+            .filter(name => name !== '');
+    }
+
+    // Filter hospital names based on input
+    function filterHospitalNames(searchTerm) {
+        if (!searchTerm) return [];
+        searchTerm = searchTerm.toLowerCase();
+        return getAllHospitalNames().filter(name =>
+            name.toLowerCase().includes(searchTerm)
+        );
+    }
+
+    // Show autocomplete suggestions with improved selection handling
+    function showSuggestions(suggestions) {
+        // Clear previous suggestions
+        autocompleteList.innerHTML = '';
+        currentFocus = -1;
+
+        if (!suggestions.length) {
+            autocompleteList.style.display = 'none';
+            return;
+        }
+
+        suggestions.forEach((suggestion, index) => {
+            const div = document.createElement('div');
+            div.className = 'autocomplete-item';
+            div.innerHTML = suggestion;
+            div.dataset.index = index;
+
+            // FIXED: Improved click handler with proper hospital name selection
+            div.addEventListener('click', function (e) {
+                e.stopPropagation(); // Prevent event bubbling
+                
+                // Set the input value to the selected hospital name
+                hospitalNameInput.value = this.textContent;
+                
+                // Hide the autocomplete list
+                autocompleteList.style.display = 'none';
+                
+                // Focus on the input field
+                hospitalNameInput.focus();
+                
+                // Trigger the search with the selected hospital
+                filterHospitals();
+            });
+
+            div.addEventListener('mouseover', function () {
+                removeActive();
+                currentFocus = parseInt(this.dataset.index);
+                addActive();
+            });
+
+            autocompleteList.appendChild(div);
+        });
+
+        // Style the autocomplete list for better visibility
+        autocompleteList.style.maxHeight = '200px';
+        autocompleteList.style.overflowY = 'auto';
+        autocompleteList.style.position = 'absolute';
+        autocompleteList.style.zIndex = '1000';
+        autocompleteList.style.backgroundColor = '#fff';
+        autocompleteList.style.border = '1px solid #ddd';
+        autocompleteList.style.width = '100%';
+        autocompleteList.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+
+        autocompleteList.style.display = 'block';
+    }
+
+    // Remove active class from all items
+    function removeActive() {
+        const items = autocompleteList.getElementsByClassName('autocomplete-item');
+        Array.from(items).forEach(item => item.classList.remove('selected'));
+    }
+
+    // Add active class to current item
+    function addActive() {
+        const items = autocompleteList.getElementsByClassName('autocomplete-item');
+        if (!items || !items.length) return;
+
+        removeActive();
+        if (currentFocus >= items.length) currentFocus = 0;
+        if (currentFocus < 0) currentFocus = items.length - 1;
+        items[currentFocus].classList.add('selected');
+        items[currentFocus].scrollIntoView({ block: 'nearest' });
+    }
+
+    // Filter hospitals based on all criteria with improved "All Location" handling
+    function filterHospitals() {
+        const filters = {
+            // Handle "All Location" selection
+            location: locationSelect && locationSelect.value !== "All Location" ? locationSelect.value : null,
+            service: serviceTypeSelect ? serviceTypeSelect.value : null,
+            category: categorySelect ? categorySelect.value : null,
+            name: hospitalNameInput ? hospitalNameInput.value.toLowerCase().trim() : null
+        };
+
+        const hospitalRows = document.querySelectorAll('.hospital-row');
+        let visibleCount = 0;
+
+        hospitalRows.forEach(row => {
+            const elements = {
+                name: row.querySelector('.hospital-name'),
+                address: row.querySelector('.hospital-address'),
+                services: row.querySelector('.hospital-services'),
+                category: row.querySelector('.hospital-category')
+            };
+
+            let shouldShow = true;
+
+            // Apply each filter if it has a value
+            if (filters.name && elements.name) {
+                shouldShow = shouldShow && elements.name.textContent.toLowerCase().includes(filters.name);
+            }
+            
+            // Only apply location filter if not "All Location"
+            if (filters.location && elements.address) {
+                shouldShow = shouldShow && elements.address.textContent.includes(filters.location);
+            }
+            
+            if (filters.service && elements.services) {
+                shouldShow = shouldShow && elements.services.textContent.includes(filters.service);
+            }
+            
+            if (filters.category && elements.category) {
+                shouldShow = shouldShow && elements.category.textContent.includes(filters.category);
+            }
+
+            row.style.display = shouldShow ? '' : 'none';
+            if (shouldShow) visibleCount++;
+        });
+
+        // Handle no results message
+        showNoResultsMessage(visibleCount);
+    }
+
+    // Show/hide no results message
+    function showNoResultsMessage(visibleCount) {
+        let noResults = document.getElementById('noResults');
+
+        if (visibleCount === 0) {
+            if (!noResults) {
+                noResults = document.createElement('div');
+                noResults.id = 'noResults';
+                noResults.className = 'row pd-100-60';
+                noResults.innerHTML = '<div class="col-12 text-center">No hospitals found matching your criteria.</div>';
+                resultsContainer.appendChild(noResults);
+            }
+        } else if (noResults) {
+            noResults.remove();
+        }
+    }
+
+    // Reset all filters
+    function resetFilters() {
+        if (searchForm) searchForm.reset();
+        
+        // Show all rows
+        const hospitalRows = document.querySelectorAll('.hospital-row');
+        hospitalRows.forEach(row => row.style.display = '');
+
+        // Remove no results message
+        const noResults = document.getElementById('noResults');
+        if (noResults) noResults.remove();
+
+        // Hide autocomplete list
+        autocompleteList.style.display = 'none';
+    }
+
+    // Add CSS for autocomplete items
+    function addStyles() {
+        // Check if styles already exist
+        if (!document.getElementById('autocomplete-styles')) {
+            const style = document.createElement('style');
+            style.id = 'autocomplete-styles';
+            style.textContent = `
+                .autocomplete-item {
+                    padding: 10px;
+                    cursor: pointer;
+                    background-color: #fff;
+                    border-bottom: 1px solid #ddd;
+                }
+                .autocomplete-item:hover, .autocomplete-item.selected {
+                    background-color: #f1f1f1;
+                }
+                .autocomplete-list {
+                    display: none;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+
+    // FIXED: Added a helper function to handle selection consistently
+    function selectHospital(hospitalName) {
+        hospitalNameInput.value = hospitalName;
+        autocompleteList.style.display = 'none';
+        hospitalNameInput.focus();
+        filterHospitals();
+    }
+
+    // Set up event listeners
+    function setupEventListeners() {
+        if (hospitalNameInput) {
+            // Input event for autocomplete
+            hospitalNameInput.addEventListener('input', function (e) {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    const suggestions = filterHospitalNames(this.value);
+                    showSuggestions(suggestions);
+                }, 300);
+            });
+
+            // Keyboard navigation
+            hospitalNameInput.addEventListener('keydown', function (e) {
+                const items = autocompleteList.getElementsByClassName('autocomplete-item');
+                
+                if (autocompleteList.style.display === 'none') {
+                    return; // Don't process keyboard navigation if the list is hidden
+                }
+
+                switch (e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        currentFocus++;
+                        addActive();
+                        break;
+
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        currentFocus--;
+                        addActive();
+                        break;
+
+                    case 'Enter':
+                        e.preventDefault();
+                        if (currentFocus > -1 && items[currentFocus]) {
+                            // FIXED: Use the helper function for selection
+                            selectHospital(items[currentFocus].textContent);
+                        } else {
+                            // If no item is selected, just perform the search
+                            filterHospitals();
+                        }
+                        break;
+
+                    case 'Escape':
+                        autocompleteList.style.display = 'none';
+                        currentFocus = -1;
+                        break;
+                }
+            });
+
+            // Focus out event with improved delay
+            hospitalNameInput.addEventListener('blur', function (e) {
+                // Delay hiding to allow click events to fire
+                setTimeout(() => {
+                    autocompleteList.style.display = 'none';
+                }, 300); // FIXED: Increased timeout to ensure click handlers can fire
+            });
+        }
+
+        // Form submit event
+        if (searchForm) {
+            searchForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                filterHospitals();
+            });
+        }
+
+        // Add change event to location dropdown
+        if (locationSelect) {
+            locationSelect.addEventListener('change', function() {
+                // Trigger search when location changes
+                filterHospitals();
+            });
+        }
+
+        // Service type change event
+        if (serviceTypeSelect) {
+            serviceTypeSelect.addEventListener('change', function() {
+                filterHospitals();
+            });
+        }
+
+        // Category change event
+        if (categorySelect) {
+            categorySelect.addEventListener('change', function() {
+                filterHospitals();
+            });
+        }
+
+        // Close autocomplete when clicking outside
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.autocomplete-container')) {
+                autocompleteList.style.display = 'none';
+                currentFocus = -1;
+            }
+        });
+
+        // Add reset button if it doesn't exist
+        if (searchForm && !document.querySelector('.reset-button')) {
+            const resetButton = document.createElement('button');
+            resetButton.type = 'button';
+            resetButton.className = 'cta-secondary reset-button';
+            resetButton.innerHTML = '<span>Reset</span>';
+            resetButton.style.marginLeft = '10px';
+            resetButton.addEventListener('click', resetFilters);
+
+            // Find the search button and insert reset button after it
+            const searchButton = searchForm.querySelector('button[type="submit"]');
+            if (searchButton && searchButton.parentNode) {
+                searchButton.parentNode.appendChild(resetButton);
+            }
+        }
+    }
+
+    // Initialize
+    addStyles();
+    setupEventListeners();
+});
