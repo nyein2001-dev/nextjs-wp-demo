@@ -1,15 +1,21 @@
 /* Task 1: Reduce the height of the dropdown component */
 .custom-dropdown-select__inner {
     height: 30px !important; /* Adjust the height as needed */
+    display: flex !important;
+    align-items: center !important; /* Vertically center the content */
 }
 
 .custom-dropdown-select__inner select {
     height: 100% !important;
     padding: 4px 8px !important; /* Adjust padding to fit the reduced height */
+    line-height: 1 !important; /* Ensure text aligns properly */
+    font-size: 14px !important; /* Adjust font size if needed */
+    border: 1px solid #ccc !important; /* Ensure border is visible */
+    box-sizing: border-box !important; /* Include padding and border in height calculation */
 }
 
-/* Task 2: Reduce the height of the dropdown item list */
-.custom-dropdown-select__inner .dropdown-menu {
-    max-height: 150px !important; /* Adjust the max-height as needed */
-    overflow-y: auto !important; /* Ensure scrolling if the list exceeds the max height */
+/* Ensure the dropdown arrow is properly aligned */
+.custom-dropdown-select__inner::after {
+    top: 50% !important;
+    transform: translateY(-50%) !important;
 }
