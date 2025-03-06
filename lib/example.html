@@ -1,1 +1,13 @@
-onchange="window.location.href=this.value"
+<div class="col-md-3" style="padding: 5px 0;">
+  <div class="custom-dropdown select_inner" style="height: 32px; display: flex; align-items: center;">
+    <label class="sr-only" for="filter-gmap">${content.value.CountryToggle.value.ActiveCountry}</label>
+    <select class="w-100" id="filter-gmap" data-select-dropdown data-style data-live-search="true" 
+      aria-expanded="true" data-parsley-trigger="change" onchange="window"
+      style="height: 28px; line-height: 28px; font-size: 14px; padding: 2px 5px;">
+      <option disabled selected data-hidden="true">${content.value.CountryToggle.value.ActiveCountry}</option>
+      <c:forEach var="item" items="${content.value.CountryToggle.valueList.LocationContainerWithinCountry}">
+        <option value="${item.value.CountryDirectedURL}">${item.value.CountryName}</option>
+      </c:forEach>
+    </select>
+  </div>
+</div>
