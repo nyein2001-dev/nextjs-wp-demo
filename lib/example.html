@@ -4,21 +4,23 @@ value: function () {
         t = this.$element.find(".radio-checkbox__input"),
         i = this.$element.find("[data-policy-number]"),
         ty = this.$element.find("[data-thank-you]"),
-        overlay = this.$element.find(".overlay-takeover"); // Select overlay element
+        overlay = $("[data-overlay-popup]"); // Use global selector for testing
+
+    console.log("Overlay Found:", overlay.length > 0); // Debugging: Is it selected?
 
     t.off("change.".concat(e)).on("change.".concat(e), function (e) {
         var t = i.find('input[name="policy-number"]'),
-            n = i.toggleClass("d-none", t),
             isYes = "yes" === $(e.currentTarget).attr("id");
 
         ty.toggleClass("d-none", isYes);
         i.toggleClass("d-none", !isYes);
 
-        // Toggle overlay display
-        overlay.css("display", isYes ? "flex" : "none");
-
-        isYes ? t.attr("required", !0) : t.attr("required", !1);
+        if (isYes) {
+            overlay.css("display", "flex");
+            console.log("Overlay should be flex:", overlay.css("display"));
+        } else {
+            overlay.css("display", "none");
+            console.log("Overlay should be none:", overlay.css("display"));
+        }
     });
 }
-
-console.log("Overlay should be flex:", overlay.css("display"));
