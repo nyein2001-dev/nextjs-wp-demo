@@ -1,1 +1,10 @@
-Prudential PLC	https://www.prudentialplc.com/	Prudential PLC	保诚集团	保誠集團	 ប្រូដិនស្យាល់ ភីអិលសី	Prudential PLC	Prudential PLC																						
+document.addEventListener("DOMContentLoaded", function () {
+    const yesRadio = document.getElementById("yes");
+    const overlaySection = document.querySelector(".overlay-takeover");
+
+    yesRadio.addEventListener("change", function () {
+        if (this.checked) {
+            overlaySection.style.display = "flex";
+        }
+    });
+});
