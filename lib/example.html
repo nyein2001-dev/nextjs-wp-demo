@@ -1,10 +1,22 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const yesRadio = document.getElementById("yes");
-    const overlaySection = document.querySelector(".overlay-takeover");
+key: "checkboxShowPopup",
+value: function () {
+    var e = this.options.pluginName,
+        t = this.$element.find(".radio-checkbox__input"),
+        i = this.$element.find("[data-policy-number]"),
+        ty = this.$element.find("[data-thank-you]"),
+        overlay = this.$element.find(".overlay-takeover"); // Select overlay element
 
-    yesRadio.addEventListener("change", function () {
-        if (this.checked) {
-            overlaySection.style.display = "flex";
-        }
+    t.off("change.".concat(e)).on("change.".concat(e), function (e) {
+        var t = i.find('input[name="policy-number"]'),
+            n = i.toggleClass("d-none", t),
+            isYes = "yes" === $(e.currentTarget).attr("id");
+
+        ty.toggleClass("d-none", isYes);
+        i.toggleClass("d-none", !isYes);
+
+        // Toggle overlay display
+        overlay.css("display", isYes ? "flex" : "none");
+
+        isYes ? t.attr("required", !0) : t.attr("required", !1);
     });
-});
+}
