@@ -55,9 +55,9 @@
     }
     
     // Create a CSV line from form data with timestamp
-    public String createCSVLine(String firstName, String lastName, String email, String phoneNumber, String product) {
+    public String createCSVLine(String firstName, String email, String phoneNumber, String product) {
         StringBuilder line = new StringBuilder();
-        line.append(sanitizeForCSV(firstName + " " + lastName)).append(",");
+        line.append(sanitizeForCSV(firstName)).append(",");
         line.append(sanitizeForCSV(email)).append(",");
         line.append(sanitizeForCSV(phoneNumber)).append(",");
         line.append(sanitizeForCSV(product));
@@ -154,13 +154,12 @@
     try {
         // Variables to store form data
         String firstName = "";
-        String lastName = "";
         String emailAddress = "";
         String phoneNumber = "";
         String product = "";
         
         // Parse multipart request
-        if (ServletFileUpload.isMultipartContent(request)) {
+        /* if (ServletFileUpload.isMultipartContent(request)) {
             // Create file upload factory and handler
             DiskFileItemFactory factory = new DiskFileItemFactory();
             ServletFileUpload upload = new ServletFileUpload(factory);
@@ -177,8 +176,6 @@
                     // Store form field values
                     if ("first-name".equals(fieldName)) {
                         firstName = value;
-                    } else if ("last-name".equals(fieldName)) {
-                        lastName = value;
                     } else if ("email-address".equals(fieldName)) {
                         emailAddress = value;
                     } else if ("phone-no".equals(fieldName)) {
@@ -189,10 +186,10 @@
                 }
                 // We ignore file uploads for this implementation
             }
-        }
+        }*/
         
         // Ensure required fields are not empty
-        if (StringUtils.isEmpty(firstName) || StringUtils.isEmpty(lastName) || 
+        if (StringUtils.isEmpty(firstName) ||
             StringUtils.isEmpty(emailAddress) || StringUtils.isEmpty(phoneNumber)) {
             out.print(responseObject(400, "Required fields cannot be empty"));
             return;
@@ -213,7 +210,7 @@
         boolean fileExists = cmsObject.existsResource(csvFileName);
         
         // Create CSV line with timestamp
-        String csvLine = createCSVLine(firstName, lastName, emailAddress, phoneNumber, product);
+        String csvLine = createCSVLine(firstName, emailAddress, phoneNumber, product);
         
         if (!fileExists) {
             // Create new CSV file with headers
