@@ -1,13 +1,262 @@
-Please fill in your details below and our customer service representative will be in touch with you.
-(Expect our call from 03-2775 7188 within the next 24 business hours)
+<%@ page import="java.sql.*,
+                 java.io.*,
+                 java.net.*,
+                 java.util.*,
+                 java.text.*,
+                 java.nio.file.*,
+                 java.time.*,
+                 java.time.format.*,
+                 org.opencms.main.OpenCms,
+                 org.opencms.file.*,
+                 org.opencms.util.*,
+                 org.opencms.jsp.*,
+                 org.apache.commons.logging.Log,
+                 org.opencms.main.CmsLog,
+                 org.apache.commons.lang.StringUtils,
+                 org.opencms.jsp.util.*,
+                 org.apache.commons.fileupload.*,
+                 org.apache.commons.fileupload.disk.*,
+                 org.apache.commons.fileupload.servlet.*" %>
+<%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
-<span style="font-style: italic; font-size: 12px">(Expect our call from 03-2775 7188 within the next 24 business hours)</span>
+<%!
+    // Constants
+    private static final String CSV_FOLDER_PATH = "/system/modules/com.prudential.v2.ph/resources/csv-data/";
+    private static final int MAX_MONTHS_TO_KEEP = 12;
+    private static final Log LOG = CmsLog.getLog("ContactInfoCSVHandler");
+    private static final String TIMESTAMP_FORMAT = "MMM d, y h:mm a"; //Apr 19, 2025 2:45 PM
+    
+    // CSV protection: Sanitize input to prevent CSV injection
+    public String sanitizeForCSV(String input) {
+        if (input == null) {
+            return "";
+        }
+        
+        // Escape double quotes by doubling them
+        String sanitized = input.replace("\"", "\"\"");
+        
+        // If the field contains commas, newlines, or quotes, wrap in quotes
+        if (sanitized.contains(",") || sanitized.contains("\"") || 
+            sanitized.contains("\n") || sanitized.contains("\r")) {
+            sanitized = "\"" + sanitized + "\"";
+        }
+        
+        return sanitized;
+    }
+    
+    // Get current timestamp in standard format
+    public String getCurrentTimestamp() {
+        SimpleDateFormat sdf = new SimpleDateFormat(TIMESTAMP_FORMAT, Locale.US);
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kuala_Lumpur"));
+        return sdf.format(new Date());
+    }
+    
+    // Create a CSV line from form data with timestamp
+    public String createCSVLine(String firstName, String lastName, String email, String phoneNumber, String policyNumber) {
+        StringBuilder line = new StringBuilder();
+        line.append(sanitizeForCSV(firstName + " " + lastName)).append(",");
+        line.append(sanitizeForCSV(email)).append(",");
+        line.append(sanitizeForCSV(phoneNumber)).append(",");
+        line.append(sanitizeForCSV(policyNumber));
+        // Add timestamp as the first column
+        line.append(sanitizeForCSV(getCurrentTimestamp())).append(",");
+        return line.toString();
+    }
+    
+    // Get current month and year formatted as MM-YYYY
+    public String getCurrentMonthYear() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MM-yyyy");
+        return dateFormat.format(new Date());
+    }
+    
+    // Format CSV headers
+    public String getCSVHeaders() {
+        return "Name,Email,Phone Number,Policy Number,Submit Time";
+    }
+    
+    // Clean up old CSV files (keep only last 12 months)
+    public void cleanupOldCSVFiles(CmsObject cmsObject) {
+        try {
+            List<CmsResource> resources = cmsObject.getResourcesInFolder(CSV_FOLDER_PATH, CmsResourceFilter.ALL);
+            
+            // Get the cutoff date (12 months ago)
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.MONTH, -MAX_MONTHS_TO_KEEP);
+            long cutoffTime = calendar.getTimeInMillis();
+            
+            for (CmsResource resource : resources) {
+                String resourceName = resource.getName();
+                // Only process CSV files
+                if (resourceName.endsWith(".csv")) {
+                    // Check if the file is older than the cutoff date
+                    if (resource.getDateCreated() < cutoffTime) {
+                        cmsObject.lockResource(resource);
+                        cmsObject.deleteResource(resource, CmsResource.DELETE_PRESERVE_SIBLINGS);
+                        LOG.info("Deleted old CSV file: " + resourceName + " (created on: " + 
+                                 new Date(resource.getDateCreated()) + ")");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Error cleaning up old CSV files: " + e.getMessage(), e);
+        }
+    }
+    /* public void cleanupOldCSVFiles(CmsObject cmsObject) {
+        try {
+            List<CmsResource> resources = cmsObject.getResourcesInFolder(CSV_FOLDER_PATH, CmsResourceFilter.ALL);
+            
+            // Sort resources by date (oldest first)
+            Collections.sort(resources, new Comparator<CmsResource>() {
+                @Override
+                public int compare(CmsResource r1, CmsResource r2) {
+                    return Long.compare(r1.getDateLastModified(), r2.getDateLastModified());
+                }
+            });
+            
+            // If we have more than MAX_MONTHS_TO_KEEP files, delete the oldest ones
+            if (resources.size() > MAX_MONTHS_TO_KEEP) {
+                int filesToDelete = resources.size() - MAX_MONTHS_TO_KEEP;
+                for (int i = 0; i < filesToDelete; i++) {
+                    CmsResource oldResource = resources.get(i);
+                    String resourceName = oldResource.getName();
+                    // Only delete CSV files
+                    if (resourceName.endsWith(".csv")) {
+                        cmsObject.lockResource(oldResource);
+                        cmsObject.deleteResource(oldResource, CmsResource.DELETE_PRESERVE_SIBLINGS);
+                        LOG.info("Deleted old CSV file: " + resourceName);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Error cleaning up old CSV files: " + e.getMessage(), e);
+        }
+    } */
+    
+    // Create response object for AJAX calls
+    public String responseObject(int statusCode, String message) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        sb.append("\"statusCode\":").append(statusCode).append(",");
+        sb.append("\"message\":\"").append(message).append("\"");
+        sb.append("}");
+        return sb.toString();
+    }
+%>
 
-If you are interested in any products, specify below
-
-Protection (e.g: Critical Illness, Death, Total & Permanent Disability)
-Health (e.g: Medical) 
-Savings & Investment
-Retirement
-Others
-
+<%
+    // Initialize OpenCms objects
+    CmsJspActionElement cms = new CmsJspActionElement(pageContext, request, response);
+    CmsObject cmsObject = cms.getCmsObject();
+    
+    try {
+        // Variables to store form data
+        String firstName = "";
+        String lastName = "";
+        String emailAddress = "";
+        String phoneNumber = "";
+        String policyNumber = "";
+        
+        // Parse multipart request
+        if (ServletFileUpload.isMultipartContent(request)) {
+            // Create file upload factory and handler
+            DiskFileItemFactory factory = new DiskFileItemFactory();
+            ServletFileUpload upload = new ServletFileUpload(factory);
+            
+            // Parse the request
+            List<FileItem> items = upload.parseRequest(request);
+            
+            // Process form fields
+            for (FileItem item : items) {
+                if (item.isFormField()) {
+                    String fieldName = item.getFieldName();
+                    String value = item.getString();
+                    
+                    // Store form field values
+                    if ("first-name".equals(fieldName)) {
+                        firstName = value;
+                    } else if ("last-name".equals(fieldName)) {
+                        lastName = value;
+                    } else if ("email-address".equals(fieldName)) {
+                        emailAddress = value;
+                    } else if ("phone-no".equals(fieldName)) {
+                        phoneNumber = value;
+                    } else if ("policy-number".equals(fieldName)) {
+                        policyNumber = value;
+                    }
+                }
+                // We ignore file uploads for this implementation
+            }
+        }
+        
+        // Ensure required fields are not empty
+        if (StringUtils.isEmpty(firstName) || StringUtils.isEmpty(lastName) || 
+            StringUtils.isEmpty(emailAddress) || StringUtils.isEmpty(phoneNumber)) {
+            out.print(responseObject(400, "Required fields cannot be empty"));
+            return;
+        }
+        
+        // Create CSV folder if it doesn't exist
+        if (!cmsObject.existsResource(CSV_FOLDER_PATH)) {
+            cmsObject.createResource(CSV_FOLDER_PATH, 
+                                    OpenCms.getResourceManager().getResourceType("folder").getTypeId());
+            LOG.info("Created CSV folder: " + CSV_FOLDER_PATH);
+        }
+        
+        // Determine current month's CSV filename
+        String currentMonthYear = getCurrentMonthYear();
+        String csvFileName = CSV_FOLDER_PATH + currentMonthYear + "-CWS-Leads.csv";
+        
+        // Check if CSV file for current month exists
+        boolean fileExists = cmsObject.existsResource(csvFileName);
+        
+        // Create CSV line with timestamp
+        String csvLine = createCSVLine(firstName, lastName, emailAddress, phoneNumber, policyNumber);
+        
+        if (!fileExists) {
+            // Create new CSV file with headers
+            String content = getCSVHeaders() + "\n" + csvLine;
+            byte[] bytes = content.getBytes("UTF-8");
+            
+            // Lock parent folder
+            cmsObject.lockResource(CSV_FOLDER_PATH);
+            
+            // Create CSV file
+            CmsResource resource = cmsObject.createResource(csvFileName, 
+                                    OpenCms.getResourceManager().getResourceType("plain").getTypeId(),
+                                    bytes, 
+                                    new ArrayList<CmsProperty>());
+            
+            LOG.info("Created new CSV file: " + csvFileName);
+        } else {
+            // Append to existing file
+            CmsResource resource = cmsObject.readResource(csvFileName);
+            cmsObject.lockResource(csvFileName);
+            
+            // Read existing content
+            CmsFile file = cmsObject.readFile(resource);
+            byte[] content = file.getContents();
+            String existingContent = new String(content, "UTF-8");
+            
+            // Append new line
+            String newContent = existingContent + "\n" + csvLine;
+            file.setContents(newContent.getBytes("UTF-8"));
+            
+            // Write updated file
+            cmsObject.writeFile(file);
+            LOG.info("Updated CSV file: " + csvFileName);
+        }
+        
+        // Clean up old CSV files (keep only last 12 months)
+        cleanupOldCSVFiles(cmsObject);
+        
+        // Return success response
+        out.print(responseObject(200, "Data successfully saved to CSV"));
+        
+    } catch (Exception e) {
+        LOG.error("Error processing form submission: " + e.getMessage(), e);
+        out.print(responseObject(500, "Error: " + e.getMessage()));
+    }
+%>
