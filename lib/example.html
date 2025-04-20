@@ -55,12 +55,12 @@
     }
     
     // Create a CSV line from form data with timestamp
-    public String createCSVLine(String firstName, String lastName, String email, String phoneNumber, String policyNumber) {
+    public String createCSVLine(String firstName, String lastName, String email, String phoneNumber, String product) {
         StringBuilder line = new StringBuilder();
         line.append(sanitizeForCSV(firstName + " " + lastName)).append(",");
         line.append(sanitizeForCSV(email)).append(",");
         line.append(sanitizeForCSV(phoneNumber)).append(",");
-        line.append(sanitizeForCSV(policyNumber));
+        line.append(sanitizeForCSV(product));
         // Add timestamp as the first column
         line.append(sanitizeForCSV(getCurrentTimestamp())).append(",");
         return line.toString();
@@ -74,7 +74,7 @@
     
     // Format CSV headers
     public String getCSVHeaders() {
-        return "Name,Email,Phone Number,Policy Number,Submit Time";
+        return "Name,Email,Phone Number,Product,Submit Time";
     }
     
     // Clean up old CSV files (keep only last 12 months)
@@ -157,7 +157,7 @@
         String lastName = "";
         String emailAddress = "";
         String phoneNumber = "";
-        String policyNumber = "";
+        String product = "";
         
         // Parse multipart request
         if (ServletFileUpload.isMultipartContent(request)) {
@@ -183,8 +183,8 @@
                         emailAddress = value;
                     } else if ("phone-no".equals(fieldName)) {
                         phoneNumber = value;
-                    } else if ("policy-number".equals(fieldName)) {
-                        policyNumber = value;
+                    } else if ("product-number".equals(fieldName)) {
+                        product = value;
                     }
                 }
                 // We ignore file uploads for this implementation
@@ -213,7 +213,7 @@
         boolean fileExists = cmsObject.existsResource(csvFileName);
         
         // Create CSV line with timestamp
-        String csvLine = createCSVLine(firstName, lastName, emailAddress, phoneNumber, policyNumber);
+        String csvLine = createCSVLine(firstName, lastName, emailAddress, phoneNumber, product);
         
         if (!fileExists) {
             // Create new CSV file with headers
