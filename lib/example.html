@@ -78,32 +78,39 @@
     }
     
     // Clean up old CSV files (keep only last 12 months)
-    public void cleanupOldCSVFiles(CmsObject cmsObject) {
-        try {
-            List<CmsResource> resources = cmsObject.getResourcesInFolder(CSV_FOLDER_PATH, CmsResourceFilter.ALL);
-            
-            // Get the cutoff date (12 months ago)
-            Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.MONTH, -MAX_MONTHS_TO_KEEP);
-            long cutoffTime = calendar.getTimeInMillis();
-            
-            for (CmsResource resource : resources) {
-                String resourceName = resource.getName();
-                // Only process CSV files
-                if (resourceName.endsWith(".csv")) {
-                    // Check if the file is older than the cutoff date
-                    if (resource.getDateCreated() < cutoffTime) {
-                        cmsObject.lockResource(resource);
-                        cmsObject.deleteResource(resource, CmsResource.DELETE_PRESERVE_SIBLINGS);
-                        LOG.info("Deleted old CSV file: " + resourceName + " (created on: " + 
-                                 new Date(resource.getDateCreated()) + ")");
-                    }
+   public void cleanupOldCSVFiles(CmsObject cmsObject) {
+    try {
+        List<CmsResource> resources = cmsObject.getResourcesInFolder(CSV_FOLDER_PATH, CmsResourceFilter.ALL);
+        
+        // Get the cutoff date (12 months ago)
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MONTH, -MAX_MONTHS_TO_KEEP);
+        long cutoffTime = calendar.getTimeInMillis();
+        
+        for (CmsResource resource : resources) {
+            String resourceName = resource.getName();
+            // Only process CSV files
+            if (resourceName.endsWith(".csv")) {
+                // Check if the file is older than the cutoff date
+                if (resource.getDateCreated() < cutoffTime) {
+                    // Get the resource path
+                    String resourcePath = CSV_FOLDER_PATH + resourceName;
+                    
+                    // Lock the resource before deletion
+                    cmsObject.lockResource(resourcePath);
+                    
+                    // Delete the resource using the correct method signature
+                    cmsObject.deleteResource(resourcePath, CmsResource.CmsResourceDeleteMode.valueOf("PRESERVE_SIBLINGS"));
+                    
+                    LOG.info("Deleted old CSV file: " + resourceName + " (created on: " + 
+                             new java.util.Date(resource.getDateCreated()) + ")");
                 }
             }
-        } catch (Exception e) {
-            LOG.error("Error cleaning up old CSV files: " + e.getMessage(), e);
         }
+    } catch (Exception e) {
+        LOG.error("Error cleaning up old CSV files: " + e.getMessage(), e);
     }
+}
     /* public void cleanupOldCSVFiles(CmsObject cmsObject) {
         try {
             List<CmsResource> resources = cmsObject.getResourcesInFolder(CSV_FOLDER_PATH, CmsResourceFilter.ALL);
