@@ -1,4 +1,5 @@
 <%@ page import="java.io.*,java.util.*,java.text.*,java.nio.charset.*,
+                 org.opencms.jsp.*,
                  org.opencms.main.*,org.opencms.file.*,
                  org.opencms.util.*,org.opencms.mail.*" %>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms" %>
@@ -78,9 +79,9 @@ class EmailDispatcher {
                     
                     if (!cmso.existsResource(path)) {
                         cmso.createResource(path, 
-                                          CmsResourceTypeFolder.getStaticTypeId(), 
+                                          OpenCms.getResourceManager().getResourceType("folder").getTypeId(), 
                                           null, 
-                                          new ArrayList<>());
+                                          new ArrayList<CmsProperty>());
                     }
                 }
             }
@@ -90,9 +91,9 @@ class EmailDispatcher {
                 // Create new log file
                 byte[] content = logEntry.toString().getBytes(StandardCharsets.UTF_8);
                 cmso.createResource(logFilePath, 
-                                  CmsResourceTypePlain.getStaticTypeId(), 
+                                  OpenCms.getResourceManager().getResourceType("plain").getTypeId(), 
                                   content,
-                                  new ArrayList<>());
+                                  new ArrayList<CmsProperty>());
             } else {
                 // Read existing content
                 CmsFile file = cmso.readFile(logFilePath);
