@@ -52,7 +52,7 @@ class EmailDispatcher {
         this.emailSubjectPrefix = emailSubjectPrefix;
     }
     
-    // Log function to write to OpenCms log file
+    // Enhanced log function to write to OpenCms log file
     public void logMessage(String level, String message) {
         try {
             // Format the log entry with timestamp
@@ -67,25 +67,7 @@ class EmailDispatcher {
             String logFilePath = logFolderPath + "email-dispatch-" + date + ".log";
             
             // Ensure log directory exists
-            if (!cmso.existsResource(logFolderPath)) {
-                // Create parent folders if they don't exist
-                String[] pathSegments = logFolderPath.split("/");
-                StringBuilder currentPath = new StringBuilder();
-                
-                for (String segment : pathSegments) {
-                    if (segment.isEmpty()) continue;
-                    
-                    currentPath.append("/").append(segment);
-                    String path = currentPath.toString();
-                    
-                    if (!cmso.existsResource(path)) {
-                        cmso.createResource(path, 
-                                          OpenCms.getResourceManager().getResourceType("folder").getTypeId(), 
-                                          null, 
-                                          new ArrayList<CmsProperty>());
-                    }
-                }
-            }
+            ensureDirectoryExists(logFolderPath);
             
             // Create or append to the log file
             if (!cmso.existsResource(logFilePath)) {
@@ -95,6 +77,7 @@ class EmailDispatcher {
                                   OpenCms.getResourceManager().getResourceType("plain").getTypeId(), 
                                   content,
                                   new ArrayList<CmsProperty>());
+                logSystemMessage("Created new log file: " + logFilePath);
             } else {
                 // Read existing content
                 CmsFile file = cmso.readFile(logFilePath);
@@ -108,10 +91,43 @@ class EmailDispatcher {
                 cmso.lockResource(logFilePath);
                 file.setContents(newContent.getBytes(StandardCharsets.UTF_8));
                 cmso.writeFile(file);
+                cmso.unlockResource(logFilePath);
+                logSystemMessage("Appended to existing log file: " + logFilePath);
             }
         } catch (Exception e) {
             // Fall back to system logging if file logging fails
-            System.out.println("Failed to write to log file: " + e.getMessage());
+            logSystemMessage("Failed to write to log file: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    // Helper method to log to system out for debugging
+    private void logSystemMessage(String message) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        System.out.println(sdf.format(new Date()) + " [SYSTEM] " + message);
+    }
+    
+    // Helper method to ensure directory exists
+    private void ensureDirectoryExists(String path) throws Exception {
+        if (!cmso.existsResource(path)) {
+            // Create parent folders if they don't exist
+            String[] pathSegments = path.split("/");
+            StringBuilder currentPath = new StringBuilder();
+            
+            for (String segment : pathSegments) {
+                if (segment.isEmpty()) continue;
+                
+                currentPath.append("/").append(segment);
+                String segmentPath = currentPath.toString();
+                
+                if (!cmso.existsResource(segmentPath)) {
+                    cmso.createResource(segmentPath, 
+                                      OpenCms.getResourceManager().getResourceType("folder").getTypeId(), 
+                                      null, 
+                                      new ArrayList<CmsProperty>());
+                    logSystemMessage("Created directory: " + segmentPath);
+                }
+            }
         }
     }
 
@@ -124,14 +140,19 @@ class EmailDispatcher {
             Date cutoffDate = cal.getTime();
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             
+            logMessage("INFO", "Cleaning up log files older than " + dateFormat.format(cutoffDate));
+            
+            // Ensure log directory exists
+            if (!cmso.existsResource(logFolderPath)) {
+                logMessage("INFO", "Log folder does not exist, nothing to clean up");
+                return;
+            }
+            
             // List all resources in the log directory
             List<CmsResource> resources = cmso.getResourcesInFolder(logFolderPath, CmsResourceFilter.ALL);
             
             for (CmsResource resource : resources) {
-                String name = cmso.readPropertyObject(resource, CmsPropertyDefinition.PROPERTY_TITLE, false).getValue();
-                if (name == null) {
-                    name = resource.getName();
-                }
+                String name = resource.getName();
                 
                 // Check if this is a log file matching our pattern
                 if (name.startsWith("email-dispatch-") && name.endsWith(".log")) {
@@ -157,19 +178,39 @@ class EmailDispatcher {
         }
     }
 
-    // Read email template
+    // Enhanced email template reading with error handling
     public String readEmailTemplate() throws Exception {
         try {
+            if (!cmso.existsResource(emailTemplatePath)) {
+                logMessage("ERROR", "Email template not found at: " + emailTemplatePath);
+                throw new FileNotFoundException("Email template not found: " + emailTemplatePath);
+            }
+            
             CmsFile templateFile = cmso.readFile(emailTemplatePath);
             byte[] content = templateFile.getContents();
-            return new String(content, StandardCharsets.UTF_8);
+            
+            if (content == null || content.length == 0) {
+                logMessage("ERROR", "Email template is empty at: " + emailTemplatePath);
+                throw new IOException("Email template is empty: " + emailTemplatePath);
+            }
+            
+            String templateContent = new String(content, StandardCharsets.UTF_8);
+            logMessage("INFO", "Successfully read email template, size: " + templateContent.length() + " characters");
+            
+            // For debugging, log a preview of the template
+            if (templateContent.length() > 0) {
+                String preview = templateContent.substring(0, Math.min(100, templateContent.length()));
+                logMessage("DEBUG", "Template preview: " + preview.replace("\n", " ") + "...");
+            }
+            
+            return templateContent;
         } catch (Exception e) {
             logMessage("ERROR", "Failed to read email template from: " + emailTemplatePath + ": " + e.getMessage());
             throw e;
         }
     }
 
-    // Generate email content
+    // Generate email content with better template variable handling
     public String generateEmailContent() throws Exception {
         try {
             // Read the email template
@@ -185,17 +226,36 @@ class EmailDispatcher {
             SimpleDateFormat fullDateFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy");
             String todayDate = fullDateFormat.format(new Date());
             template = template.replace("${TODAY_DATE}", todayDate);
+            logMessage("DEBUG", "Replaced ${TODAY_DATE} with: " + todayDate);
             
             // Replace run type placeholder
             String runTypeDisplay = isMorningRun ? "Morning (8:30 AM)" : "End of Day";
             template = template.replace("${RUN_TYPE}", runTypeDisplay);
+            logMessage("DEBUG", "Replaced ${RUN_TYPE} with: " + runTypeDisplay);
             
-            logMessage("INFO", "Email content generated successfully");
+            // Check for any remaining unresolved placeholders
+            int unresolvedCount = countOccurrences(template, "${");
+            if (unresolvedCount > 0) {
+                logMessage("WARN", "Found " + unresolvedCount + " unresolved placeholders in the template");
+            }
+            
+            logMessage("INFO", "Email content generated successfully, length: " + template.length() + " characters");
             return template;
         } catch (Exception e) {
             logMessage("ERROR", "Failed to generate email content: " + e.getMessage());
             throw e;
         }
+    }
+    
+    // Helper method to count occurrences of a substring
+    private int countOccurrences(String source, String search) {
+        int count = 0;
+        int index = 0;
+        while ((index = source.indexOf(search, index)) != -1) {
+            count++;
+            index += search.length();
+        }
+        return count;
     }
 
     // Attach CSV file to email
@@ -231,8 +291,15 @@ class EmailDispatcher {
             fos = new FileOutputStream(tempFile);
             fos.write(fileContent);
             fos.close();
+            fos = null;  // Set to null after closing to avoid double-close in finally
             logMessage("INFO", "Wrote CSV data to temporary file");
-        
+            
+            // Verify file was written properly
+            if (!tempFile.exists() || tempFile.length() == 0) {
+                logMessage("ERROR", "Temporary file was not created or is empty: " + tempFile.getAbsolutePath());
+                throw new IOException("Failed to write CSV data to temporary file");
+            }
+            
             // Create EmailAttachment object and set properties
             EmailAttachment attachment = new EmailAttachment();
             attachment.setPath(tempFile.getAbsolutePath());
@@ -271,11 +338,17 @@ class EmailDispatcher {
         }
     }
 
-    // Send email
+    // Enhanced email sending with better error handling
     public boolean sendEmail(String emailContent) {
         CmsHtmlMail email = null;
         
         try {
+            // Validate email content
+            if (emailContent == null || emailContent.isEmpty()) {
+                logMessage("ERROR", "Cannot send email with empty content");
+                return false;
+            }
+            
             email = new CmsHtmlMail();
             email.setCharset("UTF-8");
             email.setFrom(emailFrom);
@@ -283,6 +356,11 @@ class EmailDispatcher {
             
             // Add recipients based on time of day
             String[] recipients = isMorningRun ? emailRecipientsMorning : emailRecipientsEod;
+            if (recipients == null || recipients.length == 0) {
+                logMessage("ERROR", "No recipients specified for email");
+                return false;
+            }
+            
             for (String recipient : recipients) {
                 email.addTo(recipient);
                 logMessage("INFO", "Adding recipient: " + recipient);
@@ -296,9 +374,14 @@ class EmailDispatcher {
             email.setSubject(subject);
             logMessage("INFO", "Setting email subject: " + subject);
             
-            // Set content
-            email.setMsg(emailContent);
-            logMessage("INFO", "Email content set, content length: " + emailContent.length() + " characters");
+            // Set HTML content
+            email.setHtmlMsg(emailContent);
+            logMessage("INFO", "Email HTML content set, content length: " + emailContent.length() + " characters");
+            
+            // Set plain text content as fallback
+            String plainTextContent = "Contact Information Updates Report - " + timeIndicator + " (" + today + ")";
+            email.setTextMsg(plainTextContent);
+            logMessage("INFO", "Email plain text content set as fallback");
 
             // Attach CSV file
             logMessage("INFO", "Attempting to attach monthly CSV file");
@@ -354,8 +437,11 @@ class EmailDispatcher {
                 result = "Error: Email sending failed";
             }
         } catch (Exception e) {
-            // Log error
+            // Log error with stack trace
             logMessage("ERROR", "Error in automated email dispatch job: " + e.getMessage());
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            logMessage("ERROR", "Stack trace: " + sw.toString());
             result = "Error: " + e.getMessage();
         }
         
