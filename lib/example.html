@@ -214,6 +214,7 @@ class EmailDispatcher {
         }
 
         File tempFile = null;
+        FileOutputStream fos = null;
         try {
             // Read the CSV file content
             logMessage("INFO", "Reading CSV file content");
@@ -225,13 +226,14 @@ class EmailDispatcher {
             tempFile = File.createTempFile(csvFileName.replace(".csv", "-"), ".csv");
             logMessage("INFO", "Created temporary file: " + tempFile.getAbsolutePath());
         
-            try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-                fos.write(fileContent);
-                logMessage("INFO", "Wrote CSV data to temporary file");
-            }
-        
+            // Write the content to the temp file (compatible with old Java versions)
+            fos = new FileOutputStream(tempFile);
+            fos.write(fileContent);
+            fos.flush();
+            logMessage("INFO", "Wrote CSV data to temporary file");
+            
             // Add the file as an attachment to the email with the original filename
-            email.addAttachment(tempFile, csvFileName, "text/csv");
+            email.addAttachment(tempFile.getAbsolutePath(), csvFileName, "text/csv");
             logMessage("INFO", "Successfully attached monthly CSV file: " + csvFileName);
         
             // Schedule the temp file for deletion when JVM exits
@@ -250,6 +252,15 @@ class EmailDispatcher {
             }
         
             throw e;
+        } finally {
+            // Close the file output stream in the finally block
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    logMessage("WARN", "Failed to close file output stream: " + e.getMessage());
+                }
+            }
         }
     }
 
@@ -279,7 +290,7 @@ class EmailDispatcher {
             logMessage("INFO", "Setting email subject: " + subject);
             
             // Set content
-            email.setMsg(emailContent);
+            email.setHtmlMsg(emailContent);
             logMessage("INFO", "Email content set, content length: " + emailContent.length() + " characters");
 
             // Attach CSV file
