@@ -1,3 +1,18 @@
+javax.servlet.*,
+try {
+    // Get the JSP dispatcher
+    RequestDispatcher dispatcher = request.getRequestDispatcher("/system/modules/com.prudential.v2.ph/email-dispatch.jsp?runType=morning");
+    
+    // Include the JSP (this executes it but keeps the response separate)
+    if (dispatcher != null) {
+        dispatcher.include(request, response);
+        LOG.info("Email dispatch JSP executed via include");
+    }
+} catch (Exception e) {
+    LOG.error("Error including email dispatch JSP: " + e.getMessage(), e);
+}
+
+
 <%@ page import="java.io.*,java.util.*,java.text.*,java.nio.charset.*,
                  org.opencms.main.*,org.opencms.file.*,
                  org.opencms.util.*,org.opencms.mail.*" %>
