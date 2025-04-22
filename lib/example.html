@@ -1,7 +1,8 @@
 <%@ page import="java.io.*,java.util.*,java.text.*,java.nio.charset.*,
                  org.opencms.jsp.*,
                  org.opencms.main.*,org.opencms.file.*,
-                 org.opencms.util.*,org.opencms.mail.*" %>
+                 org.opencms.util.*,org.opencms.mail.*,
+                 org.apache.commons.mail.EmailAttachment" %>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms" %>
 <%
 // Initialize the CMS action element for OpenCms operations
@@ -226,14 +227,21 @@ class EmailDispatcher {
             tempFile = File.createTempFile(csvFileName.replace(".csv", "-"), ".csv");
             logMessage("INFO", "Created temporary file: " + tempFile.getAbsolutePath());
         
-            // Write the content to the temp file (compatible with old Java versions)
+            // Write content to temp file
             fos = new FileOutputStream(tempFile);
             fos.write(fileContent);
-            fos.flush();
+            fos.close();
             logMessage("INFO", "Wrote CSV data to temporary file");
-            
-            // Add the file as an attachment to the email with the original filename
-            email.addAttachment(tempFile.getAbsolutePath(), csvFileName, "text/csv");
+        
+            // Create EmailAttachment object and set properties
+            EmailAttachment attachment = new EmailAttachment();
+            attachment.setPath(tempFile.getAbsolutePath());
+            attachment.setDisposition(EmailAttachment.ATTACHMENT);
+            attachment.setName(csvFileName);
+            attachment.setDescription("Monthly CSV Report");
+        
+            // Attach the file to the email
+            email.attach(attachment);
             logMessage("INFO", "Successfully attached monthly CSV file: " + csvFileName);
         
             // Schedule the temp file for deletion when JVM exits
@@ -250,10 +258,9 @@ class EmailDispatcher {
                     logMessage("WARN", "Failed to clean up temporary file: " + tempFile.getAbsolutePath());
                 }
             }
-        
             throw e;
         } finally {
-            // Close the file output stream in the finally block
+            // Ensure FileOutputStream is closed
             if (fos != null) {
                 try {
                     fos.close();
@@ -290,7 +297,7 @@ class EmailDispatcher {
             logMessage("INFO", "Setting email subject: " + subject);
             
             // Set content
-            email.setHtmlMsg(emailContent);
+            email.setMsg(emailContent);
             logMessage("INFO", "Email content set, content length: " + emailContent.length() + " characters");
 
             // Attach CSV file
