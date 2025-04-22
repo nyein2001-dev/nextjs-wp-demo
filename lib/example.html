@@ -134,11 +134,17 @@ class EmailDispatcher {
     // Clean up old log files
     public void cleanupOldLogFiles() {
         try {
-            int LOG_RETENTION_DAYS = 7;
+             int LOG_RETENTION_DAYS = 7;
+             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+            // Normalize cutoffDate to midnight
             Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
             cal.add(Calendar.DAY_OF_MONTH, -LOG_RETENTION_DAYS);
             Date cutoffDate = cal.getTime();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             
             logMessage("INFO", "Cleaning up log files older than " + dateFormat.format(cutoffDate));
             
