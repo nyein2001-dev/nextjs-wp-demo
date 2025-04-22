@@ -1,527 +1,315 @@
-package com.prudential.v2.ph.email;
+<%@ page import="java.io.*,java.util.*,java.text.*,java.nio.charset.*,
+                 org.opencms.main.*,org.opencms.file.*,
+                 org.opencms.util.*,org.opencms.mail.*" %>
+<%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms" %>
+<%
+// Initialize the CMS action element for OpenCms operations
+CmsJspActionElement cms = new CmsJspActionElement(pageContext, request, response);
+CmsObject cmso = cms.getCmsObject();
 
-import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.stream.Collectors;
+// Configuration constants
+final String CSV_FOLDER_PATH = "/system/modules/com.prudential.v2.ph/resources/csv-data/";
+final String EMAIL_TEMPLATE_PATH = "/system/modules/com.prudential.v2.ph/resources/email-templates/daily-summary-template.html";
+final String LOG_FOLDER_PATH = "/system/modules/com.prudential.v2.ph/resources/csv-logs/";
+final String EOD_TIME = "17:30";
 
-import org.apache.commons.logging.Log;
-import org.opencms.file.*;
-import org.opencms.main.*;
-import org.opencms.scheduler.*;
-import org.opencms.mail.CmsHtmlMail;
-import org.opencms.util.CmsStringUtil;
-import org.opencms.jsp.CmsJspActionElement;
-import org.opencms.flex.CmsFlexController;
+// Email configuration
+final String EMAIL_FROM = "withdrawals@prulifeuk.com.ph";
+final String[] EMAIL_RECIPIENTS_MORNING = {"morning-team@prulifeuk.com.ph"};
+final String[] EMAIL_RECIPIENTS_EOD = {"eod-team@prulifeuk.com.ph", "management@prulifeuk.com.ph"};
+final String EMAIL_SUBJECT_PREFIX = "Contact Info Updates - ";
 
-/**
- * Enhanced logger for the email dispatch system with file rotation and cleanup.
- */
-class EmailDispatchLogger {
-    private static final String LOG_FOLDER_PATH = "/system/modules/com.prudential.v2.ph/resources/csv-logs/";
-    private static final int LOG_RETENTION_DAYS = 7;
-    private static final SimpleDateFormat LOG_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    
-    private final Log log;
-    private final CmsObject cms;
-    private String currentLogFile;
-    
-    /**
-     * Creates a new logger instance for the email dispatch system.
-     * 
-     * @param cls The class using this logger
-     * @param cms The CMS object for file operations
-     */
-    public EmailDispatchLogger(Class<?> cls, CmsObject cms) {
-        this.log = CmsLog.getLog(cls);
-        this.cms = cms;
-        this.currentLogFile = createLogFilePath();
+// Get run type from request parameter
+String runType = request.getParameter("runType");
+boolean isMorningRun = "morning".equals(runType);
+
+// Log function to write to OpenCms log file
+void logMessage(String level, String message) {
+    try {
+        // Format the log entry with timestamp
+        SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        String timestamp = timestampFormat.format(new Date());
+        StringBuilder logEntry = new StringBuilder();
+        logEntry.append(timestamp).append(" [").append(level).append("] ").append(message).append("\n");
+        
+        // Create log file path
+        SimpleDateFormat logDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String date = logDateFormat.format(new Date());
+        String logFilePath = LOG_FOLDER_PATH + "email-dispatch-" + date + ".log";
         
         // Ensure log directory exists
-        try {
-            ensureLogDirectoryExists();
-            cleanupOldLogFiles();
-        } catch (Exception e) {
-            log.error("Failed to initialize logger", e);
-        }
-    }
-    
-    /**
-     * Ensures the log directory exists in OpenCms.
-     */
-    private void ensureLogDirectoryExists() throws CmsException {
-        if (!cms.existsResource(LOG_FOLDER_PATH)) {
-            try {
-                // Create parent folders if they don't exist
-                String[] pathSegments = LOG_FOLDER_PATH.split("/");
-                StringBuilder currentPath = new StringBuilder();
-                
-                for (String segment : pathSegments) {
-                    if (segment.isEmpty()) continue;
-                    
-                    currentPath.append("/").append(segment);
-                    String path = currentPath.toString();
-                    
-                    if (!cms.existsResource(path)) {
-                        cms.createResource(path, 
-                                           CmsResourceTypeFolder.getStaticTypeId(), 
-                                           null, 
-                                           new ArrayList<>());
-                    }
-                }
-                
-                log.info("Created log directory: " + LOG_FOLDER_PATH);
-            } catch (Exception e) {
-                log.error("Failed to create log directory", e);
-                throw e;
-            }
-        }
-    }
-    
-    /**
-     * Creates the log file path for today.
-     */
-    private String createLogFilePath() {
-        String date = LOG_DATE_FORMAT.format(new Date());
-        return LOG_FOLDER_PATH + "email-dispatch-" + date + ".log";
-    }
-    
-    /**
-     * Cleans up log files older than the retention period.
-     */
-    public void cleanupOldLogFiles() {
-        try {
-            LocalDate today = LocalDate.now();
-            LocalDate cutoffDate = today.minus(LOG_RETENTION_DAYS, ChronoUnit.DAYS);
+        if (!cmso.existsResource(LOG_FOLDER_PATH)) {
+            // Create parent folders if they don't exist
+            String[] pathSegments = LOG_FOLDER_PATH.split("/");
+            StringBuilder currentPath = new StringBuilder();
             
-            // List all resources in the log directory
-            List<CmsResource> resources = cms.getResourcesInFolder(LOG_FOLDER_PATH, CmsResourceFilter.ALL);
-            
-            for (CmsResource resource : resources) {
-                String name = cms.readPropertyObject(resource, CmsPropertyDefinition.PROPERTY_TITLE, false).getValue();
-                if (name == null) {
-                    name = resource.getName();
-                }
+            for (String segment : pathSegments) {
+                if (segment.isEmpty()) continue;
                 
-                // Check if this is a log file matching our pattern
-                if (name.startsWith("email-dispatch-") && name.endsWith(".log")) {
-                    try {
-                        // Extract date from the filename
-                        String dateStr = name.substring(14, 24); // "email-dispatch-yyyy-MM-dd.log"
-                        LocalDate fileDate = LocalDate.parse(dateStr, DATE_TIME_FORMATTER);
-                        
-                        // Delete if older than cutoff
-                        if (fileDate.isBefore(cutoffDate)) {
-                            cms.lockResource(resource.getRootPath());
-                            cms.deleteResource(resource.getRootPath(), CmsResource.DELETE_PRESERVE_SIBLINGS);
-                            log.info("Deleted old log file: " + name);
-                        }
-                    } catch (Exception e) {
-                        // Skip files that don't match our expected format
-                        log.warn("Could not parse date from log filename: " + name, e);
-                    }
+                currentPath.append("/").append(segment);
+                String path = currentPath.toString();
+                
+                if (!cmso.existsResource(path)) {
+                    cmso.createResource(path, 
+                                      CmsResourceTypeFolder.getStaticTypeId(), 
+                                      null, 
+                                      new ArrayList<>());
                 }
             }
-        } catch (Exception e) {
-            log.error("Failed to clean up old log files", e);
-        }
-    }
-    
-    /**
-     * Logs an informational message to both the system log and our custom log file.
-     */
-    public void info(String message) {
-        log.info(message);
-        writeToLogFile("INFO", message, null);
-    }
-    
-    /**
-     * Logs a warning message to both the system log and our custom log file.
-     */
-    public void warn(String message) {
-        log.warn(message);
-        writeToLogFile("WARN", message, null);
-    }
-    
-    /**
-     * Logs a warning message with exception details to both the system log and our custom log file.
-     */
-    public void warn(String message, Throwable t) {
-        log.warn(message, t);
-        writeToLogFile("WARN", message, t);
-    }
-    
-    /**
-     * Logs an error message to both the system log and our custom log file.
-     */
-    public void error(String message) {
-        log.error(message);
-        writeToLogFile("ERROR", message, null);
-    }
-    
-    /**
-     * Logs an error message with exception details to both the system log and our custom log file.
-     */
-    public void error(String message, Throwable t) {
-        log.error(message, t);
-        writeToLogFile("ERROR", message, t);
-    }
-    
-    /**
-     * Writes the log message to our custom log file.
-     */
-    private void writeToLogFile(String level, String message, Throwable t) {
-        try {
-            // Check if day has changed, create new log file if needed
-            String logFilePath = createLogFilePath();
-            if (!logFilePath.equals(currentLogFile)) {
-                currentLogFile = logFilePath;
-                cleanupOldLogFiles(); // Clean up old logs when starting a new day
-            }
-            
-            // Format the log entry with timestamp
-            SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-            String timestamp = timestampFormat.format(new Date());
-            StringBuilder logEntry = new StringBuilder();
-            logEntry.append(timestamp).append(" [").append(level).append("] ").append(message);
-            
-            // Add exception details if available
-            if (t != null) {
-                StringWriter sw = new StringWriter();
-                PrintWriter pw = new PrintWriter(sw);
-                t.printStackTrace(pw);
-                logEntry.append("\n").append(sw.toString());
-            }
-            logEntry.append("\n");
-            
-            // Create or append to the log file
-            if (!cms.existsResource(currentLogFile)) {
-                // Create new log file
-                byte[] content = logEntry.toString().getBytes(StandardCharsets.UTF_8);
-                cms.createResource(currentLogFile, 
-                                  CmsResourceTypePlain.getStaticTypeId(), 
-                                  content,
-                                  new ArrayList<>());
-            } else {
-                // Read existing content
-                CmsFile file = cms.readFile(currentLogFile);
-                byte[] existingContent = file.getContents();
-                String existingString = new String(existingContent, StandardCharsets.UTF_8);
-                
-                // Append new log entry
-                String newContent = existingString + logEntry.toString();
-                
-                // Write updated content
-                cms.lockResource(currentLogFile);
-                file.setContents(newContent.getBytes(StandardCharsets.UTF_8));
-                cms.writeFile(file);
-            }
-        } catch (Exception e) {
-            // Fall back to system logging if file logging fails
-            log.error("Failed to write to log file", e);
-        }
-    }
-    
-    /**
-     * Gets a detailed error report for an exception.
-     */
-    public String getDetailedErrorReport(Throwable t) {
-        if (t == null) return "No exception details available";
-        
-        StringBuilder report = new StringBuilder();
-        report.append("Exception: ").append(t.getClass().getName()).append("\n");
-        report.append("Message: ").append(t.getMessage()).append("\n");
-        report.append("Stack Trace:\n");
-        
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        t.printStackTrace(pw);
-        report.append(sw.toString()).append("\n");
-        
-        // Add cause chain
-        Throwable cause = t.getCause();
-        while (cause != null) {
-            report.append("Caused by: ").append(cause.getClass().getName()).append("\n");
-            report.append("Message: ").append(cause.getMessage()).append("\n");
-            
-            StringWriter causeWriter = new StringWriter();
-            PrintWriter causePrinter = new PrintWriter(causeWriter);
-            cause.printStackTrace(causePrinter);
-            report.append(causeWriter.toString()).append("\n");
-            
-            cause = cause.getCause();
         }
         
-        return report.toString();
+        // Create or append to the log file
+        if (!cmso.existsResource(logFilePath)) {
+            // Create new log file
+            byte[] content = logEntry.toString().getBytes(StandardCharsets.UTF_8);
+            cmso.createResource(logFilePath, 
+                              CmsResourceTypePlain.getStaticTypeId(), 
+                              content,
+                              new ArrayList<>());
+        } else {
+            // Read existing content
+            CmsFile file = cmso.readFile(logFilePath);
+            byte[] existingContent = file.getContents();
+            String existingString = new String(existingContent, StandardCharsets.UTF_8);
+            
+            // Append new log entry
+            String newContent = existingString + logEntry.toString();
+            
+            // Write updated content
+            cmso.lockResource(logFilePath);
+            file.setContents(newContent.getBytes(StandardCharsets.UTF_8));
+            cmso.writeFile(file);
+        }
+    } catch (Exception e) {
+        // Fall back to system logging if file logging fails
+        System.out.println("Failed to write to log file: " + e.getMessage());
     }
 }
 
-/**
- * Enhanced automated email dispatch job for OpenCms with improved logging.
- * Sends summary emails twice daily with data from CSV files.
- */
-public class CsvEmailDispatchJob implements I_CmsScheduledJob {
-    
-    private static final Log LOG = CmsLog.getLog(CsvEmailDispatchJob.class);
-    private static final String CSV_FOLDER_PATH = "/system/modules/com.prudential.v2.ph/resources/csv-data/";
-    private static final String EMAIL_TEMPLATE_PATH = "/system/modules/com.prudential.v2.ph/resources/email-templates/daily-summary-template.html";
-    private static final String EOD_TIME = "17:30";
-    
-    // Email configuration
-    private static final String EMAIL_FROM = "withdrawals@prulifeuk.com.ph";
-    private static final String[] EMAIL_RECIPIENTS_MORNING = {"morning-team@prulifeuk.com.ph"};
-    private static final String[] EMAIL_RECIPIENTS_EOD = {"eod-team@prulifeuk.com.ph", "management@prulifeuk.com.ph"};
-    private static final String EMAIL_SUBJECT_PREFIX = "Contact Info Updates - ";
-    
-    private EmailDispatchLogger logger;
-    
-    /**
-     * Executes the scheduled job with enhanced logging and error handling.
-     */
-    @Override
-    public String launch(CmsObject cms, Map<String, String> parameters) throws Exception {
-        // Initialize our custom logger
-        this.logger = new EmailDispatchLogger(CsvEmailDispatchJob.class, cms);
-        logger.info("Starting automated email dispatch job");
+// Clean up old log files
+void cleanupOldLogFiles() {
+    try {
+        int LOG_RETENTION_DAYS = 7;
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, -LOG_RETENTION_DAYS);
+        Date cutoffDate = cal.getTime();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         
-        try {
-            // Record job parameters
-            logger.info("Job parameters: " + parameters);
-            
-            // Determine if this is a morning or EOD run
-            boolean isMorningRun = isMorningRun();
-            logger.info("Run type: " + (isMorningRun ? "Morning" : "End of Day"));
-            
-            // Generate email content based on CSV data
-            logger.info("Generating email content");
-            String emailContent = generateEmailContent(cms, isMorningRun);
-            
-            // Send the email
-            logger.info("Sending email to " + 
-                      (isMorningRun ? String.join(", ", EMAIL_RECIPIENTS_MORNING) : 
-                                     String.join(", ", EMAIL_RECIPIENTS_EOD)));
-            boolean success = sendEmail(cms, emailContent, isMorningRun);
-            
-            if (success) {
-                logger.info("Email dispatch completed successfully");
-                return "Success: Email sent at " + new Date();
-            } else {
-                logger.error("Email dispatch failed");
-                return "Error: Email sending failed";
-            }
-        } catch (Exception e) {
-            // Log detailed error information
-            String errorDetails = logger.getDetailedErrorReport(e);
-            logger.error("Error in automated email dispatch job: " + errorDetails);
-            
-            // Clean up possible temporary resources before exiting
-            try {
-                performEmergencyCleanup();
-            } catch (Exception cleanupEx) {
-                logger.error("Failed to clean up after error", cleanupEx);
+        // List all resources in the log directory
+        List<CmsResource> resources = cmso.getResourcesInFolder(LOG_FOLDER_PATH, CmsResourceFilter.ALL);
+        
+        for (CmsResource resource : resources) {
+            String name = cmso.readPropertyObject(resource, CmsPropertyDefinition.PROPERTY_TITLE, false).getValue();
+            if (name == null) {
+                name = resource.getName();
             }
             
-            return "Error: " + e.getMessage();
-        }
-    }
-    
-    /**
-     * Emergency cleanup to handle resources in case of failure.
-     */
-    private void performEmergencyCleanup() {
-        // Implementation would handle any cleanup needed in case of failure
-        logger.info("Performing emergency cleanup");
-        
-        // Add specific cleanup logic here as needed
-    }
-    
-    /**
-     * Determines if this is a morning run or EOD run.
-     */
-    private boolean isMorningRun() {
-        Calendar now = Calendar.getInstance();
-        int currentHour = now.get(Calendar.HOUR_OF_DAY);
-        int currentMinute = now.get(Calendar.MINUTE);
-        
-        // Parse EOD time
-        String[] eodParts = EOD_TIME.split(":");
-        int eodHour = Integer.parseInt(eodParts[0]);
-        int eodMinute = Integer.parseInt(eodParts[1]);
-        
-        // If current time is before EOD time, it's a morning run
-        if (currentHour < eodHour || (currentHour == eodHour && currentMinute < eodMinute)) {
-            return true;
-        }
-        return false;
-    }
-    
-    /**
-     * Generates email content based on CSV data.
-     */
-    private String generateEmailContent(CmsObject cms, boolean isMorningRun) throws Exception {
-        try {
-            // Read the email template
-            logger.info("Reading email template from: " + EMAIL_TEMPLATE_PATH);
-            String template = readEmailTemplate(cms);
-            
-            // Get today's date
-            SimpleDateFormat dateFormat = new SimpleDateFormat("MM-yyyy");
-            String currentMonthYear = dateFormat.format(new Date());
-            logger.info("Generating email for period: " + currentMonthYear);
-            
-            // Replace date placeholder
-            SimpleDateFormat fullDateFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy");
-            String todayDate = fullDateFormat.format(new Date());
-            template = template.replace("${TODAY_DATE}", todayDate);
-            
-            // Replace run type placeholder
-            String runType = isMorningRun ? "Morning (8:30 AM)" : "End of Day";
-            template = template.replace("${RUN_TYPE}", runType);
-            
-            logger.info("Email content generated successfully");
-            return template;
-        } catch (Exception e) {
-            logger.error("Failed to generate email content", e);
-            throw new Exception("Email content generation failed: " + e.getMessage(), e);
-        }
-    }
-    
-    /**
-     * Reads the email HTML template.
-     */
-    private String readEmailTemplate(CmsObject cms) throws Exception {
-        try {
-            CmsFile templateFile = cms.readFile(EMAIL_TEMPLATE_PATH);
-            byte[] content = templateFile.getContents();
-            return new String(content, StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            logger.error("Failed to read email template from: " + EMAIL_TEMPLATE_PATH, e);
-            throw new Exception("Email template reading failed: " + e.getMessage(), e);
-        }
-    }
-    
-    /**
-     * Sends the email with the generated content.
-     */
-    private boolean sendEmail(CmsObject cms, String emailContent, boolean isMorningRun) {
-        CmsHtmlMail email = null;
-        
-        try {
-            email = new CmsHtmlMail();
-            email.setCharset("UTF-8");
-            email.setFrom(EMAIL_FROM);
-            logger.info("Setting email from: " + EMAIL_FROM);
-            
-            // Add recipients based on time of day
-            String[] recipients = isMorningRun ? EMAIL_RECIPIENTS_MORNING : EMAIL_RECIPIENTS_EOD;
-            for (String recipient : recipients) {
-                email.addTo(recipient);
-                logger.info("Adding recipient: " + recipient);
-            }
-            
-            // Set subject with current date
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String today = dateFormat.format(new Date());
-            String timeIndicator = isMorningRun ? "Morning Report" : "EOD Report";
-            String subject = EMAIL_SUBJECT_PREFIX + timeIndicator + " (" + today + ")";
-            email.setSubject(subject);
-            logger.info("Setting email subject: " + subject);
-            
-            // Set content
-            email.setMsg(emailContent);
-            logger.info("Email content set, content length: " + emailContent.length() + " characters");
-
-            // Attach CSV file
-            logger.info("Attempting to attach monthly CSV file");
-            attachMonthlyCsvFile(cms, email);
-            
-            // Send email
-            logger.info("Sending email");
-            email.send();
-            logger.info("Email sent successfully");
-            return true;
-        } catch (Exception e) {
-            logger.error("Failed to send email", e);
-            
-            // Log specific email setup information for debugging
-            if (email != null) {
+            // Check if this is a log file matching our pattern
+            if (name.startsWith("email-dispatch-") && name.endsWith(".log")) {
                 try {
-                    logger.error("Email configuration at failure: " + 
-                                "From: " + EMAIL_FROM + 
-                                ", Recipients: " + Arrays.toString(isMorningRun ? 
-                                                    EMAIL_RECIPIENTS_MORNING : 
-                                                    EMAIL_RECIPIENTS_EOD));
-                } catch (Exception ex) {
-                    // Just continue if we can't log the email details
+                    // Extract date from the filename
+                    String dateStr = name.substring(14, 24); // "email-dispatch-yyyy-MM-dd.log"
+                    Date fileDate = dateFormat.parse(dateStr);
+                    
+                    // Delete if older than cutoff
+                    if (fileDate.before(cutoffDate)) {
+                        cmso.lockResource(resource.getRootPath());
+                        cmso.deleteResource(resource.getRootPath(), CmsResource.DELETE_PRESERVE_SIBLINGS);
+                        logMessage("INFO", "Deleted old log file: " + name);
+                    }
+                } catch (Exception e) {
+                    // Skip files that don't match our expected format
+                    logMessage("WARN", "Could not parse date from log filename: " + name + ": " + e.getMessage());
                 }
             }
-            
-            return false;
         }
+    } catch (Exception e) {
+        logMessage("ERROR", "Failed to clean up old log files: " + e.getMessage());
     }
+}
 
-    /**
-    * Attaches the current month's CSV file to the email.
-    */
-    private void attachMonthlyCsvFile(CmsObject cms, CmsHtmlMail email) throws Exception {
-        // Get current month CSV filename with the specific format
+// Read email template
+String readEmailTemplate() throws Exception {
+    try {
+        CmsFile templateFile = cmso.readFile(EMAIL_TEMPLATE_PATH);
+        byte[] content = templateFile.getContents();
+        return new String(content, StandardCharsets.UTF_8);
+    } catch (Exception e) {
+        logMessage("ERROR", "Failed to read email template from: " + EMAIL_TEMPLATE_PATH + ": " + e.getMessage());
+        throw e;
+    }
+}
+
+// Generate email content
+String generateEmailContent() throws Exception {
+    try {
+        // Read the email template
+        logMessage("INFO", "Reading email template from: " + EMAIL_TEMPLATE_PATH);
+        String template = readEmailTemplate();
+        
+        // Get today's date
         SimpleDateFormat dateFormat = new SimpleDateFormat("MM-yyyy");
         String currentMonthYear = dateFormat.format(new Date());
-        String csvFileName = currentMonthYear + "-CWS-Leads.csv";
-        String csvFilePath = CSV_FOLDER_PATH + csvFileName;
-    
-        logger.info("Looking for CSV file: " + csvFilePath);
-    
-        // Check if the file exists
-        if (!cms.existsResource(csvFilePath)) {
-            logger.warn("Monthly CSV file does not exist: " + csvFilePath);
-            return; // Skip attachment if file doesn't exist
-        }
-    
-        File tempFile = null;
-        try {
-            // Read the CSV file content
-            logger.info("Reading CSV file content");
-            CmsFile csvFile = cms.readFile(cms.readResource(csvFilePath));
-            byte[] fileContent = csvFile.getContents();
-            logger.info("CSV file size: " + fileContent.length + " bytes");
+        logMessage("INFO", "Generating email for period: " + currentMonthYear);
         
-            // Create a temporary file that preserves the original filename
-            // This uses the same name pattern but in the temp directory
-            tempFile = File.createTempFile(csvFileName.replace(".csv", "-"), ".csv");
-            logger.info("Created temporary file: " + tempFile.getAbsolutePath());
+        // Replace date placeholder
+        SimpleDateFormat fullDateFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy");
+        String todayDate = fullDateFormat.format(new Date());
+        template = template.replace("${TODAY_DATE}", todayDate);
         
-            try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-                fos.write(fileContent);
-                logger.info("Wrote CSV data to temporary file");
-            }
+        // Replace run type placeholder
+        String runTypeDisplay = isMorningRun ? "Morning (8:30 AM)" : "End of Day";
+        template = template.replace("${RUN_TYPE}", runTypeDisplay);
         
-            // Add the file as an attachment to the email with the original filename
-            email.addAttachment(tempFile, csvFileName, "text/csv");
-            logger.info("Successfully attached monthly CSV file: " + csvFileName);
-        
-            // Schedule the temp file for deletion when JVM exits
-            tempFile.deleteOnExit();
-        } catch (Exception e) {
-            logger.error("Failed to attach monthly CSV file: " + csvFilePath, e);
-        
-            // Ensure temp file is cleaned up in case of failure
-            if (tempFile != null && tempFile.exists()) {
-                try {
-                    tempFile.delete();
-                    logger.info("Cleaned up temporary file after error");
-                } catch (Exception ex) {
-                    logger.warn("Failed to clean up temporary file: " + tempFile.getAbsolutePath(), ex);
-                }
-            }
-        
-            throw e; // Re-throw to be handled by the calling method
-        }
+        logMessage("INFO", "Email content generated successfully");
+        return template;
+    } catch (Exception e) {
+        logMessage("ERROR", "Failed to generate email content: " + e.getMessage());
+        throw e;
     }
 }
+
+// Attach CSV file to email
+void attachMonthlyCsvFile(CmsHtmlMail email) throws Exception {
+    // Get current month CSV filename with the specific format
+    SimpleDateFormat dateFormat = new SimpleDateFormat("MM-yyyy");
+    String currentMonthYear = dateFormat.format(new Date());
+    String csvFileName = currentMonthYear + "-CWS-Leads.csv";
+    String csvFilePath = CSV_FOLDER_PATH + csvFileName;
+
+    logMessage("INFO", "Looking for CSV file: " + csvFilePath);
+
+    // Check if the file exists
+    if (!cmso.existsResource(csvFilePath)) {
+        logMessage("WARN", "Monthly CSV file does not exist: " + csvFilePath);
+        return; // Skip attachment if file doesn't exist
+    }
+
+    File tempFile = null;
+    try {
+        // Read the CSV file content
+        logMessage("INFO", "Reading CSV file content");
+        CmsFile csvFile = cmso.readFile(cmso.readResource(csvFilePath));
+        byte[] fileContent = csvFile.getContents();
+        logMessage("INFO", "CSV file size: " + fileContent.length + " bytes");
+    
+        // Create a temporary file that preserves the original filename
+        tempFile = File.createTempFile(csvFileName.replace(".csv", "-"), ".csv");
+        logMessage("INFO", "Created temporary file: " + tempFile.getAbsolutePath());
+    
+        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+            fos.write(fileContent);
+            logMessage("INFO", "Wrote CSV data to temporary file");
+        }
+    
+        // Add the file as an attachment to the email with the original filename
+        email.addAttachment(tempFile, csvFileName, "text/csv");
+        logMessage("INFO", "Successfully attached monthly CSV file: " + csvFileName);
+    
+        // Schedule the temp file for deletion when JVM exits
+        tempFile.deleteOnExit();
+    } catch (Exception e) {
+        logMessage("ERROR", "Failed to attach monthly CSV file: " + csvFilePath + ": " + e.getMessage());
+    
+        // Ensure temp file is cleaned up in case of failure
+        if (tempFile != null && tempFile.exists()) {
+            try {
+                tempFile.delete();
+                logMessage("INFO", "Cleaned up temporary file after error");
+            } catch (Exception ex) {
+                logMessage("WARN", "Failed to clean up temporary file: " + tempFile.getAbsolutePath());
+            }
+        }
+    
+        throw e;
+    }
+}
+
+// Send email
+boolean sendEmail(String emailContent) {
+    CmsHtmlMail email = null;
+    
+    try {
+        email = new CmsHtmlMail();
+        email.setCharset("UTF-8");
+        email.setFrom(EMAIL_FROM);
+        logMessage("INFO", "Setting email from: " + EMAIL_FROM);
+        
+        // Add recipients based on time of day
+        String[] recipients = isMorningRun ? EMAIL_RECIPIENTS_MORNING : EMAIL_RECIPIENTS_EOD;
+        for (String recipient : recipients) {
+            email.addTo(recipient);
+            logMessage("INFO", "Adding recipient: " + recipient);
+        }
+        
+        // Set subject with current date
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String today = dateFormat.format(new Date());
+        String timeIndicator = isMorningRun ? "Morning Report" : "EOD Report";
+        String subject = EMAIL_SUBJECT_PREFIX + timeIndicator + " (" + today + ")";
+        email.setSubject(subject);
+        logMessage("INFO", "Setting email subject: " + subject);
+        
+        // Set content
+        email.setMsg(emailContent);
+        logMessage("INFO", "Email content set, content length: " + emailContent.length() + " characters");
+
+        // Attach CSV file
+        logMessage("INFO", "Attempting to attach monthly CSV file");
+        attachMonthlyCsvFile(email);
+        
+        // Send email
+        logMessage("INFO", "Sending email");
+        email.send();
+        logMessage("INFO", "Email sent successfully");
+        return true;
+    } catch (Exception e) {
+        logMessage("ERROR", "Failed to send email: " + e.getMessage());
+        
+        // Log specific email setup information for debugging
+        if (email != null) {
+            try {
+                logMessage("ERROR", "Email configuration at failure: " + 
+                          "From: " + EMAIL_FROM + 
+                          ", Recipients: " + Arrays.toString(isMorningRun ? 
+                                              EMAIL_RECIPIENTS_MORNING : 
+                                              EMAIL_RECIPIENTS_EOD));
+            } catch (Exception ex) {
+                // Just continue if we can't log the email details
+            }
+        }
+        
+        return false;
+    }
+}
+
+// Main execution flow
+String result = "Unknown";
+logMessage("INFO", "Starting automated email dispatch job with runType: " + runType);
+
+try {
+    // Clean up old log files
+    cleanupOldLogFiles();
+    
+    // Generate email content
+    logMessage("INFO", "Generating email content");
+    String emailContent = generateEmailContent();
+    
+    // Send the email
+    logMessage("INFO", "Sending email");
+    boolean success = sendEmail(emailContent);
+    
+    if (success) {
+        logMessage("INFO", "Email dispatch completed successfully");
+        result = "Success: Email sent at " + new Date();
+    } else {
+        logMessage("ERROR", "Email dispatch failed");
+        result = "Error: Email sending failed";
+    }
+} catch (Exception e) {
+    // Log error
+    logMessage("ERROR", "Error in automated email dispatch job: " + e.getMessage());
+    result = "Error: " + e.getMessage();
+}
+%>
+<%= result %>
