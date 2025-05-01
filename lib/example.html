@@ -44,21 +44,62 @@ Lain-lain
     const params = new URLSearchParams(window.location.search);
 
     for (const [key, value] of params.entries()) {
-      // Skip if the field already exists
+      // Skip if this param is already defined in the form (like name, email)
       if (form.querySelector(`input[name="${key}"]`)) continue;
 
       const input = document.createElement('input');
       input.type = 'hidden';
-      input.name = key;
+      input.name = "Simplified-" + key;  // Prefix for JSP detection
       input.value = value;
       form.appendChild(input);
     }
   });
 </script>
 
+
 ...
 Produk \ Product: %race%
 <!--DYNAMIC-FIELDS-->
+
+<%
+  // Read email template
+  CmsResource resource = cmsObject.readResource(templateContentAdmin);
+  CmsFile file = cmsObject.readFile(resource);
+  byte[] contentAdmin = file.getContents();
+  String mailContent = new String(contentAdmin, "UTF-8");
+
+  // Replace fixed values
+  mailContent = mailContent.replace("%fullName%", getParam(request, "fullName"));
+  mailContent = mailContent.replace("%email-address%", getParam(request, "email-address"));
+  mailContent = mailContent.replace("%phone-no%", getParam(request, "phone-no"));
+  mailContent = mailContent.replace("%country-code%", getParam(request, "country-code"));
+  mailContent = mailContent.replace("%race%", getParam(request, "race"));
+  mailContent = mailContent.replace("%selectTopic%", getParam(request, "selectTopic"));
+
+  // Prepare dynamic fields
+  StringBuffer dynamicFields = new StringBuffer();
+  java.util.Enumeration paramNames = request.getParameterNames();
+  while (paramNames.hasMoreElements()) {
+    String param = (String) paramNames.nextElement();
+    if (param != null && param.startsWith("Simplified-")) {
+      String originalKey = param.substring("Simplified-".length());
+      String value = request.getParameter(param);
+      if (value != null && value.trim().length() > 0) {
+        dynamicFields.append("<strong>").append(originalKey).append(":</strong> ").append(value).append("<br>");
+      }
+    }
+  }
+
+  mailContent = mailContent.replace("<!--DYNAMIC-FIELDS-->", dynamicFields.toString());
+%>
+
+<%! 
+  public String getParam(javax.servlet.http.HttpServletRequest request, String key) {
+    String value = request.getParameter(key);
+    return (value == null) ? "" : value;
+  }
+%>
+
 
  java.util.Set knownKeys = new java.util.HashSet();
   knownKeys.add("fullName");
