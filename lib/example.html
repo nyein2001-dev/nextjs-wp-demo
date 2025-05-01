@@ -60,6 +60,14 @@ Lain-lain
 Produk \ Product: %race%
 <!--DYNAMIC-FIELDS-->
 
+ java.util.Set knownKeys = new java.util.HashSet();
+  knownKeys.add("fullName");
+  knownKeys.add("email-address");
+  knownKeys.add("phone-no");
+  knownKeys.add("country-code");
+  knownKeys.add("race");
+  knownKeys.add("selectTopic");
+
 StringBuffer dynamicFields = new StringBuffer();
   java.util.Enumeration paramNames = request.getParameterNames();
   while (paramNames.hasMoreElements()) {
