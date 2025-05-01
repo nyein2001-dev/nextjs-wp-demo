@@ -37,3 +37,41 @@ Perlindungan Menyeluruh & Kekal) (cth: Penyakit Kritikal, Kematian, Hilang Upaya
 Kesihatan Simpanan & Pelaburan bersara(cth: Perubatan)
 Lain-lain
 
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('form');
+    const params = new URLSearchParams(window.location.search);
+
+    for (const [key, value] of params.entries()) {
+      // Skip if the field already exists
+      if (form.querySelector(`input[name="${key}"]`)) continue;
+
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    }
+  });
+</script>
+
+...
+Produk \ Product: %race%
+<!--DYNAMIC-FIELDS-->
+
+StringBuffer dynamicFields = new StringBuffer();
+  java.util.Enumeration paramNames = request.getParameterNames();
+  while (paramNames.hasMoreElements()) {
+    String param = (String) paramNames.nextElement();
+    if (!knownKeys.contains(param)) {
+      String value = request.getParameter(param);
+      if (value != null && value.trim().length() > 0) {
+        dynamicFields.append(param).append(": ").append(value).append("<br>");
+      }
+    }
+  }
+
+  // 5. Inject dynamic key-values at placeholder
+  mailContent = mailContent.replace("<!--DYNAMIC-FIELDS-->", dynamicFields.toString());
+
