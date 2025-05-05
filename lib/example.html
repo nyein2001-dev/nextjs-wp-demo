@@ -1,9 +1,15 @@
 <c:if test="${content.value.GeneralForm.value.ImageRedDisplayText.isSet}">
-    <div style="background-color: red; padding: 16px; color: white; border-radius: 4px;">
-      <div class="col-12 col-md-12 col-lg-8" style="margin: 0 auto; padding: 0;">
-        <div class="title-form_desc" style="text-align: left;">
-          ${content.value.GeneralForm.value.ImageRedDisplayText}
-        </div>
+    <div style="
+      background-color: #e60000;
+      padding: 16px;
+      border-radius: 8px;
+      color: white;
+      max-width: 100%;
+      font-size: 16px;
+      line-height: 1.5;
+    ">
+      <div style="text-align: left;">
+        ${content.value.GeneralForm.value.ImageRedDisplayText}
       </div>
     </div>
   </c:if>
