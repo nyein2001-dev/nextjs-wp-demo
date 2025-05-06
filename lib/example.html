@@ -16,115 +16,110 @@
             <!-- Form Title -->
             <xsd:element name="FormTitle" type="OpenCmsString" />
             
-            <!-- Dropdown Options -->
-            <xsd:element name="DropdownOptions" type="OpenCmsDropdownOptions" />
+            <!-- Dropdown Options - Using nested structure -->
+            <xsd:element name="DropdownOptions">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="DropdownOption" minOccurs="0" maxOccurs="unbounded">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element name="OptionName" type="OpenCmsString" />
+                                    <xsd:element name="OptionId" type="OpenCmsString" />
+                                    <xsd:element name="IsAvailable" type="OpenCmsBoolean" />
+                                    <xsd:element name="IncludeRadioSection" type="OpenCmsBoolean" />
+                                    <xsd:element name="UnavailableText" type="OpenCmsString" minOccurs="0" />
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
             
-            <!-- Radio Sections -->
-            <xsd:element name="RadioSections" type="OpenCmsRadioSections" />
+            <!-- Radio Sections - Using nested structure -->
+            <xsd:element name="RadioSections">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="RadioSection" minOccurs="0" maxOccurs="unbounded">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element name="ParentId" type="OpenCmsString" />
+                                    <xsd:element name="RadioOptions">
+                                        <xsd:complexType>
+                                            <xsd:sequence>
+                                                <xsd:element name="RadioOption" minOccurs="0" maxOccurs="unbounded">
+                                                    <xsd:complexType>
+                                                        <xsd:sequence>
+                                                            <xsd:element name="OptionName" type="OpenCmsString" />
+                                                            <xsd:element name="OptionId" type="OpenCmsString" />
+                                                        </xsd:sequence>
+                                                    </xsd:complexType>
+                                                </xsd:element>
+                                            </xsd:sequence>
+                                        </xsd:complexType>
+                                    </xsd:element>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
             
-            <!-- Default Form -->
-            <xsd:element name="DefaultForm" type="OpenCmsDefaultForm" />
+            <!-- Default Form - Using nested structure -->
+            <xsd:element name="DefaultForm">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="EmailLabel" type="OpenCmsString" />
+                        <xsd:element name="PolicyNumberLabel" type="OpenCmsString" />
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
             
-            <!-- Additional Forms -->
-            <xsd:element name="AdditionalForms" type="OpenCmsAdditionalForms" />
+            <!-- Additional Forms - Using nested structure -->
+            <xsd:element name="AdditionalForms">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="AdditionalForm" minOccurs="0" maxOccurs="unbounded">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element name="ParentId" type="OpenCmsString" />
+                                    <xsd:element name="Instructions" type="OpenCmsString" minOccurs="0" />
+                                    <xsd:element name="Attachments" minOccurs="0">
+                                        <xsd:complexType>
+                                            <xsd:sequence>
+                                                <xsd:element name="Attachment" minOccurs="0" maxOccurs="unbounded">
+                                                    <xsd:complexType>
+                                                        <xsd:sequence>
+                                                            <xsd:element name="Description" type="OpenCmsString" />
+                                                            <xsd:element name="FieldName" type="OpenCmsString" />
+                                                            <xsd:element name="IsRequired" type="OpenCmsBoolean" />
+                                                            <xsd:element name="FileSize" type="OpenCmsInteger" minOccurs="0" />
+                                                        </xsd:sequence>
+                                                    </xsd:complexType>
+                                                </xsd:element>
+                                            </xsd:sequence>
+                                        </xsd:complexType>
+                                    </xsd:element>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
             
             <!-- Submit Button -->
             <xsd:element name="SubmitButtonText" type="OpenCmsString" />
             
-            <!-- Form Messages -->
-            <xsd:element name="FormMessages" type="OpenCmsFormMessages" />
+            <!-- Form Messages - Using nested structure -->
+            <xsd:element name="FormMessages">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="SuccessMessage" type="OpenCmsString" />
+                        <xsd:element name="ErrorMessage" type="OpenCmsString" />
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
         </xsd:sequence>
         <xsd:attribute name="language" type="OpenCmsLocale" use="optional"/>
-    </xsd:complexType>
-    
-    <!-- Dropdown Options -->
-    <xsd:complexType name="OpenCmsDropdownOptions">
-        <xsd:sequence>
-            <xsd:element name="DropdownOption" type="OpenCmsDropdownOption" minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
-    </xsd:complexType>
-    
-    <xsd:complexType name="OpenCmsDropdownOption">
-        <xsd:sequence>
-            <xsd:element name="OptionName" type="OpenCmsString" />
-            <xsd:element name="OptionId" type="OpenCmsString" />
-            <xsd:element name="IsAvailable" type="OpenCmsBoolean" />
-            <xsd:element name="IncludeRadioSection" type="OpenCmsBoolean" />
-            <xsd:element name="UnavailableText" type="OpenCmsString" minOccurs="0" />
-        </xsd:sequence>
-    </xsd:complexType>
-    
-    <!-- Radio Sections -->
-    <xsd:complexType name="OpenCmsRadioSections">
-        <xsd:sequence>
-            <xsd:element name="RadioSection" type="OpenCmsRadioSection" minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
-    </xsd:complexType>
-    
-    <xsd:complexType name="OpenCmsRadioSection">
-        <xsd:sequence>
-            <xsd:element name="ParentId" type="OpenCmsString" />
-            <xsd:element name="RadioOptions" type="OpenCmsRadioOptions" />
-        </xsd:sequence>
-    </xsd:complexType>
-    
-    <xsd:complexType name="OpenCmsRadioOptions">
-        <xsd:sequence>
-            <xsd:element name="RadioOption" type="OpenCmsRadioOption" minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
-    </xsd:complexType>
-    
-    <xsd:complexType name="OpenCmsRadioOption">
-        <xsd:sequence>
-            <xsd:element name="OptionName" type="OpenCmsString" />
-            <xsd:element name="OptionId" type="OpenCmsString" />
-        </xsd:sequence>
-    </xsd:complexType>
-    
-    <!-- Default Form -->
-    <xsd:complexType name="OpenCmsDefaultForm">
-        <xsd:sequence>
-            <xsd:element name="EmailLabel" type="OpenCmsString" />
-            <xsd:element name="PolicyNumberLabel" type="OpenCmsString" />
-        </xsd:sequence>
-    </xsd:complexType>
-    
-    <!-- Additional Forms -->
-    <xsd:complexType name="OpenCmsAdditionalForms">
-        <xsd:sequence>
-            <xsd:element name="AdditionalForm" type="OpenCmsAdditionalForm" minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
-    </xsd:complexType>
-    
-    <xsd:complexType name="OpenCmsAdditionalForm">
-        <xsd:sequence>
-            <xsd:element name="ParentId" type="OpenCmsString" />
-            <xsd:element name="Instructions" type="OpenCmsString" minOccurs="0" />
-            <xsd:element name="Attachments" type="OpenCmsAttachments" minOccurs="0" />
-        </xsd:sequence>
-    </xsd:complexType>
-    
-    <xsd:complexType name="OpenCmsAttachments">
-        <xsd:sequence>
-            <xsd:element name="Attachment" type="OpenCmsAttachment" minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
-    </xsd:complexType>
-    
-    <xsd:complexType name="OpenCmsAttachment">
-        <xsd:sequence>
-            <xsd:element name="Description" type="OpenCmsString" />
-            <xsd:element name="FieldName" type="OpenCmsString" />
-            <xsd:element name="IsRequired" type="OpenCmsBoolean" />
-            <xsd:element name="FileSize" type="OpenCmsInteger" minOccurs="0" />
-        </xsd:sequence>
-    </xsd:complexType>
-    
-    <!-- Form Messages -->
-    <xsd:complexType name="OpenCmsFormMessages">
-        <xsd:sequence>
-            <xsd:element name="SuccessMessage" type="OpenCmsString" />
-            <xsd:element name="ErrorMessage" type="OpenCmsString" />
-        </xsd:sequence>
     </xsd:complexType>
     
     <xsd:annotation>
