@@ -1,146 +1,122 @@
-<c:if test="${content.value.GeneralForm.value.ImageRedDisplayText.isSet}">
-    <div style="
-      background-color: #e60000;
-      padding: 16px;
-      border-radius: 8px;
-      color: white;
-      max-width: 100%;
-      font-size: 16px;
-      line-height: 1.5;
-    ">
-      <div style="text-align: left;">
-        ${content.value.GeneralForm.value.ImageRedDisplayText}
-      </div>
-    </div>
-  </c:if>
-
-https://www.facebook.com/?utm_source=facebook&utm_medium=cpc&utm_campaign=always+on&utm_id=1246&utm_term=jan-dec25&utm_content=video_15s
-
-For assistance on your existing certificate(s), click here or call 
-03-2775 7188.
-
-Please fill in your details below and our customer service representative will be in touch with you.
-(Expect our call from 03-2775 7188 within the next 24 business hours)
-
-Sila isikan butiran anda di bawah dan wakil khidmat pelanggan kami akan menghubungi anda.
-(Nantikan panggilan kami daripada 03-2775 7188 dalam masa 24 jam hari bekerja)
-
-
-Untuk mendapatkan bantuan mengenai sijil sedia ada anda, klik di sini atau hubungi 03-2775 7188.
-
-Full Name as per IC*:  /  
-
-Phone Number*:
-
-Email Address*:
-
-If you are interested in any products, specify below
-
-Protection (e.g: Critical Illness, Death, Total & Permanent Disability)
-Health (e.g: Medical) 
-Savings & Investment
-Retirement
-Others
-
-
-Nama Penuh Mengikut KP*:
-
-Nombor Telefon*:
-
-Alamat Emel*:
-
-Jika anda berminat dengan mana-mana produk, nyatakan di bawah
-
-Perlindungan Menyeluruh & Kekal) (cth: Penyakit Kritikal, Kematian, Hilang Upaya)
-Kesihatan (cth: Perubatan)
-Simpanan & Pelaburan 
-Bersara
-Lain-lain
-
-
-<script>
-  window.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('form');
-    const params = new URLSearchParams(window.location.search);
-
-    for (const [key, value] of params.entries()) {
-      // Skip if this param is already defined in the form (like name, email)
-      if (form.querySelector(`input[name="${key}"]`)) continue;
-
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = "Simplified-" + key;  // Prefix for JSP detection
-      input.value = value;
-      form.appendChild(input);
-    }
-  });
-</script>
-
-
-...
-Produk \ Product: %race%
-<!--DYNAMIC-FIELDS-->
-
-<%
-  // Read email template
-  CmsResource resource = cmsObject.readResource(templateContentAdmin);
-  CmsFile file = cmsObject.readFile(resource);
-  byte[] contentAdmin = file.getContents();
-  String mailContent = new String(contentAdmin, "UTF-8");
-
-  // Replace fixed values
-  mailContent = mailContent.replace("%fullName%", getParam(request, "fullName"));
-  mailContent = mailContent.replace("%email-address%", getParam(request, "email-address"));
-  mailContent = mailContent.replace("%phone-no%", getParam(request, "phone-no"));
-  mailContent = mailContent.replace("%country-code%", getParam(request, "country-code"));
-  mailContent = mailContent.replace("%race%", getParam(request, "race"));
-  mailContent = mailContent.replace("%selectTopic%", getParam(request, "selectTopic"));
-
-  // Prepare dynamic fields
-  StringBuffer dynamicFields = new StringBuffer();
-  java.util.Enumeration paramNames = request.getParameterNames();
-  while (paramNames.hasMoreElements()) {
-    String param = (String) paramNames.nextElement();
-    if (param != null && param.startsWith("Simplified-")) {
-      String originalKey = param.substring("Simplified-".length());
-      String value = request.getParameter(param);
-      if (value != null && value.trim().length() > 0) {
-        dynamicFields.append("<strong>").append(originalKey).append(":</strong> ").append(value).append("<br>");
-      }
-    }
-  }
-
-  mailContent = mailContent.replace("<!--DYNAMIC-FIELDS-->", dynamicFields.toString());
-%>
-
-<%! 
-  public String getParam(javax.servlet.http.HttpServletRequest request, String key) {
-    String value = request.getParameter(key);
-    return (value == null) ? "" : value;
-  }
-%>
-
-
- java.util.Set knownKeys = new java.util.HashSet();
-  knownKeys.add("fullName");
-  knownKeys.add("email-address");
-  knownKeys.add("phone-no");
-  knownKeys.add("country-code");
-  knownKeys.add("race");
-  knownKeys.add("selectTopic");
-
-StringBuffer dynamicFields = new StringBuffer();
-  java.util.Enumeration paramNames = request.getParameterNames();
-  while (paramNames.hasMoreElements()) {
-    String param = (String) paramNames.nextElement();
-    if (!knownKeys.contains(param)) {
-      String value = request.getParameter(param);
-      if (value != null && value.trim().length() > 0) {
-        dynamicFields.append(param).append(": ").append(value).append("<br>");
-      }
-    }
-  }
-
-  // 5. Inject dynamic key-values at placeholder
-  mailContent = mailContent.replace("<!--DYNAMIC-FIELDS-->", dynamicFields.toString());
-
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    
+    <!-- Contact Us Form Schema -->
+    <xsd:element name="ContactUsForm">
+        <xsd:annotation>
+            <xsd:documentation>
+                Schema for Contact Us form with dynamic content based on dropdown selection
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <!-- Form Title -->
+                <xsd:element name="FormTitle" type="xsd:string" />
+                
+                <!-- Dropdown Options -->
+                <xsd:element name="DropdownOptions">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="DropdownOption" maxOccurs="unbounded">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="OptionName" type="xsd:string" />
+                                        <xsd:element name="OptionId" type="xsd:string" />
+                                        <xsd:element name="IsAvailable" type="xsd:boolean" />
+                                        <xsd:element name="IncludeRadioSection" type="xsd:boolean" />
+                                        <xsd:element name="UnavailableText" type="xsd:string" minOccurs="0" />
+                                    </xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                
+                <!-- Radio Sections -->
+                <xsd:element name="RadioSections">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="RadioSection" minOccurs="0" maxOccurs="unbounded">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="ParentId" type="xsd:string" />
+                                        <xsd:element name="RadioOptions">
+                                            <xsd:complexType>
+                                                <xsd:sequence>
+                                                    <xsd:element name="RadioOption" maxOccurs="unbounded">
+                                                        <xsd:complexType>
+                                                            <xsd:sequence>
+                                                                <xsd:element name="OptionName" type="xsd:string" />
+                                                                <xsd:element name="OptionId" type="xsd:string" />
+                                                            </xsd:sequence>
+                                                        </xsd:complexType>
+                                                    </xsd:element>
+                                                </xsd:sequence>
+                                            </xsd:complexType>
+                                        </xsd:element>
+                                    </xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                
+                <!-- Default Form -->
+                <xsd:element name="DefaultForm">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="EmailLabel" type="xsd:string" />
+                            <xsd:element name="PolicyNumberLabel" type="xsd:string" />
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                
+                <!-- Additional Forms -->
+                <xsd:element name="AdditionalForms">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="AdditionalForm" minOccurs="0" maxOccurs="unbounded">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="ParentId" type="xsd:string" />
+                                        <xsd:element name="Instructions" type="xsd:string" minOccurs="0" />
+                                        <xsd:element name="Attachments" minOccurs="0">
+                                            <xsd:complexType>
+                                                <xsd:sequence>
+                                                    <xsd:element name="Attachment" maxOccurs="unbounded">
+                                                        <xsd:complexType>
+                                                            <xsd:sequence>
+                                                                <xsd:element name="Description" type="xsd:string" />
+                                                                <xsd:element name="FieldName" type="xsd:string" />
+                                                                <xsd:element name="IsRequired" type="xsd:boolean" />
+                                                                <xsd:element name="FileSize" type="xsd:integer" minOccurs="0" />
+                                                            </xsd:sequence>
+                                                        </xsd:complexType>
+                                                    </xsd:element>
+                                                </xsd:sequence>
+                                            </xsd:complexType>
+                                        </xsd:element>
+                                    </xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                
+                <!-- Submit Button -->
+                <xsd:element name="SubmitButtonText" type="xsd:string" />
+                
+                <!-- Form Messages -->
+                <xsd:element name="FormMessages">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="SuccessMessage" type="xsd:string" />
+                            <xsd:element name="ErrorMessage" type="xsd:string" />
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    
+</xsd:schema>
