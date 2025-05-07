@@ -20,6 +20,16 @@ Great news!
 
 Your selected transaction is now available in PRUServices. Please visit PRUServices to manage your policy.
 
+const popup = document.querySelector("[data-policy-number]");
+popup.classList.toggle("d-none");
+
+  if (popup.classList.contains("d-none")) {
+    popup.classList.remove("d-none"); // Show popup
+  } else {
+    popup.classList.add("d-none"); // Hide popup
+  }
+
+
 
 
 <cms:contentload collector="singleFile" param="%(param.contactForm|/contact-us/contact-form.xml)">
