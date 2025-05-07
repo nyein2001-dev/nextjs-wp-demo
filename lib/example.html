@@ -1,152 +1,234 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
-    <xsd:include schemaLocation="opencms://opencms-xmlcontent.xsd"/>
+<%@ page import="org.opencms.jsp.*" %>
+<%@ page import="org.opencms.xml.content.*" %>
+<%@ page import="org.opencms.main.*" %>
+<%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+
+<cms:contentload collector="singleFile" param="%(param.contactForm|/contact-us/contact-form.xml)">
+    <cms:contentaccess var="content" />
     
-    <!-- Contact Us Form Schema -->
-    <xsd:element name="ContactUsForms" type="OpenCmsContactUsForms"/>
+    <div class="contact-us-container">
+        <h2>${content.value.FormTitle}</h2>
+        
+        <form id="contactForm" class="contact-form" method="post" action="<cms:link>/system/modules/com.example.contact/elements/form-submit.jsp</cms:link>" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="contactType">Please select:</label>
+                <select id="contactType" name="contactType" class="form-control" onchange="updateForm()" required>
+                    <option value="">-- Please select --</option>
+                    <c:forEach var="option" items="${content.valueList.DropdownOptions[0].valueList.DropdownOption}">
+                        <option value="${option.value.OptionId}">${option.value.OptionName}</option>
+                    </c:forEach>
+                </select>
+            </div>
+            
+            <div id="formContent">
+                <!-- Dynamic content will be loaded here -->
+                <p>Please select an option above to continue.</p>
+            </div>
+        </form>
+    </div>
     
-    <xsd:complexType name="OpenCmsContactUsForms">
-        <xsd:sequence>
-            <xsd:element name="ContactUsForm" type="OpenCmsContactUsForm" minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
-    </xsd:complexType>
-    
-    <xsd:complexType name="OpenCmsContactUsForm">
-        <xsd:sequence>
-            <!-- Form Title -->
-            <xsd:element name="FormTitle" type="OpenCmsString" />
+    <script>
+        function updateForm() {
+            var selectElement = document.getElementById("contactType");
+            var selectedValue = selectElement.value;
+            var formContent = document.getElementById("formContent");
             
-            <!-- Dropdown Options - Using nested structure -->
-            <xsd:element name="DropdownOptions">
-                <xsd:complexType>
-                    <xsd:sequence>
-                        <xsd:element name="DropdownOption" minOccurs="0" maxOccurs="unbounded">
-                            <xsd:complexType>
-                                <xsd:sequence>
-                                    <xsd:element name="OptionName" type="OpenCmsString" />
-                                    <xsd:element name="OptionId" type="OpenCmsString" />
-                                    <xsd:element name="IsAvailable" type="OpenCmsBoolean" />
-                                    <xsd:element name="IncludeRadioSection" type="OpenCmsBoolean" />
-                                    <xsd:element name="UnavailableText" type="OpenCmsString" minOccurs="0" />
-                                </xsd:sequence>
-                            </xsd:complexType>
-                        </xsd:element>
-                    </xsd:sequence>
-                </xsd:complexType>
-            </xsd:element>
+            if (!selectedValue) {
+                formContent.innerHTML = "<p>Please select an option above to continue.</p>";
+                return;
+            }
             
-            <!-- Radio Sections - Using nested structure -->
-            <xsd:element name="RadioSections">
-                <xsd:complexType>
-                    <xsd:sequence>
-                        <xsd:element name="RadioSection" minOccurs="0" maxOccurs="unbounded">
-                            <xsd:complexType>
-                                <xsd:sequence>
-                                    <xsd:element name="ParentId" type="OpenCmsString" />
-                                    <xsd:element name="RadioOptions">
-                                        <xsd:complexType>
-                                            <xsd:sequence>
-                                                <xsd:element name="RadioOption" minOccurs="0" maxOccurs="unbounded">
-                                                    <xsd:complexType>
-                                                        <xsd:sequence>
-                                                            <xsd:element name="OptionName" type="OpenCmsString" />
-                                                            <xsd:element name="OptionId" type="OpenCmsString" />
-                                                        </xsd:sequence>
-                                                    </xsd:complexType>
-                                                </xsd:element>
-                                            </xsd:sequence>
-                                        </xsd:complexType>
-                                    </xsd:element>
-                                </xsd:sequence>
-                            </xsd:complexType>
-                        </xsd:element>
-                    </xsd:sequence>
-                </xsd:complexType>
-            </xsd:element>
+            // Get the dropdown option data
+            var dropdownOptions = [
+                <c:forEach var="option" items="${content.valueList.DropdownOptions[0].valueList.DropdownOption}" varStatus="status">
+                {
+                    id: "${option.value.OptionId}",
+                    isAvailable: ${option.value.IsAvailable},
+                    includeRadio: ${option.value.IncludeRadioSection},
+                    unavailableText: "${option.value.UnavailableText}"
+                }<c:if test="${!status.last}">,</c:if>
+                </c:forEach>
+            ];
             
-            <!-- Default Form - Using nested structure -->
-            <xsd:element name="DefaultForm">
-                <xsd:complexType>
-                    <xsd:sequence>
-                        <xsd:element name="EmailLabel" type="OpenCmsString" />
-                        <xsd:element name="PolicyNumberLabel" type="OpenCmsString" />
-                    </xsd:sequence>
-                </xsd:complexType>
-            </xsd:element>
+            // Find selected dropdown option
+            var selectedOption = null;
+            for (var i = 0; i < dropdownOptions.length; i++) {
+                if (dropdownOptions[i].id === selectedValue) {
+                    selectedOption = dropdownOptions[i];
+                    break;
+                }
+            }
             
-            <!-- Additional Forms - Using nested structure -->
-            <xsd:element name="AdditionalForms">
-                <xsd:complexType>
-                    <xsd:sequence>
-                        <xsd:element name="AdditionalForm" minOccurs="0" maxOccurs="unbounded">
-                            <xsd:complexType>
-                                <xsd:sequence>
-                                    <xsd:element name="ParentId" type="OpenCmsString" />
-                                    <xsd:element name="Instructions" type="OpenCmsString" minOccurs="0" />
-                                    <xsd:element name="Attachments" minOccurs="0">
-                                        <xsd:complexType>
-                                            <xsd:sequence>
-                                                <xsd:element name="Attachment" minOccurs="0" maxOccurs="unbounded">
-                                                    <xsd:complexType>
-                                                        <xsd:sequence>
-                                                            <xsd:element name="Description" type="OpenCmsString" />
-                                                            <xsd:element name="FieldName" type="OpenCmsString" />
-                                                            <xsd:element name="IsRequired" type="OpenCmsBoolean" />
-                                                            <xsd:element name="FileSize" type="OpenCmsInteger" minOccurs="0" />
-                                                        </xsd:sequence>
-                                                    </xsd:complexType>
-                                                </xsd:element>
-                                            </xsd:sequence>
-                                        </xsd:complexType>
-                                    </xsd:element>
-                                </xsd:sequence>
-                            </xsd:complexType>
-                        </xsd:element>
-                    </xsd:sequence>
-                </xsd:complexType>
-            </xsd:element>
+            if (!selectedOption) {
+                return;
+            }
             
-            <!-- Submit Button -->
-            <xsd:element name="SubmitButtonText" type="OpenCmsString" />
+            // Start building HTML
+            var html = "";
             
-            <!-- Form Messages - Using nested structure -->
-            <xsd:element name="FormMessages">
-                <xsd:complexType>
-                    <xsd:sequence>
-                        <xsd:element name="SuccessMessage" type="OpenCmsString" />
-                        <xsd:element name="ErrorMessage" type="OpenCmsString" />
-                    </xsd:sequence>
-                </xsd:complexType>
-            </xsd:element>
-        </xsd:sequence>
-        <xsd:attribute name="language" type="OpenCmsLocale" use="optional"/>
-    </xsd:complexType>
-    
-    <xsd:annotation>
-        <xsd:appinfo>
-            <resourcebundle name="com.prudential.contactus"/>
-            <defaults>
-                <default element="IsAvailable" value="true" />
-                <default element="IncludeRadioSection" value="false" />
-                <default element="IsRequired" value="false" />
-            </defaults>
-            <layouts>
-                <layout element="FormTitle" widget="StringWidget" />
-                <layout element="IsAvailable" widget="BooleanWidget" />
-                <layout element="IncludeRadioSection" widget="BooleanWidget" />
-                <layout element="IsRequired" widget="BooleanWidget" />
-                <layout element="FileSize" widget="NumberWidget" />
-                <layout element="Instructions" widget="HtmlWidget" />
-                <layout element="SuccessMessage" widget="HtmlWidget" />
-                <layout element="ErrorMessage" widget="HtmlWidget" />
-            </layouts>
-            <validationrules>
-                <rule element="FormTitle" regex="^.+" type="error" message="Form title is mandatory"/>
-                <rule element="OptionName" regex="^.+" type="error" message="Option name is mandatory"/>
-                <rule element="OptionId" regex="^.+" type="error" message="Option ID is mandatory"/>
-                <rule element="EmailLabel" regex="^.+" type="error" message="Email label is mandatory"/>
-                <rule element="SubmitButtonText" regex="^.+" type="error" message="Submit button text is mandatory"/>
-            </validationrules>
-        </xsd:appinfo>
-    </xsd:annotation>
-</xsd:schema>
+            if (!selectedOption.isAvailable) {
+                // Show unavailable message
+                html = "<div class='unavailable-message'>" + selectedOption.unavailableText + "</div>";
+            } else {
+                // Build form based on selection
+                html += "<div class='default-form'>";
+                
+                // Add default fields
+                html += "<div class='form-group'>";
+                html += "<label for='policy_number'>${content.value.DefaultForm[0].value.PolicyNumberLabel} <span class='required'>*</span></label>";
+                html += "<input type='text' id='policy_number' name='policy_number' class='form-control' required>";
+                html += "</div>";
+                
+                html += "<div class='form-group'>";
+                html += "<label for='email'>${content.value.DefaultForm[0].value.EmailLabel} <span class='required'>*</span></label>";
+                html += "<input type='email' id='email' name='email' class='form-control' required>";
+                html += "</div>";
+                
+                // Add radio buttons if needed
+                if (selectedOption.includeRadio) {
+                    html += "<div class='radio-section'>";
+                    html += "<div class='form-group'>";
+                    html += "<label>Please select one option: <span class='required'>*</span></label>";
+                    
+                    <c:forEach var="radioSection" items="${content.valueList.RadioSections[0].valueList.RadioSection}">
+                        if ("${radioSection.value.ParentId}" === selectedValue) {
+                            <c:forEach var="radioOption" items="${radioSection.valueList.RadioOptions[0].valueList.RadioOption}" varStatus="rStatus">
+                                html += "<div class='radio'>";
+                                html += "<label>";
+                                html += "<input type='radio' name='radioOption' value='${radioOption.value.OptionId}' class='radio-option' onchange='updateAdditionalForm()' ${rStatus.first ? 'checked' : ''}>";
+                                html += "${radioOption.value.OptionName}";
+                                html += "</label>";
+                                html += "</div>";
+                            </c:forEach>
+                        }
+                    </c:forEach>
+                    
+                    html += "</div>";
+                    html += "</div>";
+                }
+                
+                html += "</div>";
+                
+                // Add div for additional form content
+                html += "<div id='additionalFormContent'></div>";
+                
+                // Add submit button
+                html += "<div class='form-group'>";
+                html += "<button type='submit' class='btn btn-primary'>${content.value.SubmitButtonText}</button>";
+                html += "</div>";
+            }
+            
+            formContent.innerHTML = html;
+            
+            // Update additional form content if needed
+            if (selectedOption.isAvailable) {
+                updateAdditionalForm();
+            }
+        }
+        
+        function updateAdditionalForm() {
+            var selectedValue = document.getElementById("contactType").value;
+            var additionalFormContent = document.getElementById("additionalFormContent");
+            
+            if (!additionalFormContent) {
+                return;
+            }
+            
+            var parentId = selectedValue;
+            var radioOptions = document.getElementsByClassName("radio-option");
+            
+            // Check if radio options exist and one is selected
+            var selectedRadioOption = null;
+            for (var i = 0; i < radioOptions.length; i++) {
+                if (radioOptions[i].checked) {
+                    selectedRadioOption = radioOptions[i].value;
+                    break;
+                }
+            }
+            
+            // If radio option is selected, combine IDs
+            if (selectedRadioOption) {
+                parentId = selectedValue + "_" + selectedRadioOption;
+            }
+            
+            // Find matching additional form
+            var additionalForms = [
+                <c:forEach var="form" items="${content.valueList.AdditionalForms[0].valueList.AdditionalForm}" varStatus="status">
+                {
+                    parentId: "${form.value.ParentId}",
+                    instructions: "${form.value.Instructions}",
+                    attachments: [
+                        <c:if test="${not empty form.valueList.Attachments}">
+                            <c:forEach var="attachment" items="${form.valueList.Attachments[0].valueList.Attachment}" varStatus="attStatus">
+                            {
+                                description: "${attachment.value.Description}",
+                                fieldName: "${attachment.value.FieldName}",
+                                isRequired: ${attachment.value.IsRequired},
+                                fileSize: "${attachment.value.FileSize}"
+                            }<c:if test="${!attStatus.last}">,</c:if>
+                            </c:forEach>
+                        </c:if>
+                    ]
+                }<c:if test="${!status.last}">,</c:if>
+                </c:forEach>
+            ];
+            
+            var matchingForm = null;
+            for (var i = 0; i < additionalForms.length; i++) {
+                if (additionalForms[i].parentId === parentId) {
+                    matchingForm = additionalForms[i];
+                    break;
+                }
+            }
+            
+            // Build additional form HTML
+            var html = "";
+            
+            if (matchingForm) {
+                html += "<div class='additional-form'>";
+                
+                // Add instructions
+                if (matchingForm.instructions) {
+                    html += "<div class='instructions'>";
+                    html += "<h4>Instructions/Requirements:</h4>";
+                    html += "<pre>" + matchingForm.instructions + "</pre>";
+                    html += "</div>";
+                }
+                
+                // Add attachments
+                if (matchingForm.attachments.length > 0) {
+                    html += "<div class='attachments'>";
+                    html += "<h4>Required Documents:</h4>";
+                    
+                    for (var i = 0; i < matchingForm.attachments.length; i++) {
+                        var attachment = matchingForm.attachments[i];
+                        html += "<div class='form-group'>";
+                        html += "<label for='" + attachment.fieldName + "'>" + attachment.description;
+                        if (attachment.isRequired) {
+                            html += " <span class='required'>*</span>";
+                        }
+                        html += "</label>";
+                        html += "<input type='file' id='" + attachment.fieldName + "' name='" + attachment.fieldName + "' class='form-control-file'";
+                        if (attachment.isRequired) {
+                            html += " required";
+                        }
+                        html += ">";
+                        if (attachment.fileSize) {
+                            html += "<small class='form-text text-muted'>Maximum file size: " + attachment.fileSize + "MB</small>";
+                        }
+                        html += "</div>";
+                    }
+                    
+                    html += "</div>";
+                }
+                
+                html += "</div>";
+            }
+            
+            additionalFormContent.innerHTML = html;
+        }
+    </script>
+</cms:contentload>
