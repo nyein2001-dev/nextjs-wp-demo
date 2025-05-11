@@ -24,34 +24,47 @@ document.addEventListener('DOMContentLoaded', function () {
     const unavailableText = document.getElementById('unavailable-text');
 
     function showSelectedView() {
-        const selectedOption = select.options[select.selectedIndex];
-        const selectedValue = selectedOption.value;
-
-        // Hide all views and the unavailable text first
+        // Hide all views and the unavailable message
         views.forEach(view => view.style.display = 'none');
         unavailableText.style.display = 'none';
         unavailableText.textContent = '';
 
+        const selectedOption = select.options[select.selectedIndex];
+        const selectedValue = selectedOption.value;
+
+        console.log('Selected value:', selectedValue);
+
         if (selectedValue) {
-            const isAvailable = selectedOption.getAttribute('data-available') === 'true';
-            const text = selectedOption.getAttribute('data-unavailable-text') || 'This option is unavailable.';
+            const isAvailable = selectedOption.dataset.available === 'true';
+            const text = selectedOption.dataset.unavailableText || 'This option is unavailable.';
+
+            console.log('Is available:', isAvailable);
+            console.log('Unavailable text:', text);
 
             if (isAvailable) {
                 const selectedView = document.getElementById(selectedValue);
+                console.log('Selected view element:', selectedView);
+
                 if (selectedView) {
                     selectedView.style.display = 'block';
+                    console.log('Showing view for:', selectedValue);
+                } else {
+                    console.log('No view found for:', selectedValue);
                 }
             } else {
                 unavailableText.textContent = text;
                 unavailableText.style.display = 'block';
+                console.log('Showing unavailable text:', text);
             }
+        } else {
+            console.log('No value selected');
         }
     }
 
-    // Initial run
+    // Initial load
     showSelectedView();
 
-    // On selection change
+    // Change event
     select.addEventListener('change', showSelectedView);
 });
 </script>
