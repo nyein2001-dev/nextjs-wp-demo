@@ -71,66 +71,26 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const select = document.getElementById('contactType');
-    const views = document.querySelectorAll('.dropdown-view');
-    const unavailableText = document.getElementById('unavailable-text');
+  const radios = document.querySelectorAll('input[type="radio"]');
 
-    function resetViews() {
-        views.forEach(view => view.style.display = 'none');
-        unavailableText.style.display = 'none';
-        unavailableText.innerHTML = '';
-    }
+  radios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      const selected = {};
 
-    function handleRadioSelection(optionId) {
-        const radios = document.querySelectorAll(`input[type="radio"][name="${optionId}"]`);
-        radios.forEach(radio => {
-            radio.addEventListener('change', function () {
-                const viewId = `${optionId}_${this.value}`;
-                const view = document.getElementById(viewId);
-                resetViews();
-                if (view) {
-                    view.style.display = 'block';
-                }
-            });
-        });
-    }
+      document.querySelectorAll('input[type="radio"]:checked').forEach(selectedRadio => {
+        selected[selectedRadio.name] = selectedRadio.value;
+        console.log("Dropdown ID:", selectedRadio.dataset.dropdownId);  // ✅ Log actual data-dropdown-id
+      });
 
-    function showSelectedView() {
-        resetViews();
-        const selectedOption = select.options[select.selectedIndex];
-        const selectedValue = selectedOption.value;
-
-        if (!selectedValue) return;
-
-        const isAvailable = selectedOption.getAttribute('data-available') === 'true';
-        const includeRadio = selectedOption.getAttribute('data-include-radio') === 'true';
-        const unavailableMsg = selectedOption.getAttribute('data-unavailable-text') || 'This option is unavailable.';
-
-        if (!isAvailable) {
-            unavailableText.innerHTML = unavailableMsg;
-            unavailableText.style.display = 'block';
-            return;
-        }
-
-        if (!includeRadio) {
-            // Direct view
-            const directView = document.getElementById(selectedValue);
-            if (directView) directView.style.display = 'block';
-        } else {
-            // Show radio section
-            const radioSection = document.getElementById(`${selectedValue}_radio`);
-            if (radioSection) {
-                radioSection.style.display = 'block';
-                handleRadioSelection(selectedValue);
-            }
-        }
-    }
-
-    select.addEventListener('change', showSelectedView);
-    showSelectedView(); // on initial load
-});
+      const outputDiv = document.getElementById('output');
+      let html = '<h3>Selected Values:</h3>';
+      for (const [group, value] of Object.entries(selected)) {
+        html += `<p><strong>${group}:</strong> ${value}</p>`;
+      }
+      outputDiv.innerHTML = html;
+    });
+  });
 </script>
+
 
