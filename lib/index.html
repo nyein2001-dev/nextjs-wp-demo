@@ -1,90 +1,45 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Daily Contact Info Updates Summary</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .header {
-            background-color: #00205b;
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
-        .content {
-            padding: 20px;
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-        }
-        .footer {
-            margin-top: 20px;
-            text-align: center;
-            font-size: 12px;
-            color: #777;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .summary-box {
-            background-color: #e6f7ff;
-            border: 1px solid #b3e0ff;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 5px;
-        }
-        .logo {
-            max-height: 80px;
-            margin-bottom: 10px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <img src="https://www.prulifeuk.com.ph/export/system/modules/com.prudential.prulifeuk.ph/resources/images/prudential-logo-white.png" alt="Prudential Logo" class="logo">
-            <h1>Contact Information Updates</h1>
-            <h2>${RUN_TYPE} Report - ${TODAY_DATE}</h2>
-        </div>
-        
-        <div class="content">
-            <p>Dear Team,</p>
-            
-            <p>Please find below the latest contact information updates submitted by our customers. This report includes entries received during the last reporting period.</p>
-            
-            <p>Please ensure that all customer contact information is updated in our systems promptly. If you have any questions or need assistance, please contact the IT support team.</p>
-            
-            <p>Best regards,<br>Automated Reporting System</p>
-        </div>
-        
-        <div class="footer">
-            <p>This is an automated email. Please do not reply directly to this message.</p>
-            <p>&copy; 2025 Pru Life UK. All rights reserved.</p>
-        </div>
+<select id="contactType" name="contactType" class="form-control" required>
+    <option value="">-- Please select --</option>
+    <c:forEach var="option" items="${content.valueList.DropdownOption}">
+        <option value="${option.value.OptionId}" 
+                <c:if test="${option.value.OptionId eq param.contactType}">selected</c:if>>
+            ${option.value.OptionName}
+        </option>
+    </c:forEach>
+</select>
+
+<c:forEach var="option" items="${content.valueList.DropdownOption}">
+    <div id="${option.value.OptionId}" class="dropdown-view" style="display:none;">
+        <p>${option.value.OptionName} View</p>
     </div>
-</body>
-</html>
+</c:forEach>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const select = document.getElementById('contactType');
+    const allViews = document.querySelectorAll('.dropdown-view');
+
+    function showSelectedView() {
+        const selectedId = select.value;
+
+        // Hide all views
+        allViews.forEach(view => {
+            view.style.display = 'none';
+        });
+
+        // Show the one matching the selected OptionId
+        if (selectedId) {
+            const matchingView = document.getElementById(selectedId);
+            if (matchingView) {
+                matchingView.style.display = 'block';
+            }
+        }
+    }
+
+    // Run on page load (in case a value is pre-selected)
+    showSelectedView();
+
+    // Run when the selection changes
+    select.addEventListener('change', showSelectedView);
+});
+</script>
