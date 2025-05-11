@@ -68,3 +68,69 @@ document.addEventListener('DOMContentLoaded', function () {
     select.addEventListener('change', showSelectedView);
 });
 </script>
+
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const select = document.getElementById('contactType');
+    const views = document.querySelectorAll('.dropdown-view');
+    const unavailableText = document.getElementById('unavailable-text');
+
+    function resetViews() {
+        views.forEach(view => view.style.display = 'none');
+        unavailableText.style.display = 'none';
+        unavailableText.innerHTML = '';
+    }
+
+    function handleRadioSelection(optionId) {
+        const radios = document.querySelectorAll(`input[type="radio"][name="${optionId}"]`);
+        radios.forEach(radio => {
+            radio.addEventListener('change', function () {
+                const viewId = `${optionId}_${this.value}`;
+                const view = document.getElementById(viewId);
+                resetViews();
+                if (view) {
+                    view.style.display = 'block';
+                }
+            });
+        });
+    }
+
+    function showSelectedView() {
+        resetViews();
+        const selectedOption = select.options[select.selectedIndex];
+        const selectedValue = selectedOption.value;
+
+        if (!selectedValue) return;
+
+        const isAvailable = selectedOption.getAttribute('data-available') === 'true';
+        const includeRadio = selectedOption.getAttribute('data-include-radio') === 'true';
+        const unavailableMsg = selectedOption.getAttribute('data-unavailable-text') || 'This option is unavailable.';
+
+        if (!isAvailable) {
+            unavailableText.innerHTML = unavailableMsg;
+            unavailableText.style.display = 'block';
+            return;
+        }
+
+        if (!includeRadio) {
+            // Direct view
+            const directView = document.getElementById(selectedValue);
+            if (directView) directView.style.display = 'block';
+        } else {
+            // Show radio section
+            const radioSection = document.getElementById(`${selectedValue}_radio`);
+            if (radioSection) {
+                radioSection.style.display = 'block';
+                handleRadioSelection(selectedValue);
+            }
+        }
+    }
+
+    select.addEventListener('change', showSelectedView);
+    showSelectedView(); // on initial load
+});
+</script>
+
