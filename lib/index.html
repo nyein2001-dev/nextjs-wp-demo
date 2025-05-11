@@ -73,21 +73,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <script>
   const radios = document.querySelectorAll('input[type="radio"]');
-
   radios.forEach(radio => {
     radio.addEventListener('change', () => {
       document.querySelectorAll('input[type="radio"]:checked').forEach(selectedRadio => {
-        const radioId = selectedRadio.value;
+        // Get the radio's ID, not its value
+        const radioId = selectedRadio.id; // Changed from selectedRadio.value
+        
+        // Get the dropdown ID from the associated dropdown element
         const dropdownId = selectedRadio.getAttribute('data-dropdown-id') || '';
+        
+        // Create the composite ID
         const selectedId = `${radioId}_${dropdownId}`;
+        
+        // Log for debugging
+        console.log("Radio ID:", radioId);
+        console.log("Dropdown ID:", dropdownId);
+        console.log("Selected ID:", selectedId);
+        
         const selectedView = document.getElementById(selectedId);
-
-        console.log("Radio ID: ", radioId);
-        console.log("Dropdown ID: ", dropdownId);
-
         if (selectedView) {
           selectedView.style.display = 'block';
-          console.log('Showing view for: ', selectedId);
+          console.log('Showing view for:', selectedId);
+        } else {
+          console.log('No element found with ID:', selectedId);
         }
       });
     });
