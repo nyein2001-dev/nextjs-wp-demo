@@ -76,21 +76,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
   radios.forEach(radio => {
     radio.addEventListener('change', () => {
-      const selected = {};
-
       document.querySelectorAll('input[type="radio"]:checked').forEach(selectedRadio => {
-        selected[selectedRadio.name] = selectedRadio.value;
-        console.log("Dropdown ID:", selectedRadio.dataset.dropdownId);  // ✅ Log actual data-dropdown-id
-      });
+        const radioId = selectedRadio.value;
+        const dropdownId = selectedRadio.getAttribute('data-dropdown-id') || '';
+        const selectedId = `${radioId}_${dropdownId}`;
+        const selectedView = document.getElementById(selectedId);
 
-      const outputDiv = document.getElementById('output');
-      let html = '<h3>Selected Values:</h3>';
-      for (const [group, value] of Object.entries(selected)) {
-        html += `<p><strong>${group}:</strong> ${value}</p>`;
-      }
-      outputDiv.innerHTML = html;
+        console.log("Radio ID: ", radioId);
+        console.log("Dropdown ID: ", dropdownId);
+
+        if (selectedView) {
+          selectedView.style.display = 'block';
+          console.log('Showing view for: ', selectedId);
+        }
+      });
     });
   });
 </script>
+
 
 
