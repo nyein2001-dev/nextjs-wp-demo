@@ -2,6 +2,9 @@
     <option value="">-- Please select --</option>
     <c:forEach var="option" items="${content.valueList.DropdownOption}">
         <option value="${option.value.OptionId}" 
+            data-available="${option.value.IsAvailable}"
+                data-include-radio="${option.value.IncludeRadioSection}"
+                data-unavailable-text="${option.value.UnavailableText}"
                 <c:if test="${option.value.OptionId eq param.contactType}">selected</c:if>>
             ${option.value.OptionName}
         </option>
@@ -17,29 +20,38 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const select = document.getElementById('contactType');
-    const allViews = document.querySelectorAll('.dropdown-view');
+    const views = document.querySelectorAll('.dropdown-view');
+    const unavailableText = document.getElementById('unavailable-text');
 
     function showSelectedView() {
-        const selectedId = select.value;
+        const selectedOption = select.options[select.selectedIndex];
+        const selectedValue = selectedOption.value;
 
-        // Hide all views
-        allViews.forEach(view => {
-            view.style.display = 'none';
-        });
+        // Hide all views and the unavailable text first
+        views.forEach(view => view.style.display = 'none');
+        unavailableText.style.display = 'none';
+        unavailableText.textContent = '';
 
-        // Show the one matching the selected OptionId
-        if (selectedId) {
-            const matchingView = document.getElementById(selectedId);
-            if (matchingView) {
-                matchingView.style.display = 'block';
+        if (selectedValue) {
+            const isAvailable = selectedOption.getAttribute('data-available') === 'true';
+            const text = selectedOption.getAttribute('data-unavailable-text') || 'This option is unavailable.';
+
+            if (isAvailable) {
+                const selectedView = document.getElementById(selectedValue);
+                if (selectedView) {
+                    selectedView.style.display = 'block';
+                }
+            } else {
+                unavailableText.textContent = text;
+                unavailableText.style.display = 'block';
             }
         }
     }
 
-    // Run on page load (in case a value is pre-selected)
+    // Initial run
     showSelectedView();
 
-    // Run when the selection changes
+    // On selection change
     select.addEventListener('change', showSelectedView);
 });
 </script>
