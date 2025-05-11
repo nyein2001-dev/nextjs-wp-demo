@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('Selected value:', selectedValue);
 
         if (selectedValue) {
-            const isAvailable = selectedOption.dataset.available === 'true';
-            const text = selectedOption.dataset.unavailableText || 'This option is unavailable.';
+            const isAvailable = selectedOption.getAttribute('data-available') === 'true';
+            const text = selectedOption.getAttribute('data-unavailable-text') || 'This option is unavailable.';
 
             console.log('Is available:', isAvailable);
             console.log('Unavailable text:', text);
