@@ -1,34 +1,19 @@
-public static File createTempFileFromInputStream(InputStream inputStream, String prefix, String suffix) throws IOException {
-    File tempFile = File.createTempFile(prefix, suffix);
-    FileOutputStream out = null;
-    try {
-        out = new FileOutputStream(tempFile);
-        byte[] buffer = new byte[1024];
-        int bytesRead;
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            out.write(buffer, 0, bytesRead);
+for (FileItem item : items) {
+    if (!item.isFormField()) {
+        String fieldName = item.getFieldName();
+        System.out.println("Found file field: " + fieldName + " file: " + item.getName());
+
+        if (!fieldFilesMap.containsKey(fieldName)) {
+            fieldFilesMap.put(fieldName, new ArrayList<FileItem>());
         }
-    } finally {
-        if (out != null) {
-            try {
-                out.close();
-            } catch (IOException e) {
-                // log or ignore
-            }
-        }
-        if (inputStream != null) {
-            try {
-                inputStream.close();
-            } catch (IOException e) {
-                // log or ignore
-            }
-        }
+        fieldFilesMap.get(fieldName).add(item);
     }
-    return tempFile;
 }
+System.out.println("Total fields with files: " + fieldFilesMap.size());
 
 
-public static void sendEmail(String from, String to, String subject, String message, Map<String, List<FileItem>> fieldFilesMap) throws Exception {
+                public static void sendEmail(String from, String to, String subject, String message, Map<String, List<FileItem>> fieldFilesMap) throws Exception {
+    System.out.println("Sending email from: " + from + " to: " + to);
     CmsHtmlMail email = new CmsHtmlMail();
     email.setFrom(from);
     email.addTo(to);
@@ -36,15 +21,28 @@ public static void sendEmail(String from, String to, String subject, String mess
     email.setMsg(message);
     email.setCharset("UTF-8");
 
+    if (fieldFilesMap == null || fieldFilesMap.isEmpty()) {
+        System.out.println("No files found to attach.");
+    }
+
     Iterator<Map.Entry<String, List<FileItem>>> iterator = fieldFilesMap.entrySet().iterator();
     while (iterator.hasNext()) {
         Map.Entry<String, List<FileItem>> entry = iterator.next();
         String fieldName = entry.getKey();
         List<FileItem> fileItems = entry.getValue();
 
+        System.out.println("Processing field: " + fieldName + ", files: " + fileItems.size());
+
         for (int i = 0; i < fileItems.size(); i++) {
             FileItem fileItem = (FileItem) fileItems.get(i);
             String originalFileName = fileItem.getName();
+            if (originalFileName == null || originalFileName.trim().isEmpty()) {
+                System.out.println("FileItem " + i + " has no name, skipping.");
+                continue;
+            }
+
+            System.out.println("Original file name: " + originalFileName);
+
             String extension = "";
             int dotIndex = originalFileName.lastIndexOf('.');
             if (dotIndex > 0) {
@@ -53,40 +51,25 @@ public static void sendEmail(String from, String to, String subject, String mess
 
             String renamedFile = fieldName + "_" + i + extension;
             File tempFile = createTempFileFromInputStream(fileItem.getInputStream(), fieldName + "_" + i, extension);
+            System.out.println("Temp file created: " + tempFile.getAbsolutePath());
+
+            if (!tempFile.exists()) {
+                System.out.println("Temp file not found: " + tempFile.getAbsolutePath());
+                continue;
+            }
 
             EmailAttachment attachment = new EmailAttachment();
             attachment.setPath(tempFile.getAbsolutePath());
             attachment.setName(renamedFile);
             attachment.setDisposition(EmailAttachment.ATTACHMENT);
             email.attach(attachment);
+            System.out.println("Attached file: " + renamedFile);
 
             tempFile.deleteOnExit();
         }
     }
 
+    System.out.println("Sending email...");
     email.send();
-}
-
-
-            // Send to user
-if (!StringUtils.isEmpty(emailAddressUser)) {
-    sendEmail(
-        (String) emailAddressAdmins.get(0),
-        emailAddressUser,
-        mailSubject,
-        mailContentUser,
-        fieldFilesMap
-    );
-}
-
-// Send to admins
-for (int i = 0; i < emailAddressAdmins.size(); i++) {
-    String adminEmail = (String) emailAddressAdmins.get(i);
-    sendEmail(
-        emailAddressUser,
-        adminEmail,
-        adminMailSubject,
-        mailContent,
-        fieldFilesMap
-    );
+    System.out.println("Email sent successfully.");
 }
