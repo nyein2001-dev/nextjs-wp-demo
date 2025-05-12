@@ -1,66 +1,49 @@
-// Assume this is a complete list of file inputs from request
-List<FileItem> uploadedFileItems = ...; // from FileUpload parser
-
-// Send to user
-if (!StringUtils.isEmpty(emailAddressUser)) {
-    sendEmailWithAttachments(
-        emailAddressAdmins.get(0),
-        emailAddressUser,
-        mailSubject,
-        mailContentUser,
-        uploadedFileItems
-    );
-}
-
-// Send to each admin
-for (String emailAdmin : emailAddressAdmins) {
-    sendEmailWithAttachments(
-        emailAddressUser,
-        emailAdmin,
-        adminMailSubject,
-        mailContent,
-        uploadedFileItems
-    );
-}
-
-
-
-    public void sendEmailWithAttachments(
-        String from,
-        String to,
-        String subject,
-        String message,
-        List<FileItem> uploadedFileItems
-) throws Exception {
-
-    CmsHtmlMail email = new CmsHtmlMail();
-    email.setMsg(message);
-    email.setSubject(subject);
-    email.setCharset("UTF-8");
-    email.setFrom(from);
-    email.addTo(to);
-
-    List<File> tempFilesToDelete = new ArrayList<File>();
-
-    // Group by field name and allow multiple files per field
-    Map<String, List<FileItem>> fieldMap = new HashMap<String, List<FileItem>>();
-    for (FileItem fileItem : uploadedFileItems) {
-        if (!fileItem.isFormField()) {
-            String fieldName = fileItem.getFieldName();
-            if (!fieldMap.containsKey(fieldName)) {
-                fieldMap.put(fieldName, new ArrayList<FileItem>());
+public static File createTempFileFromInputStream(InputStream inputStream, String prefix, String suffix) throws IOException {
+    File tempFile = File.createTempFile(prefix, suffix);
+    FileOutputStream out = null;
+    try {
+        out = new FileOutputStream(tempFile);
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            out.write(buffer, 0, bytesRead);
+        }
+    } finally {
+        if (out != null) {
+            try {
+                out.close();
+            } catch (IOException e) {
+                // log or ignore
             }
-            fieldMap.get(fieldName).add(fileItem);
+        }
+        if (inputStream != null) {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                // log or ignore
+            }
         }
     }
+    return tempFile;
+}
 
-    // Process and attach
-    for (Map.Entry<String, List<FileItem>> entry : fieldMap.entrySet()) {
+
+public static void sendEmail(String from, String to, String subject, String message, Map<String, List<FileItem>> fieldFilesMap) throws Exception {
+    CmsHtmlMail email = new CmsHtmlMail();
+    email.setFrom(from);
+    email.addTo(to);
+    email.setSubject(subject);
+    email.setMsg(message);
+    email.setCharset("UTF-8");
+
+    Iterator<Map.Entry<String, List<FileItem>>> iterator = fieldFilesMap.entrySet().iterator();
+    while (iterator.hasNext()) {
+        Map.Entry<String, List<FileItem>> entry = iterator.next();
         String fieldName = entry.getKey();
         List<FileItem> fileItems = entry.getValue();
 
         for (int i = 0; i < fileItems.size(); i++) {
-            FileItem fileItem = fileItems.get(i);
+            FileItem fileItem = (FileItem) fileItems.get(i);
             String originalFileName = fileItem.getName();
             String extension = "";
             int dotIndex = originalFileName.lastIndexOf('.');
@@ -68,38 +51,42 @@ for (String emailAdmin : emailAddressAdmins) {
                 extension = originalFileName.substring(dotIndex);
             }
 
-            String newFileName = fieldName + "_" + i + extension;
+            String renamedFile = fieldName + "_" + i + extension;
             File tempFile = createTempFileFromInputStream(fileItem.getInputStream(), fieldName + "_" + i, extension);
-            tempFilesToDelete.add(tempFile);
 
             EmailAttachment attachment = new EmailAttachment();
             attachment.setPath(tempFile.getAbsolutePath());
+            attachment.setName(renamedFile);
             attachment.setDisposition(EmailAttachment.ATTACHMENT);
-            attachment.setName(newFileName);
-
             email.attach(attachment);
+
+            tempFile.deleteOnExit();
         }
     }
 
     email.send();
-
-    // Cleanup
-    for (File tempFile : tempFilesToDelete) {
-        tempFile.deleteOnExit();
-    }
 }
 
 
+            // Send to user
+if (!StringUtils.isEmpty(emailAddressUser)) {
+    sendEmail(
+        (String) emailAddressAdmins.get(0),
+        emailAddressUser,
+        mailSubject,
+        mailContentUser,
+        fieldFilesMap
+    );
+}
 
-            public File createTempFileFromInputStream(InputStream inputStream, String baseName, String extension) throws IOException {
-    File tempFile = File.createTempFile(baseName, extension);
-    FileOutputStream out = new FileOutputStream(tempFile);
-    byte[] buffer = new byte[1024];
-    int bytesRead;
-    while ((bytesRead = inputStream.read(buffer)) != -1) {
-        out.write(buffer, 0, bytesRead);
-    }
-    out.close();
-    inputStream.close();
-    return tempFile;
+// Send to admins
+for (int i = 0; i < emailAddressAdmins.size(); i++) {
+    String adminEmail = (String) emailAddressAdmins.get(i);
+    sendEmail(
+        emailAddressUser,
+        adminEmail,
+        adminMailSubject,
+        mailContent,
+        fieldFilesMap
+    );
 }
