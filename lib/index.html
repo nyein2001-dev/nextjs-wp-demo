@@ -1,3 +1,39 @@
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.querySelector('[data-submit-form]');
+  if (!form) return;
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(form); // Forces multipart/form-data
+    const submitUrl = form.getAttribute("data-url-submit");
+    const redirectUrl = form.getAttribute("data-url-redirect");
+
+    fetch(submitUrl, {
+      method: "POST",
+      body: formData,
+      // DO NOT manually set Content-Type!
+    })
+    .then(response => {
+      if (response.ok) {
+        if (redirectUrl) {
+          window.location.href = redirectUrl;
+        } else {
+          alert("Form submitted successfully!");
+        }
+      } else {
+        alert("Submission failed.");
+      }
+    })
+    .catch(error => {
+      console.error("Error submitting form:", error);
+    });
+  });
+});
+</script>
+
+
 <%@ page session="false" contentType="text/html;charset=UTF-8" %>
 <%@ page import="java.sql.*,
                  java.io.*,
