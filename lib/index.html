@@ -1,72 +1,105 @@
-Map<String, List<FileItem>> fieldFilesMap = new HashMap<>();
+// Assume this is a complete list of file inputs from request
+List<FileItem> uploadedFileItems = ...; // from FileUpload parser
 
-for (FileItem item : items) {
-    if (!item.isFormField()) {
-        String fieldName = item.getFieldName();
+// Send to user
+if (!StringUtils.isEmpty(emailAddressUser)) {
+    sendEmailWithAttachments(
+        emailAddressAdmins.get(0),
+        emailAddressUser,
+        mailSubject,
+        mailContentUser,
+        uploadedFileItems
+    );
+}
 
-        if (!fieldFilesMap.containsKey(fieldName)) {
-            fieldFilesMap.put(fieldName, new ArrayList<FileItem>());
+// Send to each admin
+for (String emailAdmin : emailAddressAdmins) {
+    sendEmailWithAttachments(
+        emailAddressUser,
+        emailAdmin,
+        adminMailSubject,
+        mailContent,
+        uploadedFileItems
+    );
+}
+
+
+
+    public void sendEmailWithAttachments(
+        String from,
+        String to,
+        String subject,
+        String message,
+        List<FileItem> uploadedFileItems
+) throws Exception {
+
+    CmsHtmlMail email = new CmsHtmlMail();
+    email.setMsg(message);
+    email.setSubject(subject);
+    email.setCharset("UTF-8");
+    email.setFrom(from);
+    email.addTo(to);
+
+    List<File> tempFilesToDelete = new ArrayList<File>();
+
+    // Group by field name and allow multiple files per field
+    Map<String, List<FileItem>> fieldMap = new HashMap<String, List<FileItem>>();
+    for (FileItem fileItem : uploadedFileItems) {
+        if (!fileItem.isFormField()) {
+            String fieldName = fileItem.getFieldName();
+            if (!fieldMap.containsKey(fieldName)) {
+                fieldMap.put(fieldName, new ArrayList<FileItem>());
+            }
+            fieldMap.get(fieldName).add(fileItem);
         }
-        fieldFilesMap.get(fieldName).add(item);
+    }
+
+    // Process and attach
+    for (Map.Entry<String, List<FileItem>> entry : fieldMap.entrySet()) {
+        String fieldName = entry.getKey();
+        List<FileItem> fileItems = entry.getValue();
+
+        for (int i = 0; i < fileItems.size(); i++) {
+            FileItem fileItem = fileItems.get(i);
+            String originalFileName = fileItem.getName();
+            String extension = "";
+            int dotIndex = originalFileName.lastIndexOf('.');
+            if (dotIndex > 0) {
+                extension = originalFileName.substring(dotIndex);
+            }
+
+            String newFileName = fieldName + "_" + i + extension;
+            File tempFile = createTempFileFromInputStream(fileItem.getInputStream(), fieldName + "_" + i, extension);
+            tempFilesToDelete.add(tempFile);
+
+            EmailAttachment attachment = new EmailAttachment();
+            attachment.setPath(tempFile.getAbsolutePath());
+            attachment.setDisposition(EmailAttachment.ATTACHMENT);
+            attachment.setName(newFileName);
+
+            email.attach(attachment);
+        }
+    }
+
+    email.send();
+
+    // Cleanup
+    for (File tempFile : tempFilesToDelete) {
+        tempFile.deleteOnExit();
     }
 }
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.mail.EmailAttachment;
-import org.opencms.mail.CmsHtmlMail;
-import org.apache.commons.io.FilenameUtils;
 
-...
 
-// Create the email
-CmsHtmlMail smToCs = new CmsHtmlMail();
-smToCs.setMsg(mailContentUser);
-smToCs.setSubject(mailSubject + " " + policyNumber);
-smToCs.setCharset("UTF-8");
-smToCs.setFrom("withdrawals@prulifeuk.com.ph");
-smToCs.addTo(emailAddressUser);
-
-// Store temp files to delete later
-List<File> tempFilesToDelete = new ArrayList<File>();
-
-// Process file uploads
-for (Map.Entry<String, List<FileItem>> entry : fieldFilesMap.entrySet()) {
-    String fieldName = entry.getKey();
-    List<FileItem> fileItems = entry.getValue();
-
-    for (int i = 0; i < fileItems.size(); i++) {
-        FileItem fileItem = fileItems.get(i);
-        String originalFileName = fileItem.getName();
-        if (originalFileName == null || originalFileName.isEmpty()) {
-            continue;
-        }
-
-        String extension = "";
-        int dotIndex = originalFileName.lastIndexOf('.');
-        if (dotIndex > 0) {
-            extension = originalFileName.substring(dotIndex);
-        }
-
-        // Rename with index if multiple
-        String newFileName = fieldName + "_" + i + extension;
-
-        // Create temp file
-        File tempFile = createTempFileFromInputStream(fileItem.getInputStream(), fieldName + "_" + i, extension);
-        tempFilesToDelete.add(tempFile);
-
-        EmailAttachment attachment = new EmailAttachment();
-        attachment.setPath(tempFile.getAbsolutePath());
-        attachment.setDisposition(EmailAttachment.ATTACHMENT);
-        attachment.setName(newFileName); // This sets the attachment name
-
-        smToCs.attach(attachment);
+            public File createTempFileFromInputStream(InputStream inputStream, String baseName, String extension) throws IOException {
+    File tempFile = File.createTempFile(baseName, extension);
+    FileOutputStream out = new FileOutputStream(tempFile);
+    byte[] buffer = new byte[1024];
+    int bytesRead;
+    while ((bytesRead = inputStream.read(buffer)) != -1) {
+        out.write(buffer, 0, bytesRead);
     }
-}
-
-// Send email
-smToCs.send();
-
-// Clean up temp files
-for (File file : tempFilesToDelete) {
-    file.deleteOnExit();
+    out.close();
+    inputStream.close();
+    return tempFile;
 }
