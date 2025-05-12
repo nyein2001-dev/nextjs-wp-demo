@@ -1,106 +1,72 @@
-<select id="contactType" name="contactType" class="form-control" required>
-    <option value="">-- Please select --</option>
-    <c:forEach var="option" items="${content.valueList.DropdownOption}">
-        <option value="${option.value.OptionId}" 
-            data-available="${option.value.IsAvailable}"
-                data-include-radio="${option.value.IncludeRadioSection}"
-                data-unavailable-text="${option.value.UnavailableText}"
-                <c:if test="${option.value.OptionId eq param.contactType}">selected</c:if>>
-            ${option.value.OptionName}
-        </option>
-    </c:forEach>
-</select>
+Map<String, List<FileItem>> fieldFilesMap = new HashMap<>();
 
-<c:forEach var="option" items="${content.valueList.DropdownOption}">
-    <div id="${option.value.OptionId}" class="dropdown-view" style="display:none;">
-        <p>${option.value.OptionName} View</p>
-    </div>
-</c:forEach>
+for (FileItem item : items) {
+    if (!item.isFormField()) {
+        String fieldName = item.getFieldName();
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const select = document.getElementById('contactType');
-    const views = document.querySelectorAll('.dropdown-view');
-    const unavailableText = document.getElementById('unavailable-text');
-
-    function showSelectedView() {
-        // Hide all views and the unavailable message
-        views.forEach(view => view.style.display = 'none');
-        unavailableText.style.display = 'none';
-        unavailableText.textContent = '';
-
-        const selectedOption = select.options[select.selectedIndex];
-        const selectedValue = selectedOption.value;
-
-        console.log('Selected value:', selectedValue);
-
-        if (selectedValue) {
-            const isAvailable = selectedOption.getAttribute('data-available') === 'true';
-            const text = selectedOption.getAttribute('data-unavailable-text') || 'This option is unavailable.';
-
-            console.log('Is available:', isAvailable);
-            console.log('Unavailable text:', text);
-
-            if (isAvailable) {
-                const selectedView = document.getElementById(selectedValue);
-                console.log('Selected view element:', selectedView);
-
-                if (selectedView) {
-                    selectedView.style.display = 'block';
-                    console.log('Showing view for:', selectedValue);
-                } else {
-                    console.log('No view found for:', selectedValue);
-                }
-            } else {
-                unavailableText.textContent = text;
-                unavailableText.style.display = 'block';
-                console.log('Showing unavailable text:', text);
-            }
-        } else {
-            console.log('No value selected');
+        if (!fieldFilesMap.containsKey(fieldName)) {
+            fieldFilesMap.put(fieldName, new ArrayList<FileItem>());
         }
+        fieldFilesMap.get(fieldName).add(item);
     }
+}
 
-    // Initial load
-    showSelectedView();
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.mail.EmailAttachment;
+import org.opencms.mail.CmsHtmlMail;
+import org.apache.commons.io.FilenameUtils;
 
-    // Change event
-    select.addEventListener('change', showSelectedView);
-});
-</script>
+...
 
+// Create the email
+CmsHtmlMail smToCs = new CmsHtmlMail();
+smToCs.setMsg(mailContentUser);
+smToCs.setSubject(mailSubject + " " + policyNumber);
+smToCs.setCharset("UTF-8");
+smToCs.setFrom("withdrawals@prulifeuk.com.ph");
+smToCs.addTo(emailAddressUser);
 
+// Store temp files to delete later
+List<File> tempFilesToDelete = new ArrayList<File>();
 
-<script>
-  const radios = document.querySelectorAll('input[type="radio"]');
-  radios.forEach(radio => {
-    radio.addEventListener('change', () => {
-      document.querySelectorAll('input[type="radio"]:checked').forEach(selectedRadio => {
-        // Get the radio's ID, not its value
-        const radioId = selectedRadio.id; // Changed from selectedRadio.value
-        
-        // Get the dropdown ID from the associated dropdown element
-        const dropdownId = selectedRadio.getAttribute('data-dropdown-id') || '';
-        
-        // Create the composite ID
-        const selectedId = `${radioId}_${dropdownId}`;
-        
-        // Log for debugging
-        console.log("Radio ID:", radioId);
-        console.log("Dropdown ID:", dropdownId);
-        console.log("Selected ID:", selectedId);
-        
-        const selectedView = document.getElementById(selectedId);
-        if (selectedView) {
-          selectedView.style.display = 'block';
-          console.log('Showing view for:', selectedId);
-        } else {
-          console.log('No element found with ID:', selectedId);
+// Process file uploads
+for (Map.Entry<String, List<FileItem>> entry : fieldFilesMap.entrySet()) {
+    String fieldName = entry.getKey();
+    List<FileItem> fileItems = entry.getValue();
+
+    for (int i = 0; i < fileItems.size(); i++) {
+        FileItem fileItem = fileItems.get(i);
+        String originalFileName = fileItem.getName();
+        if (originalFileName == null || originalFileName.isEmpty()) {
+            continue;
         }
-      });
-    });
-  });
-</script>
 
+        String extension = "";
+        int dotIndex = originalFileName.lastIndexOf('.');
+        if (dotIndex > 0) {
+            extension = originalFileName.substring(dotIndex);
+        }
 
+        // Rename with index if multiple
+        String newFileName = fieldName + "_" + i + extension;
 
+        // Create temp file
+        File tempFile = createTempFileFromInputStream(fileItem.getInputStream(), fieldName + "_" + i, extension);
+        tempFilesToDelete.add(tempFile);
+
+        EmailAttachment attachment = new EmailAttachment();
+        attachment.setPath(tempFile.getAbsolutePath());
+        attachment.setDisposition(EmailAttachment.ATTACHMENT);
+        attachment.setName(newFileName); // This sets the attachment name
+
+        smToCs.attach(attachment);
+    }
+}
+
+// Send email
+smToCs.send();
+
+// Clean up temp files
+for (File file : tempFilesToDelete) {
+    file.deleteOnExit();
+}
