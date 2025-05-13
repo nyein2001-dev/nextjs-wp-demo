@@ -1,659 +1,239 @@
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  const form = document.querySelector('[data-submit-form]');
-  if (!form) return;
-
-  form.addEventListener("submit", function (e) {
-    e.preventDefault();
-
-    const formData = new FormData(form); // Forces multipart/form-data
-    const submitUrl = form.getAttribute("data-url-submit");
-    const redirectUrl = form.getAttribute("data-url-redirect");
-
-    fetch(submitUrl, {
-      method: "POST",
-      body: formData,
-      // DO NOT manually set Content-Type!
-    })
-    .then(response => {
-      if (response.ok) {
-        if (redirectUrl) {
-          window.location.href = redirectUrl;
-        } else {
-          alert("Form submitted successfully!");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRU Life UK Contact Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
         }
-      } else {
-        alert("Submission failed.");
+
+        p {
+            margin: 10px 0;
+        }
+
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        .highlight {
+            color: #c00;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .underline {
+            text-decoration: underline;
+            text-decoration-color: #c00;
+            text-decoration-thickness: 2px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 8px 15px;
+            text-align: left;
+            border: 1px solid #ccc;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(odd) {
+            background-color: #e6e6e6;
+        }
+
+        @media (max-width: 600px) {
+            table {
+                font-size: 14px;
+            }
+            
+            th, td {
+                padding: 6px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p>Thank you for reaching out to us!</p>
+        
+        <p>We're excited to assist you. For the best support experience, please visit your nearest PRU Life UK branch<span class="underline">.</span> Our friendly team is ready to help you with all your needs.</p>
+        
+        <p>Find your nearest PRU Life UK branch <a href="https://www.prulifeuk.com.ph/en/contact-us/branch-general-agency-directory/" class="highlight">here</a>.</p>
+        
+        <p>You may also call our hotline numbers:</p>
+        
+        <table>
+            <tr>
+                <td>PLDT Metro Manila</td>
+                <td>+63 (2) 887 5433</td>
+            </tr>
+            <tr>
+                <td>Domestic Toll-free</td>
+                <td>1 800 10 PRULINK (1800 10 7785465)</td>
+            </tr>
+            <tr>
+                <td>Globe Metro Manila</td>
+                <td>+63 (2) 7793-5433</td>
+            </tr>
+            <tr>
+                <td>Globe Domestic Toll-free</td>
+                <td>1-800-82-785465</td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>
+
+PRUServices : https://pruservices.prulifeuk.com.ph/welcome
+
+-----------------------------------
+Pay premium / Credit card enrollment
+
+“PRUServices” will redirect user to  https://pruservices.prulifeuk.com.ph/welcome
+
+“Payment link page” will redirect user to https://www.prulifeuk.com.ph/en/payments/
+
+-----------------------------------
+Increase sum assured, Increase in premium
+
+Policy Amendment Request Form for Individual Policyowner  :   https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2022_Policy-Amendment-Request-Form-for-Individual-PO-FILLABLE-v2.pdf
+
+Policy Amendment Request Form for Corporate/Entity Policyowner  :  https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2022_Policy-Amendment-Request-Form-for-Corporate_Entity-PO-FILLABLE-v2.pdf
+
+----------------------------------  
+Reinstatement
+
+Reinstatement form for Individual Policyowner :  https:/www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2022_Reinstatement-form-for-individual-PO-FILLABLE-v2.pdf
+
+Reinstatement form for Corporate/ Entity Policyowner :  https:/www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2022_Reinstatement-form-for-Corporate-Entity-PO-FILLABLE-V2.pdf
+
+Payment facilities : https://www.prulifeuk.com.ph/en/policy-services-information/premium-payment-facilities/
+
+Payment link:   https://www.prulifeuk.com.ph/en/payments/
+
+-----------------------------------------
+Increase sum assured, Increase in premium
+
+Policy Amendment Request Form for Individual Policyowner  :  https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2022_Policy-Amendment-Request-Form-for-Individual-PO-FILLABLE-v2.pdf
+
+Policy Amendment Request Form for Corporate/Entity Policyowner  :  https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2022_Policy-Amendment-Request-Form-for-Corporate_Entity-PO-FILLABLE-v2.pdf
+
+-----------------------------------------
+Inclusion of Rider / Deletion of rider
+
+Policy Amendment Request Form for Individual Policyowner :  
+
+Policy Amendment Request Form for Corporate/Entity Policyowner 
+
+---------------------------------------------
+Top-up
+
+Top-up form  :  https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/prulink-application-for-top-up-form.pdf
+
+Mode of Release form  :  https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/Mode-of-Release-Form.pdf
+
+payment facilities  :   https://www.prulifeuk.com.ph/en/policy-services-information/premium-payment-facilities/ 
+
+-------------------------------------------
+Dividend withdrawal
+
+Partial Benefits Payout Form : https://pruo365.sharepoint.com/:b:/s/SPEEDBOATPROJECTTEAM/EXO4RNA49dlLo30lPGPDc7wB2omSayhUzTeDH94UkSmxvg?e=XRWCJs
+
+------------------------------------------
+Change method of payment (ADA, Direct debit)
+
+BDO: https:/www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/BDO-ADA-Enrollment-form.pdf
+HSBC: https:/www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/HSBC-ADA-Enrollment-form.pdf
+
+Privacy Notice and Consent form : https://pruo365.sharepoint.com/sites/SPEEDBOATPROJECTTEAM/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FSPEEDBOATPROJECTTEAM%2FShared%20Documents%2FPROJECT%20SPEEDBOAT%2FCONTACT%20CENTER%2FContact%2EUs%20in%20Website%2FContact%20Us%20Page%20%2D%20Phase%201%20%28No%20STP%29%2FForms%2FPrivacy%20Notice%20and%20Consent%20Form%201%2Epdf&parent=%2Fsites%2FSPEEDBOATPROJECTTEAM%2FShared%20Documents%2FPROJECT%20SPEEDBOAT%2FCONTACT%20CENTER%2FContact%2EUs%20in%20Website%2FContact%20Us%20Page%20%2D%20Phase%201%20%28No%20STP%29%2FForms&p=true&ga=1
+
+---------------------------------------------
+Fund switch / Premium redirection
+
+PRULink Application for  Premium Redirection and Fund Switch Form : https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/Mode-of-Release-Form.pdf
+
+Mode of Release form : https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/Mode-of-Release-Form.pdf
+
+-------------------------------------------
+User Email Template
+
+Subject line Format: 
+Web Request: <Type of Requested Link> - PN: <12345678>
+
+We have received your request.
+
+Thank you for contacting us. Our customer service team will be in touch with you. Here are the details of your request:
+
+------------------------------------
+Admin Email Template
+	
+Web Request:<Transaction> - PN: <12345678>
+
+You have a new request.
+
+You have received a new request. Please view details of the enquiry below.
+
+DETAILS OF TRANSACTION
+---------------------------------------------
+
+<script>
+const form = document.querySelector('.dynamic-form-submission');
+
+if (form) {
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const formData = new FormData(form);
+    const redirectURL = this.getAttribute('data-url-redirect');
+
+    $.ajax({
+      url: this.getAttribute('data-url-submit'),
+      type: 'POST',
+      data: formData,
+      processData: false, // Do not process FormData
+      contentType: false, // Let browser set multipart/form-data with boundary
+      success: function (data) {
+        try {
+          const response = JSON.parse(data.trim());
+          if (response.statusCode === 200) {
+            window.location.href = redirectURL;
+          } else {
+            console.error('Submission failed:', response);
+          }
+        } catch (e) {
+          console.error('Error parsing response:', e);
+        }
+      },
+      error: function (error) {
+        console.error('AJAX error:', error);
       }
-    })
-    .catch(error => {
-      console.error("Error submitting form:", error);
     });
   });
-});
+}
 </script>
 
 
-<%@ page session="false" contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.sql.*,
-                 java.io.*,
-                 java.net.*,
-                 javax.net.*,
-                 org.json.JSONObject,
-                 org.opencms.main.OpenCms,
-                 org.apache.commons.logging.Log,
-                 org.opencms.main.CmsLog,
-                 org.apache.commons.lang.StringUtils,
-                 java.util.*,
-                 org.opencms.jsp.util.*,
-                 java.io.IOException,
-                 java.text.*,
-                 org.apache.commons.fileupload.FileItem,
-                 org.apache.commons.fileupload.*,
-                 org.apache.commons.fileupload.disk.*,
-                 org.apache.commons.fileupload.servlet.*" %>
-<%@ page import="org.opencms.mail.CmsHtmlMail"%>
-<%@page import="java.util.Locale" %>
-<%@page import="org.opencms.jsp.CmsJspActionElement"%>
-<%@ page import="org.apache.commons.io.FilenameUtils" %>
-<%@ page import="org.apache.commons.mail.EmailAttachment" %>
-<%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
-<%@page import="javax.xml.bind.DatatypeConverter"%>
-<%@page import="org.opencms.jsp.*, org.opencms.file.*, org.opencms.flex.*,org.opencms.util.*, java.util.*" %>
-<c:set var="locale" value="${cms.locale}" />
-<fmt:setLocale value="${param.language}" />
-
-<%
-//paramSelectTopic
-String paramSelectTopic = StringUtils.isEmpty(request.getParameter("selectTopic")) ? "" : request.getParameter("selectTopic");
-String[] paramSelectTopics = paramSelectTopic.split("&&");
 
 
-String paramSelectTopic2 = StringUtils.isEmpty(request.getParameter("selectTopic2")) ? "" : request.getParameter("selectTopic2");
-String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
-%>
 
-<cms:bundle basename="com.prudential.v2.ph.default">
-  <c:set var="productTitle"><fmt:message key="key.default.have.productTitle" /></c:set>
-  <c:set var="noProductTitle"><fmt:message key="key.default.none.productTitle" /></c:set>
-  <c:set var="adminMailSubject"><fmt:message key="key.default.admin.mail.subject" /></c:set>
-  <c:set var="paramSelectTopics"><%=paramSelectTopics[0]%></c:set>
-  <c:set var="emailEnquiry" value=""/>
-  <c:if test="${not empty paramSelectTopics}">
-  	<c:set var="emailEnquiry"><fmt:message key="key.mail.selected.enquiry.${paramSelectTopics}" /></c:set>
-  </c:if>
-</cms:bundle>
-<%!
-	public String A1filter(String input){
-	    String tem = input;
-	    tem = tem.replaceAll("<", "&lt;");
-	    tem = tem.replaceAll(">", "&gt;");
-	    tem = tem.replaceAll("&", "&amp;");
-	    tem = tem.replaceAll("\"", "&quot;");
-	    tem = tem.replaceAll(" ", "&nbsp;");
-	    tem = tem.replaceAll("'", "&#39;");
-	    return tem;
-	}
-    public String A1filterHidden(String input,String temp){
-	    String tem = temp;
-	    String tmpinput = "content:'" + input + "'; mso-hide:all;display:none;";
-	    tem = tem.replaceAll(tmpinput, "");
-	    return tem;
-    }
-    public  String A1filter(String input,String value,String temp){
-        String tem = temp;
-        tem = tem.replaceAll(input, value);
-        return tem;
-    }
-    public String A1filterNoProductTitle(String productTitleName,String temp,String noProductTitle){
-        String tem = temp;
-        tem = tem.replaceAll(productTitleName, noProductTitle);
-        return tem;
-    }
-    public String responeObject(int statusCode,String message) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{");
-        sb.append("\"statusCode\":").append(statusCode).append(",");
-        sb.append("\"message\":\"").append(message).append("\"");
-        sb.append("}");
-        return sb.toString();
-    }
-	
-    /**
-     * Creates a temporary file from an input stream
-     * Compatible with pre-Java 7 environments
-     */
-    public static File createTempFileFromInputStream(InputStream inputStream, String prefix, String suffix) throws IOException {
-        File tempFile = File.createTempFile(prefix, suffix);
-        tempFile.deleteOnExit(); // Ensure temp file is deleted when JVM exits
-        
-        FileOutputStream out = null;
-        try {
-            out = new FileOutputStream(tempFile);
-            byte[] buffer = new byte[8192]; // Larger buffer for better performance
-            int bytesRead;
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
-            }
-            out.flush();
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    System.out.println("Error closing output stream: " + e.getMessage());
-                }
-            }
-        }
-        return tempFile;
-    }
 
-    /**
-     * Send email with attachments
-     * Compatible with OpenCms 9.5.1 and pre-Java 7 environments
-     */
-    public static void sendEmail(String from, String to, String subject, String message, Map<String, List<FileItem>> fieldFilesMap) throws Exception {
-        System.out.println("Sending email from: " + from + " to: " + to);
-        System.out.println("Subject: " + subject);
-        
-        // Create and configure the email
-        CmsHtmlMail email = new CmsHtmlMail();
-        email.setFrom(from);
-        email.addTo(to);
-        email.setSubject(subject);
-        email.setHtmlMsg(message); // Use HTML format to preserve formatting
-        email.setCharset("UTF-8");
 
-        int attachmentCount = 0;
-        List<File> tempFiles = new ArrayList<File>(); // Track temp files for cleanup
-        
-        // Handle file attachments if any exist
-        if (fieldFilesMap != null && !fieldFilesMap.isEmpty()) {
-            System.out.println("Processing " + fieldFilesMap.size() + " file fields for attachment");
-            
-            // Process each field that contains files
-            for (Map.Entry<String, List<FileItem>> entry : fieldFilesMap.entrySet()) {
-                String fieldName = entry.getKey();
-                List<FileItem> fileItems = entry.getValue();
-                
-                if (fileItems == null || fileItems.isEmpty()) {
-                    System.out.println("No files for field: " + fieldName);
-                    continue;
-                }
-                
-                System.out.println("Processing field: " + fieldName + ", files: " + fileItems.size());
-                
-                // Process each file within the field
-                for (int i = 0; i < fileItems.size(); i++) {
-                    FileItem fileItem = fileItems.get(i);
-                    
-                    // Skip if not a file or if file is empty
-                    if (fileItem.isFormField()) {
-                        System.out.println("Skipping form field (not a file): " + fieldName);
-                        continue;
-                    }
-                    
-                    if (fileItem.getSize() <= 0) {
-                        System.out.println("Skipping empty file: " + fieldName);
-                        continue;
-                    }
-                    
-                    String fileName = fileItem.getName();
-                    if (fileName == null || fileName.trim().isEmpty()) {
-                        System.out.println("Skipping file with no name: " + fieldName);
-                        continue;
-                    }
-                    
-                    // Extract filename without path information (handles different browser formats)
-                    fileName = new File(fileName).getName();
-                    System.out.println("Processing file: " + fileName + " (" + fileItem.getSize() + " bytes)");
-                    
-                    // Get file extension for temporary file
-                    String extension = "";
-                    int dotIndex = fileName.lastIndexOf('.');
-                    if (dotIndex > 0) {
-                        extension = fileName.substring(dotIndex);
-                    }
-                    
-                    InputStream fileStream = null;
-                    try {
-                        // Get the file data
-                        fileStream = fileItem.getInputStream();
-                        
-                        // Create a temporary file
-                        File tempFile = createTempFileFromInputStream(
-                            fileStream,
-                            "attachment_" + fieldName + "_" + i + "_",
-                            extension
-                        );
-                        tempFiles.add(tempFile); // Track for cleanup
-                        
-                        if (!tempFile.exists() || tempFile.length() == 0) {
-                            System.out.println("Error: Temp file was not created or is empty: " + tempFile.getAbsolutePath());
-                            continue;
-                        }
-                        
-                        System.out.println("Created temp file: " + tempFile.getAbsolutePath() + " (" + tempFile.length() + " bytes)");
-                        
-                        // Create and configure the attachment
-                        EmailAttachment attachment = new EmailAttachment();
-                        attachment.setPath(tempFile.getAbsolutePath());
-                        attachment.setName(fileName); // Use original filename
-                        attachment.setDisposition(EmailAttachment.ATTACHMENT);
-                        attachment.setDescription("Attached file: " + fileName);
-                        
-                        // Add to email
-                        email.attach(attachment);
-                        attachmentCount++;
-                        System.out.println("Successfully attached: " + fileName);
-                    } catch (Exception e) {
-                        System.out.println("Error processing attachment: " + e.getMessage());
-                        e.printStackTrace();
-                    } finally {
-                        if (fileStream != null) {
-                            try {
-                                fileStream.close();
-                            } catch (IOException e) {
-                                // Ignore
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Send the email
-        try {
-            System.out.println("Sending email with " + attachmentCount + " attachment(s)");
-            email.send();
-            System.out.println("Email sent successfully to: " + to);
-        } catch (Exception e) {
-            System.out.println("Failed to send email: " + e.getMessage());
-            e.printStackTrace();
-            throw e; // Re-throw after logging
-        } finally {
-            // Clean up temp files
-            for (File file : tempFiles) {
-                try {
-                    if (file.exists()) {
-                        boolean deleted = file.delete();
-                        if (!deleted) {
-                            System.out.println("Note: Temp file deletion deferred: " + file.getAbsolutePath());
-                        }
-                    }
-                } catch (Exception e) {
-                    System.out.println("Failed to delete temp file: " + e.getMessage());
-                }
-            }
-        }
-    }
-%>
-<%
-        CmsJspActionElement cms = new CmsJspActionElement(pageContext, request, response);
-        CmsObject cmsObject = cms.getCmsObject();
-        Locale locale = cms.getRequestContext().getLocale(); 
-        String productTitleParam = pageContext.getAttribute("productTitle").toString();
-        String noProductTitleParam = pageContext.getAttribute("noProductTitle").toString();
-        // get file xml content
-        String pathFile = request.getParameter("file-path");
-        byte[] valueDecoded = DatatypeConverter.parseBase64Binary(pathFile);
-        String pathFileXml = new String(valueDecoded, "UTF-8");
-        CmsResource contentRs = cmsObject.readResource(pathFileXml);
-        CmsJspContentAccessBean componentPros = new CmsJspContentAccessBean(cmsObject, locale, contentRs);
-        // get option send mail 
-        String SendEmail = componentPros.getValue().get("EmailAndDB").getValue().get("SendEmail").getStringValue();
-        Boolean isSendEmail = Boolean.valueOf(SendEmail);
-        // get content tempalate mail admin
-        String templateContentAdmin = componentPros.getValue().get("EmailAndDB").getValue().get("EmailContentAdmins").getStringValue();
-        CmsResource resource = cmsObject.readResource(templateContentAdmin);
-        CmsFile file = cmsObject.readFile(resource);
-        byte[] contentAdmin = file.getContents();
-        Map<String, List<FileItem>> fieldFilesMap = new HashMap<String, List<FileItem>>();
 
-        String mailContent = new String(contentAdmin);	
-		
-        // get content tempalate mail user
-        String templateContentUser = componentPros.getValue().get("EmailAndDB").getValue().get("EmailContentEndUser").getStringValue();
-        CmsResource resourceUser = cmsObject.readResource(templateContentUser);
-        CmsFile fileUser = cmsObject.readFile(resourceUser);
-        byte[] contentUser = fileUser.getContents();
-        String mailContentUser = new String(contentUser);
-        // mail admin in dialog
-        String emailAddressAdmin = componentPros.getValue().get("EmailAndDB").getValue().get("EmailAddress").getStringValue();
-        // mail user in xml file
-        String emailAddressUser  =  "";
-        // mail subject
-        String topic = StringUtils.isEmpty(paramSelectTopic) ? "" : paramSelectTopics[1];
-        String topic2 = StringUtils.isEmpty(paramSelectTopic2) ? "" : paramSelectTopics2[1];
-        String adminMailSubject = pageContext.getAttribute("adminMailSubject").toString();
-        adminMailSubject = adminMailSubject.replace("#Topic#", topic);
-        String mailSubject = componentPros.getValue().get("EmailAndDB").getValue().get("EmailSubject").getStringValue();
-        mailSubject = mailSubject.replace("#Topic#", topic);
 
-        String adminMailSubject2 = componentPros.getValue().get("EmailAndDB").getValue().get("AdminEmailSubject").getStringValue();
-        if(!StringUtils.isEmpty(adminMailSubject2))
-        {		
-            adminMailSubject2 = adminMailSubject2.replace("#Topic#", topic);
-            adminMailSubject = adminMailSubject2;
-        }
-		
-        // messge send mail fails
-        String errMesageSendMailFails = componentPros.getValue().get("GeneralForm").getValue().get("GenericErrorMessage").getStringValue();
-        // Section Title 1
-        String section1 = componentPros.getValue().get("Section1").getValue().get("SectionTitle").getStringValue();
-        if(!StringUtils.isEmpty(section1)){
-            String temp = "%class" + "Section1" + "%";
-            mailContent = A1filterHidden(temp, mailContent);
-            mailContentUser = A1filterHidden(temp, mailContentUser);
-        }
-        // Section Label 2
-        String section2 = componentPros.getValue().get("Section2").getValue().get("SectionLabel").getStringValue();
-        if(!StringUtils.isEmpty(section2)){
-            String temp = "%class" + "Section2" + "%";
-            mailContent = A1filterHidden(temp, mailContent);
-            mailContentUser = A1filterHidden(temp, mailContentUser);
-        }
-        // Section Label 3
-        String section3 = componentPros.getValue().get("Section3").getValue().get("SectionLabel").getStringValue();
-        if(!StringUtils.isEmpty(section3)){
-            String temp = "%class" + "Section3" + "%";
-            mailContent = A1filterHidden(temp, mailContent);
-            mailContentUser = A1filterHidden(temp, mailContentUser);
-        }
-        // Section Label 5
-        String section5 = componentPros.getValue().get("Section5").getValue().get("SectionLabel").getStringValue();
-        if(!StringUtils.isEmpty(section5)){
-            String temp = "%class" + "Section5" + "%";
-            mailContent = A1filterHidden(temp, mailContent);
-            mailContentUser = A1filterHidden(temp, mailContentUser);
-        } 
-        
-        if(isSendEmail){
-            try{
-                // Process form fields first
-                Enumeration<?> enumeration = request.getParameterNames();
-                String firstName = "";
-                String lastName = "";
-                String policy_number = "";
-                String marketingConsent = "";
-                
-                while(enumeration.hasMoreElements()){
-                    String parameterName = enumeration.nextElement().toString();
-                    String value = "";
-                    if(parameterName.equals("selectTopic")){
-                      value = topic;
-                    }else{
-                        value = A1filter(request.getParameter(parameterName));
-                    }
-                    if(parameterName.equals("selectTopic2")){
-                      value = topic2;
-                    }
-                    if(!StringUtils.isEmpty(value)) {
-                        String temp = "%class" + parameterName + "%";
-                        mailContent = A1filterHidden(temp, mailContent);
-                        mailContentUser = A1filterHidden(temp, mailContentUser);
-                        mailContent = A1filter("%" + parameterName + "%", value, mailContent);
-                        mailContentUser = A1filter("%" + parameterName + "%", value, mailContentUser);
-                    }
-                    // get first name
-                    if("first-name".equals(parameterName)){
-                        firstName = value;
-                    }
-                    // get last name
-                    if("last-name".equals(parameterName)){
-                        lastName = value;
-                    }
-                    // mail user in form
-                    if("email-address".equals(parameterName)) {
-                       emailAddressUser = value;
-                    }
-                    // product title
-                    if("product-title".equals(parameterName)) {
-                       String nameTitle = "%key-" + parameterName + "%";
-                       if(StringUtils.isEmpty(value)) {
-                           mailContent =  A1filterNoProductTitle(nameTitle,mailContent,noProductTitleParam);
-                           mailContentUser =  A1filterNoProductTitle(nameTitle,mailContentUser,noProductTitleParam);
-                       } else {
-                           String productTitle = productTitleParam + " " + value;
-                           mailContent = A1filter(nameTitle,productTitle,mailContent);
-                           mailContentUser = A1filter(nameTitle,productTitle,mailContentUser);
-                       }
-                    }
-                    
-                    if("policy-number".equals(parameterName)) {
-                       policy_number = value;
-                    }
-                    if("marketingConsent".equals(parameterName)) {
-                       marketingConsent = "Yes";
-                    }
-                }
-                
-                // Process file uploads if this is a multipart request
-                if (ServletFileUpload.isMultipartContent(request)) {
-                    System.out.println("Processing multipart form data for file attachments");
-                    
-                    // Configure file upload settings
-                    DiskFileItemFactory factory = new DiskFileItemFactory();
-                    // Set factory constraints
-                    factory.setSizeThreshold(4096); // 4KB
-                    File tempDir = new File(System.getProperty("java.io.tmpdir"));
-                    factory.setRepository(tempDir);
-                    
-                    // Create a new file upload handler
-                    ServletFileUpload upload = new ServletFileUpload(factory);
-                    // Set overall request size constraint if needed
-                    // upload.setSizeMax(10485760); // 10MB
-                    
-                    try {
-                        // Parse the request
-                        List<FileItem> items = upload.parseRequest(request);
-                        
-                        // Process the uploaded items
-                        for (FileItem item : items) {
-                            if (!item.isFormField()) {
-                                String fieldName = item.getFieldName();
-                                String fileName = item.getName();
-                                
-                                // Only process if we have a valid file
-                                if (fileName != null && !fileName.isEmpty() && item.getSize() > 0) {
-                                    System.out.println("Found file upload: " + fieldName + ", filename: " + fileName + ", size: " + item.getSize());
-                                    
-                                    // Store in our map for later attachment
-                                    if (!fieldFilesMap.containsKey(fieldName)) {
-                                        fieldFilesMap.put(fieldName, new ArrayList<FileItem>());
-                                    }
-                                    fieldFilesMap.get(fieldName).add(item);
-                                }
-                            } else {
-                                // Process form fields from multipart data
-                                // This is for cases where the form is multipart but we still need the form fields
-                                String fieldName = item.getFieldName();
-                                String value = item.getString("UTF-8");
-                                
-                                // Only process if not already handled above and not empty
-                                if (!request.getParameterMap().containsKey(fieldName) && !StringUtils.isEmpty(value)) {
-                                    value = A1filter(value);
-                                    
-                                    if(fieldName.equals("selectTopic")){
-                                        value = topic;
-                                    }
-                                    if(fieldName.equals("selectTopic2")){
-                                        value = topic2;
-                                    }
-                                    
-                                    String temp = "%class" + fieldName + "%";
-                                    mailContent = A1filterHidden(temp, mailContent);
-                                    mailContentUser = A1filterHidden(temp, mailContentUser);
-                                    mailContent = A1filter("%" + fieldName + "%", value, mailContent);
-                                    mailContentUser = A1filter("%" + fieldName + "%", value, mailContentUser);
-                                    
-                                    // Handle specific fields
-                                    if("first-name".equals(fieldName)) {
-                                        firstName = value;
-                                    }
-                                    if("last-name".equals(fieldName)) {
-                                        lastName = value;
-                                    }
-                                    if("email-address".equals(fieldName)) {
-                                        emailAddressUser = value;
-                                    }
-                                    if("policy-number".equals(fieldName)) {
-                                        policy_number = value;
-                                    }
-                                    if("marketingConsent".equals(fieldName)) {
-                                        marketingConsent = "Yes";
-                                    }
-                                }
-                            }
-                        }
-                        
-                        System.out.println("Processed " + fieldFilesMap.size() + " file fields");
-                        
-                    } catch (Exception e) {
-                        System.out.println("Error processing file uploads: " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                }
-                
-                // Handle marketing consent default value
-                if(StringUtils.isEmpty(marketingConsent)) {
-                    mailContent = mailContent.replace("%marketingConsent2%", "No");
-                    mailContentUser = mailContentUser.replace("%marketingConsent2%", "No");
-                } else {
-                    mailContent = mailContent.replace("%marketingConsent2%", "Yes");
-                    mailContentUser = mailContentUser.replace("%marketingConsent2%", "Yes");				
-                }
-                
-                // Handle policy number default value
-                if(StringUtils.isEmpty(policy_number)) {
-                    mailContent = mailContent.replace("%policy-number%", "-");
-                    mailContentUser = mailContentUser.replace("%policy-number%", "-");
-                }
-                
-                // Format full name
-                String fullName = firstName + " " + lastName;
-                if(!StringUtils.isEmpty(fullName.trim())){
-                    String temp = "%class" + "fullName" + "%";
-                    mailContent = A1filterHidden(temp, mailContent);
-                    mailContentUser = A1filterHidden(temp, mailContentUser);
-                    mailContent = A1filter("%" + "fullName" + "%", fullName, mailContent);
-                    mailContentUser = A1filter("%" + "fullName" + "%", fullName, mailContentUser);
-                }
-                
-                // Get admin email addresses
-                List<String> emailAddressAdmins = new ArrayList<String>();
-                String emailEnquiry = pageContext.getAttribute("emailEnquiry").toString();
-                if(!StringUtils.isEmpty(emailEnquiry) && !StringUtils.isEmpty(paramSelectTopic)){
-                  emailAddressAdmins = Arrays.asList(emailEnquiry.split(","));
-                }else{
-                  emailAddressAdmins = Arrays.asList(emailAddressAdmin.split(","));
-                }
-                
-                // Add attachment information to email body if files were uploaded
-                if (!fieldFilesMap.isEmpty()) {
-                    StringBuilder attachmentInfo = new StringBuilder();
-                    attachmentInfo.append("<div style=\"margin-top:20px; border-top:1px solid #ccc; padding-top:15px;\">");
-                    attachmentInfo.append("<p style=\"font-weight:bold; margin-bottom:10px;\">Attachments:</p><ul style=\"margin-left:15px;\">");
-                    
-                    int totalFiles = 0;
-                    
-                    for (Map.Entry<String, List<FileItem>> entry : fieldFilesMap.entrySet()) {
-                        String fieldName = entry.getKey();
-                        List<FileItem> fileItems = entry.getValue();
-                        
-                        for (FileItem item : fileItems) {
-                            if (item.getName() != null && !item.getName().isEmpty() && item.getSize() > 0) {
-                                String fileName = new File(item.getName()).getName();
-                                totalFiles++;
-                                
-                                // Format file size nicely
-                                String fileSize;
-                                long size = item.getSize();
-                                if (size < 1024) {
-                                    fileSize = size + " bytes";
-                                } else if (size < 1024 * 1024) {
-                                    fileSize = String.format("%.1f KB", size / 1024.0);
-                                } else {
-                                    fileSize = String.format("%.1f MB", size / (1024.0 * 1024));
-                                }
-                                
-                                attachmentInfo.append("<li style=\"margin-bottom:5px;\">")
-                                             .append("<strong>").append(fileName).append("</strong>")
-                                             .append(" (").append(fileSize).append(")")
-                                             .append(" - Field: ").append(fieldName)
-                                             .append("</li>");
-                            }
-                        }
-                    }
-                    
-                    attachmentInfo.append("</ul>");
-                    
-                    if (totalFiles == 0) {
-                        // No valid files found despite having entries in fieldFilesMap
-                        System.out.println("No valid files found to include in email body");
-                    } else {
-                        attachmentInfo.append("<p style=\"font-style:italic; margin-top:10px;\">")
-                                     .append("Total ").append(totalFiles).append(" file(s) attached to this email.")
-                                     .append("</p>");
-                    }
-                    
-                    attachmentInfo.append("</div>");
-                    
-                    // Add the attachment information to admin email
-                    mailContent = mailContent + attachmentInfo.toString();
-                    // Also add to user email
-                    mailContentUser = mailContentUser + attachmentInfo.toString();
-                    
-                    System.out.println("Added attachment information to email body: " + totalFiles + " file(s)");
-                } else {
-                    System.out.println("No files to add to email body");
-                }
-                
-                // Send email to user if we have their address
-                if(!StringUtils.isEmpty(emailAddressUser)){
-                    try {
-                        sendEmail(
-                            (String) emailAddressAdmins.get(0),
-                            emailAddressUser,
-                            mailSubject,
-                            mailContentUser,
-                            fieldFilesMap
-                        );
-                        System.out.println("Email sent to user: " + emailAddressUser);
-                    } catch (Exception e) {
-                        System.out.println("Failed to send email to user: " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                }
-                
-                // Send emails to admins
-                for (String emailAdmin : emailAddressAdmins) {
-                    try {
-                        sendEmail(
-                            emailAddressUser,
-                            emailAdmin,
-                            adminMailSubject,
-                            mailContent,
-                            fieldFilesMap
-                        );
-                        System.out.println("Email sent to admin: " + emailAdmin);
-                    } catch (Exception e) {
-                        System.out.println("Failed to send email to admin " + emailAdmin + ": " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                }
-                
-                out.print(responeObject(200, "Send mail success"));
-                
-            } catch(Exception e) {
-                System.out.println("Error in contact form processing: " + e.getMessage());
-                e.printStackTrace();
-                out.print(responeObject(500, errMesageSendMailFails));  
-            }
-        } else {
-            out.print(responeObject(200, "Send mail success"));
-        }
-%>
+
+
