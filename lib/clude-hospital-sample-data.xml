@@ -1,3 +1,10 @@
+String pathFile = request.getParameter("file-path");
+if (pathFile == null || pathFile.trim().isEmpty()) {
+    // Handle the error - either provide a default value or return an error response
+    out.print(responeObject(400, "Missing file-path parameter"));
+    return; // Exit processing
+}
+
 <%@ page import="java.io.*,
                  java.util.*,
                  java.text.SimpleDateFormat,
