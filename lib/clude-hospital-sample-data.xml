@@ -1,3 +1,294 @@
+/**
+ * Complete Form Data Transmission Handler for OpenCms
+ * 
+ * This script ensures ALL form data is properly collected and transmitted to new-contact-form.jsp:
+ * 1. Captures all form fields (text, select, checkbox, radio, hidden, file)
+ * 2. Handles dynamically added fields
+ * 3. Preserves field names exactly as expected by the JSP
+ * 4. Ensures proper multipart/form-data encoding
+ * 5. Provides detailed logging for troubleshooting
+ */
+(function() {
+  document.addEventListener('DOMContentLoaded', function() {
+    // Find the form
+    const form = document.querySelector('.dynamic-form-submission');
+    
+    if (!form) {
+      console.error('Form with class .dynamic-form-submission not found');
+      return;
+    }
+    
+    // Get the submission URL and redirect URL
+    const submitUrl = form.getAttribute('data-url-submit');
+    const redirectUrl = form.getAttribute('data-url-redirect');
+    
+    if (!submitUrl) {
+      console.error('Form submission URL is missing');
+      return;
+    }
+    
+    // Find or create progress and notification elements
+    const progressContainer = document.querySelector('.loader') || createProgressElement();
+    const notificationElement = document.querySelector('[data-notification]') || createNotificationElement();
+    
+    // Function to handle form submission
+    function handleFormSubmit(event) {
+      // Prevent default form submission
+      event.preventDefault();
+      
+      console.log('Form submission intercepted');
+      
+      try {
+        // Always ensure the correct enctype
+        form.setAttribute('enctype', 'multipart/form-data');
+        
+        // Create FormData object from the form
+        const formData = new FormData(form);
+        
+        // Log all form data for debugging
+        console.log('Form data being submitted:');
+        logFormData(formData);
+        
+        // Check for file inputs specifically
+        const fileInputs = form.querySelectorAll('input[type="file"]');
+        let hasFiles = false;
+        
+        fileInputs.forEach(input => {
+          if (input.files && input.files.length > 0) {
+            hasFiles = true;
+            console.log(`File input ${input.name} contains ${input.files.length} file(s)`);
+            for (let i = 0; i < input.files.length; i++) {
+              console.log(`- File: ${input.files[i].name}, Size: ${input.files[i].size} bytes, Type: ${input.files[i].type}`);
+            }
+          } else {
+            console.log(`File input ${input.name} has no files selected`);
+          }
+        });
+        
+        // Show progress indicator
+        showProgress();
+        
+        // Create and configure XMLHttpRequest
+        const xhr = new XMLHttpRequest();
+        
+        // Setup progress tracking
+        xhr.upload.addEventListener('progress', function(e) {
+          if (e.lengthComputable) {
+            const percentComplete = (e.loaded / e.total) * 100;
+            console.log(`Upload progress: ${percentComplete.toFixed(2)}%`);
+          }
+        });
+        
+        xhr.addEventListener('load', function() {
+          hideProgress();
+          
+          console.log(`Server response status: ${xhr.status}`);
+          console.log(`Server response text: ${xhr.responseText}`);
+          
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              // Parse the response
+              const response = JSON.parse(xhr.responseText.trim());
+              
+              console.log('Parsed response:', response);
+              
+              if (response.statusCode === 200) {
+                console.log('Form submitted successfully, redirecting to:', redirectUrl);
+                // Success - redirect if URL is provided
+                if (redirectUrl) {
+                  window.location.href = redirectUrl;
+                } else {
+                  showNotification('Form submitted successfully!', false);
+                }
+              } else {
+                // Server returned an error
+                console.error('Server returned error:', response);
+                showNotification(response.message || 'An error occurred during form submission.', true);
+              }
+            } catch (e) {
+              console.error('Error parsing response:', e, 'Raw response:', xhr.responseText);
+              showNotification('An unexpected error occurred. Please try again.', true);
+            }
+          } else {
+            // HTTP error
+            console.error(`HTTP error: ${xhr.status} ${xhr.statusText}`);
+            showNotification(`Server error: ${xhr.status} ${xhr.statusText}`, true);
+          }
+        });
+        
+        xhr.addEventListener('error', function(e) {
+          console.error('XHR error:', e);
+          hideProgress();
+          showNotification('Network error. Please check your connection and try again.', true);
+        });
+        
+        xhr.addEventListener('abort', function() {
+          console.log('XHR aborted');
+          hideProgress();
+          showNotification('Form submission was aborted.', true);
+        });
+        
+        // Open the request and send the form data
+        xhr.open('POST', submitUrl, true);
+        xhr.send(formData);
+        
+        console.log('Form data sent to server');
+      } catch (error) {
+        console.error('Error in form submission:', error);
+        hideProgress();
+        showNotification('An error occurred while preparing the form data. Please try again.', true);
+      }
+    }
+    
+    // Helper function to log FormData contents
+    function logFormData(formData) {
+      for (const pair of formData.entries()) {
+        const [name, value] = pair;
+        if (value instanceof File) {
+          console.log(`${name}: File - ${value.name} (${value.size} bytes)`);
+        } else {
+          console.log(`${name}: ${value}`);
+        }
+      }
+    }
+    
+    // Helper functions for UI feedback
+    function showProgress() {
+      progressContainer.classList.remove('--hide');
+    }
+    
+    function hideProgress() {
+      progressContainer.classList.add('--hide');
+    }
+    
+    function showNotification(message, isError = true) {
+      const messageElement = notificationElement.querySelector('[data-notification-message]');
+      if (messageElement) {
+        messageElement.textContent = message;
+      }
+      
+      notificationElement.classList.remove('d-none');
+      
+      if (isError) {
+        notificationElement.classList.add('error');
+      } else {
+        notificationElement.classList.remove('error');
+      }
+      
+      // Scroll to notification
+      notificationElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    function createProgressElement() {
+      const element = document.createElement('div');
+      element.className = 'loader --hide';
+      element.innerHTML = `
+        <div class="loader-wrapper">
+          <div class="loader-wrapper-item">
+            <div class="loader-item"></div>
+            <div class="loader-item loader-item-2"></div>
+            <div class="loader-item loader-item-3"></div>
+            <div class="loader-item loader-item-4"></div>
+            <div class="loader-item loader-item-5"></div>
+            <div class="loader-item loader-item-6"></div>
+            <div class="loader-item loader-item-7"></div>
+            <div class="loader-item loader-item-8"></div>
+            <div class="loader-item loader-item-9"></div>
+            <div class="loader-item loader-item-10"></div>
+            <div class="loader-item loader-item-11"></div>
+            <div class="loader-item loader-item-12"></div>
+          </div>
+        </div>
+      `;
+      form.parentNode.appendChild(element);
+      return element;
+    }
+    
+    function createNotificationElement() {
+      const element = document.createElement('div');
+      element.className = 'notification-form d-none';
+      element.setAttribute('data-notification', '');
+      
+      element.innerHTML = `
+        <span class="icon icon-warning-triangle notification-form__icon"></span>
+        <div class="notification-form__content">
+          <div class="notification-form__title">Error</div>
+          <div class="notification-form__desc" data-notification-message></div>
+        </div>
+      `;
+      
+      form.insertBefore(element, form.firstChild);
+      return element;
+    }
+    
+    // Ensure the form has the correct enctype
+    form.setAttribute('enctype', 'multipart/form-data');
+    
+    // Create a MutationObserver to ensure enctype remains correct
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'enctype') {
+          if (form.getAttribute('enctype') !== 'multipart/form-data') {
+            console.log('Enctype changed, resetting to multipart/form-data');
+            form.setAttribute('enctype', 'multipart/form-data');
+          }
+        }
+      });
+    });
+    
+    // Start observing the form for attribute changes
+    observer.observe(form, { attributes: true });
+    
+    // Add the submit event listener
+    form.addEventListener('submit', handleFormSubmit);
+    
+    // Handle any existing AJAX submission code
+    // This ensures our code works alongside any existing submission logic
+    const originalAjaxSubmit = $.ajax;
+    if ($ && $.ajax) {
+      $.ajax = function(options) {
+        if (options.url === submitUrl) {
+          console.log('Intercepted jQuery AJAX call to form submission URL');
+          // Let our handler take care of it
+          return;
+        }
+        // Otherwise, proceed with the original $.ajax
+        return originalAjaxSubmit.apply(this, arguments);
+      };
+    }
+    
+    console.log('Form data transmission handler initialized');
+    console.log('Target URL:', submitUrl);
+    console.log('Redirect URL:', redirectUrl);
+    
+    // Log all form fields for verification
+    const allFields = form.querySelectorAll('input, select, textarea');
+    console.log(`Form contains ${allFields.length} fields:`);
+    allFields.forEach(field => {
+      console.log(`- ${field.name} (${field.type})`);
+    });
+  });
+})();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 String pathFile = request.getParameter("file-path");
 if (pathFile == null || pathFile.trim().isEmpty()) {
     // Handle the error - either provide a default value or return an error response
