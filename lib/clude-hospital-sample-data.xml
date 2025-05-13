@@ -1,6 +1,3 @@
-<%@ include file="log-utils.jsp" %>
-
-
 <%@ page import="java.io.*,
                  java.util.*,
                  java.text.SimpleDateFormat,
@@ -10,207 +7,202 @@
                  org.apache.commons.logging.Log" %>
 
 <%!
+// Log types
+public static final String LOG_TYPE_INFO = "INFO";
+public static final String LOG_TYPE_ERROR = "ERROR";
+
+// OpenCms logger for console output
+private static final Log LOG = CmsLog.getLog("EmailFormLogger");
+
+// Base directory for CSV logs
+private static final String LOG_DIRECTORY = "/system/modules/com.prudential.v2.ph/resources/csv-logs/";
+
 /**
- * LogUtils - A utility class for logging in OpenCms pre-Java 7 environments
- * Saves logs to /system/modules/com.prudential.v2.ph/resources/csv-logs/
+ * Logs a message to both OpenCms log and CSV file
+ * @param cmsObject The CmsObject for file operations
+ * @param logType The type of log (INFO or ERROR)
+ * @param action The action being performed
+ * @param message The log message
+ * @param additionalData Optional additional data to log
  */
-public static class LogUtils {
-    // Log types
-    public static final String LOG_TYPE_INFO = "INFO";
-    public static final String LOG_TYPE_ERROR = "ERROR";
-    
-    // OpenCms logger for console output
-    private static final Log LOG = CmsLog.getLog(LogUtils.class);
-    
-    // Base directory for CSV logs
-    private static final String LOG_DIRECTORY = "/system/modules/com.prudential.v2.ph/resources/csv-logs/";
-    
-    /**
-     * Logs a message to both OpenCms log and CSV file
-     * @param cmsObject The CmsObject for file operations
-     * @param logType The type of log (INFO or ERROR)
-     * @param action The action being performed
-     * @param message The log message
-     * @param additionalData Optional additional data to log
-     */
-    public static void log(CmsObject cmsObject, String logType, String action, String message, String additionalData) {
-        try {
-            // Format timestamp for log entry
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String timestamp = dateFormat.format(new Date());
-            
-            // Format timestamp for filename
-            SimpleDateFormat filenameDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String dateStr = filenameDateFormat.format(new Date());
-            
-            // Create log entry
-            StringBuilder logEntry = new StringBuilder();
-            logEntry.append(timestamp).append(",");
-            logEntry.append(escapeCSV(logType)).append(",");
-            logEntry.append(escapeCSV(action)).append(",");
-            logEntry.append(escapeCSV(message)).append(",");
-            logEntry.append(escapeCSV(additionalData)).append("\n");
-            
-            // Log to OpenCms log
-            if (LOG_TYPE_ERROR.equals(logType)) {
-                LOG.error(action + ": " + message + (additionalData != null ? " - " + additionalData : ""));
-            } else {
-                LOG.info(action + ": " + message + (additionalData != null ? " - " + additionalData : ""));
-            }
-            
-            // Ensure log directory exists
-            String logFilePath = LOG_DIRECTORY + logType.toLowerCase() + "_" + dateStr + ".csv";
-            ensureDirectoryExists(cmsObject, LOG_DIRECTORY);
-            
-            // Check if file exists, create with headers if not
-            boolean fileExists = fileExists(cmsObject, logFilePath);
-            
-            // Write to log file
-            if (!fileExists) {
-                // Create new file with headers
-                String headers = "Timestamp,Type,Action,Message,AdditionalData\n";
-                writeToFile(cmsObject, logFilePath, headers + logEntry.toString(), false);
-            } else {
-                // Append to existing file
-                appendToFile(cmsObject, logFilePath, logEntry.toString());
-            }
-        } catch (Exception e) {
-            // Fallback to console logging if file logging fails
-            LOG.error("Failed to write to log file: " + e.getMessage(), e);
-        }
-    }
-    
-    /**
-     * Logs an INFO message
-     */
-    public static void logInfo(CmsObject cmsObject, String action, String message) {
-        log(cmsObject, LOG_TYPE_INFO, action, message, null);
-    }
-    
-    /**
-     * Logs an INFO message with additional data
-     */
-    public static void logInfo(CmsObject cmsObject, String action, String message, String additionalData) {
-        log(cmsObject, LOG_TYPE_INFO, action, message, additionalData);
-    }
-    
-    /**
-     * Logs an ERROR message
-     */
-    public static void logError(CmsObject cmsObject, String action, String message) {
-        log(cmsObject, LOG_TYPE_ERROR, action, message, null);
-    }
-    
-    /**
-     * Logs an ERROR message with additional data
-     */
-    public static void logError(CmsObject cmsObject, String action, String message, String additionalData) {
-        log(cmsObject, LOG_TYPE_ERROR, action, message, additionalData);
-    }
-    
-    /**
-     * Logs an ERROR message with exception details
-     */
-    public static void logError(CmsObject cmsObject, String action, String message, Throwable t) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        t.printStackTrace(pw);
-        log(cmsObject, LOG_TYPE_ERROR, action, message, sw.toString());
-    }
-    
-    /**
-     * Escapes a string for CSV format
-     */
-    private static String escapeCSV(String value) {
-        if (value == null) {
-            return "";
+public static void logMessage(CmsObject cmsObject, String logType, String action, String message, String additionalData) {
+    try {
+        // Format timestamp for log entry
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String timestamp = dateFormat.format(new Date());
+        
+        // Format timestamp for filename
+        SimpleDateFormat filenameDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String dateStr = filenameDateFormat.format(new Date());
+        
+        // Create log entry
+        StringBuilder logEntry = new StringBuilder();
+        logEntry.append(timestamp).append(",");
+        logEntry.append(escapeCSV(logType)).append(",");
+        logEntry.append(escapeCSV(action)).append(",");
+        logEntry.append(escapeCSV(message)).append(",");
+        logEntry.append(escapeCSV(additionalData)).append("\n");
+        
+        // Log to OpenCms log
+        if (LOG_TYPE_ERROR.equals(logType)) {
+            LOG.error(action + ": " + message + (additionalData != null ? " - " + additionalData : ""));
+        } else {
+            LOG.info(action + ": " + message + (additionalData != null ? " - " + additionalData : ""));
         }
         
-        // Replace quotes with double quotes and wrap in quotes if needed
-        boolean needsQuoting = value.contains("\"") || value.contains(",") || value.contains("\n");
-        if (needsQuoting) {
-            return "\"" + value.replace("\"", "\"\"") + "\"";
-        }
-        return value;
-    }
-    
-    /**
-     * Checks if a file exists in OpenCms
-     */
-    private static boolean fileExists(CmsObject cmsObject, String filePath) {
-        try {
-            cmsObject.readResource(filePath);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-    
-    /**
-     * Ensures a directory exists in OpenCms
-     */
-    private static void ensureDirectoryExists(CmsObject cmsObject, String dirPath) throws Exception {
-        if (!dirPath.endsWith("/")) {
-            dirPath += "/";
-        }
+        // Ensure log directory exists
+        String logFilePath = LOG_DIRECTORY + logType.toLowerCase() + "_" + dateStr + ".csv";
+        ensureDirectoryExists(cmsObject, LOG_DIRECTORY);
         
-        try {
-            cmsObject.readFolder(dirPath);
-        } catch (Exception e) {
-            // Directory doesn't exist, create it
-            String parentPath = dirPath.substring(0, dirPath.lastIndexOf('/', dirPath.length() - 2) + 1);
-            ensureDirectoryExists(cmsObject, parentPath);
-            
-            String folderName = dirPath.substring(parentPath.length(), dirPath.length() - 1);
-            cmsObject.createResource(parentPath + folderName, 
-                                    OpenCms.getResourceManager().getResourceType("folder").getTypeId());
+        // Check if file exists, create with headers if not
+        boolean fileExists = fileExists(cmsObject, logFilePath);
+        
+        // Write to log file
+        if (!fileExists) {
+            // Create new file with headers
+            String headers = "Timestamp,Type,Action,Message,AdditionalData\n";
+            writeToFile(cmsObject, logFilePath, headers + logEntry.toString(), false);
+        } else {
+            // Append to existing file
+            appendToFile(cmsObject, logFilePath, logEntry.toString());
         }
-    }
-    
-    /**
-     * Writes content to a file in OpenCms
-     */
-    private static void writeToFile(CmsObject cmsObject, String filePath, String content, boolean append) throws Exception {
-        try {
-            // Check if file exists
-            CmsResource resource = null;
-            try {
-                resource = cmsObject.readResource(filePath);
-            } catch (Exception e) {
-                // File doesn't exist, create it
-                int fileType = OpenCms.getResourceManager().getResourceType("plain").getTypeId();
-                resource = cmsObject.createResource(filePath, fileType);
-            }
-            
-            // Get file content
-            CmsFile file = cmsObject.readFile(resource);
-            byte[] oldContent = file.getContents();
-            byte[] newContent;
-            
-            if (append && oldContent.length > 0) {
-                // Append to existing content
-                String existingContent = new String(oldContent, "UTF-8");
-                newContent = (existingContent + content).getBytes("UTF-8");
-            } else {
-                // Write new content
-                newContent = content.getBytes("UTF-8");
-            }
-            
-            // Update file content
-            file.setContents(newContent);
-            cmsObject.writeFile(file);
-        } catch (Exception e) {
-            throw new Exception("Failed to write to file: " + filePath, e);
-        }
-    }
-    
-    /**
-     * Appends content to a file in OpenCms
-     */
-    private static void appendToFile(CmsObject cmsObject, String filePath, String content) throws Exception {
-        writeToFile(cmsObject, filePath, content, true);
+    } catch (Exception e) {
+        // Fallback to console logging if file logging fails
+        LOG.error("Failed to write to log file: " + e.getMessage(), e);
     }
 }
+
+/**
+ * Logs an INFO message
+ */
+public static void logInfo(CmsObject cmsObject, String action, String message) {
+    logMessage(cmsObject, LOG_TYPE_INFO, action, message, null);
+}
+
+/**
+ * Logs an INFO message with additional data
+ */
+public static void logInfo(CmsObject cmsObject, String action, String message, String additionalData) {
+    logMessage(cmsObject, LOG_TYPE_INFO, action, message, additionalData);
+}
+
+/**
+ * Logs an ERROR message
+ */
+public static void logError(CmsObject cmsObject, String action, String message) {
+    logMessage(cmsObject, LOG_TYPE_ERROR, action, message, null);
+}
+
+/**
+ * Logs an ERROR message with additional data
+ */
+public static void logError(CmsObject cmsObject, String action, String message, String additionalData) {
+    logMessage(cmsObject, LOG_TYPE_ERROR, action, message, additionalData);
+}
+
+/**
+ * Logs an ERROR message with exception details
+ */
+public static void logError(CmsObject cmsObject, String action, String message, Throwable t) {
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    t.printStackTrace(pw);
+    logMessage(cmsObject, LOG_TYPE_ERROR, action, message, sw.toString());
+}
+
+/**
+ * Escapes a string for CSV format
+ */
+private static String escapeCSV(String value) {
+    if (value == null) {
+        return "";
+    }
+    
+    // Replace quotes with double quotes and wrap in quotes if needed
+    boolean needsQuoting = value.contains("\"") || value.contains(",") || value.contains("\n");
+    if (needsQuoting) {
+        return "\"" + value.replace("\"", "\"\"") + "\"";
+    }
+    return value;
+}
+
+/**
+ * Checks if a file exists in OpenCms
+ */
+private static boolean fileExists(CmsObject cmsObject, String filePath) {
+    try {
+        cmsObject.readResource(filePath);
+        return true;
+    } catch (Exception e) {
+        return false;
+    }
+}
+
+/**
+ * Ensures a directory exists in OpenCms
+ */
+private static void ensureDirectoryExists(CmsObject cmsObject, String dirPath) throws Exception {
+    if (!dirPath.endsWith("/")) {
+        dirPath += "/";
+    }
+    
+    try {
+        cmsObject.readFolder(dirPath);
+    } catch (Exception e) {
+        // Directory doesn't exist, create it
+        String parentPath = dirPath.substring(0, dirPath.lastIndexOf('/', dirPath.length() - 2) + 1);
+        ensureDirectoryExists(cmsObject, parentPath);
+        
+        String folderName = dirPath.substring(parentPath.length(), dirPath.length() - 1);
+        cmsObject.createResource(parentPath + folderName, 
+                                OpenCms.getResourceManager().getResourceType("folder").getTypeId());
+    }
+}
+
+/**
+ * Writes content to a file in OpenCms
+ */
+private static void writeToFile(CmsObject cmsObject, String filePath, String content, boolean append) throws Exception {
+    try {
+        // Check if file exists
+        CmsResource resource = null;
+        try {
+            resource = cmsObject.readResource(filePath);
+        } catch (Exception e) {
+            // File doesn't exist, create it
+            int fileType = OpenCms.getResourceManager().getResourceType("plain").getTypeId();
+            resource = cmsObject.createResource(filePath, fileType);
+        }
+        
+        // Get file content
+        CmsFile file = cmsObject.readFile(resource);
+        byte[] oldContent = file.getContents();
+        byte[] newContent;
+        
+        if (append && oldContent.length > 0) {
+            // Append to existing content
+            String existingContent = new String(oldContent, "UTF-8");
+            newContent = (existingContent + content).getBytes("UTF-8");
+        } else {
+            // Write new content
+            newContent = content.getBytes("UTF-8");
+        }
+        
+        // Update file content
+        file.setContents(newContent);
+        cmsObject.writeFile(file);
+    } catch (Exception e) {
+        throw new Exception("Failed to write to file: " + filePath, e);
+    }
+}
+
+/**
+ * Appends content to a file in OpenCms
+ */
+private static void appendToFile(CmsObject cmsObject, String filePath, String content) throws Exception {
+    writeToFile(cmsObject, filePath, content, true);
+}
+%>
 
 
     <%@ page session="false" contentType="text/html;charset=UTF-8" %>
@@ -231,6 +223,7 @@ public static class LogUtils {
                  org.apache.commons.fileupload.*,
                  org.apache.commons.fileupload.disk.*,
                  org.apache.commons.fileupload.servlet.*" %>
+<%@ include file="log-utils.jsp" %>
 <%@ page import="org.opencms.mail.CmsHtmlMail"%>
 <%@page import="java.util.Locale" %>
 <%@page import="org.opencms.jsp.CmsJspActionElement"%>
@@ -336,7 +329,7 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
      */
     public static void sendEmail(CmsObject cmsObject, String from, String to, String subject, String message, Map<String, List<FileItem>> fieldFilesMap) throws Exception {
         // Log the email sending attempt
-        LogUtils.logInfo(cmsObject, "EMAIL_SEND", "Sending email from: " + from + " to: " + to, "Subject: " + subject);
+        logInfo(cmsObject, "EMAIL_SEND", "Sending email from: " + from + " to: " + to, "Subject: " + subject);
         
         try {
             CmsHtmlMail email = new CmsHtmlMail();
@@ -348,7 +341,7 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
 
             // Handle file attachments if any exist
             if (fieldFilesMap != null && !fieldFilesMap.isEmpty()) {
-                LogUtils.logInfo(cmsObject, "EMAIL_ATTACHMENTS", "Processing " + fieldFilesMap.size() + " file fields for attachment");
+                logInfo(cmsObject, "EMAIL_ATTACHMENTS", "Processing " + fieldFilesMap.size() + " file fields for attachment");
                 
                 List<File> tempFiles = new ArrayList<File>(); // Track temp files for cleanup
                 int totalAttachments = 0;
@@ -358,7 +351,7 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                     String fieldName = entry.getKey();
                     List<FileItem> fileItems = entry.getValue();
                     
-                    LogUtils.logInfo(cmsObject, "EMAIL_ATTACHMENTS", "Processing field: " + fieldName, "Files: " + fileItems.size());
+                    logInfo(cmsObject, "EMAIL_ATTACHMENTS", "Processing field: " + fieldName, "Files: " + fileItems.size());
                     
                     // Process each file within the field
                     for (int i = 0; i < fileItems.size(); i++) {
@@ -366,19 +359,19 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                         
                         // Skip if not a file or if file is empty
                         if (fileItem.isFormField() || fileItem.getSize() <= 0) {
-                            LogUtils.logInfo(cmsObject, "EMAIL_ATTACHMENTS", "Skipping empty or non-file item", "Field: " + fieldName);
+                            logInfo(cmsObject, "EMAIL_ATTACHMENTS", "Skipping empty or non-file item", "Field: " + fieldName);
                             continue;
                         }
                         
                         String fileName = fileItem.getName();
                         if (fileName == null || fileName.trim().isEmpty()) {
-                            LogUtils.logInfo(cmsObject, "EMAIL_ATTACHMENTS", "Skipping file with no name", "Field: " + fieldName);
+                            logInfo(cmsObject, "EMAIL_ATTACHMENTS", "Skipping file with no name", "Field: " + fieldName);
                             continue;
                         }
                         
                         // Extract filename without path information
                         fileName = new File(fileName).getName();
-                        LogUtils.logInfo(cmsObject, "EMAIL_ATTACHMENTS", "Processing file: " + fileName, "Size: " + fileItem.getSize() + " bytes");
+                        logInfo(cmsObject, "EMAIL_ATTACHMENTS", "Processing file: " + fileName, "Size: " + fileItem.getSize() + " bytes");
                         
                         // Get file extension
                         String extension = "";
@@ -405,9 +398,9 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                             // Add to email
                             email.attach(attachment);
                             totalAttachments++;
-                            LogUtils.logInfo(cmsObject, "EMAIL_ATTACHMENTS", "Successfully attached: " + fileName);
+                            logInfo(cmsObject, "EMAIL_ATTACHMENTS", "Successfully attached: " + fileName);
                         } catch (Exception e) {
-                            LogUtils.logError(cmsObject, "EMAIL_ATTACHMENTS", "Error processing attachment: " + fileName, e);
+                            logError(cmsObject, "EMAIL_ATTACHMENTS", "Error processing attachment: " + fileName, e);
                         }
                     }
                 }
@@ -415,7 +408,7 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                 // Send the email with attachments
                 try {
                     email.send();
-                    LogUtils.logInfo(cmsObject, "EMAIL_SEND", "Email with " + totalAttachments + " attachments sent successfully", "To: " + to);
+                    logInfo(cmsObject, "EMAIL_SEND", "Email with " + totalAttachments + " attachments sent successfully", "To: " + to);
                 } finally {
                     // Clean up temp files - not strictly necessary with deleteOnExit
                     // but good practice for long-running servers
@@ -425,17 +418,17 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                                 file.delete();
                             }
                         } catch (Exception e) {
-                            LogUtils.logError(cmsObject, "EMAIL_CLEANUP", "Failed to delete temp file: " + file.getAbsolutePath(), e);
+                            logError(cmsObject, "EMAIL_CLEANUP", "Failed to delete temp file: " + file.getAbsolutePath(), e);
                         }
                     }
                 }
             } else {
                 // No attachments, send simple email
                 email.send();
-                LogUtils.logInfo(cmsObject, "EMAIL_SEND", "Email sent successfully (no attachments)", "To: " + to);
+                logInfo(cmsObject, "EMAIL_SEND", "Email sent successfully (no attachments)", "To: " + to);
             }
         } catch (Exception e) {
-            LogUtils.logError(cmsObject, "EMAIL_SEND", "Failed to send email to: " + to, e);
+            logError(cmsObject, "EMAIL_SEND", "Failed to send email to: " + to, e);
             throw e; // Re-throw to allow caller to handle
         }
     }
@@ -448,7 +441,7 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
         String noProductTitleParam = pageContext.getAttribute("noProductTitle").toString();
         
         // Log the start of form processing
-        LogUtils.logInfo(cmsObject, "FORM_PROCESS", "Starting form processing", "Remote IP: " + request.getRemoteAddr());
+        logInfo(cmsObject, "FORM_PROCESS", "Starting form processing", "Remote IP: " + request.getRemoteAddr());
         
         try {
             // get file xml content
@@ -458,7 +451,7 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
             CmsResource contentRs = cmsObject.readResource(pathFileXml);
             CmsJspContentAccessBean componentPros = new CmsJspContentAccessBean(cmsObject, locale, contentRs);
             
-            LogUtils.logInfo(cmsObject, "FORM_CONFIG", "Form configuration loaded", "Path: " + pathFileXml);
+            logInfo(cmsObject, "FORM_CONFIG", "Form configuration loaded", "Path: " + pathFileXml);
             
             // get option send mail 
             String SendEmail = componentPros.getValue().get("EmailAndDB").getValue().get("SendEmail").getStringValue();
@@ -480,7 +473,7 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
             byte[] contentUser = fileUser.getContents();
             String mailContentUser = new String(contentUser);
             
-            LogUtils.logInfo(cmsObject, "EMAIL_TEMPLATES", "Email templates loaded", 
+            logInfo(cmsObject, "EMAIL_TEMPLATES", "Email templates loaded", 
                             "Admin template: " + templateContentAdmin + ", User template: " + templateContentUser);
             
             // mail admin in dialog
@@ -502,7 +495,7 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                 adminMailSubject = adminMailSubject2;
             }
             
-            LogUtils.logInfo(cmsObject, "EMAIL_CONFIG", "Email configuration prepared", 
+            logInfo(cmsObject, "EMAIL_CONFIG", "Email configuration prepared", 
                             "Admin email: " + emailAddressAdmin + ", Topic: " + topic);
             
             // messge send mail fails
@@ -537,7 +530,7 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
             } 
             
             if(isSendEmail){
-                LogUtils.logInfo(cmsObject, "EMAIL_PROCESS", "Email sending is enabled, processing form data");
+                logInfo(cmsObject, "EMAIL_PROCESS", "Email sending is enabled, processing form data");
                 
                 try{
                     // Process form fields first
@@ -609,11 +602,11 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                         }
                     }
                     
-                    LogUtils.logInfo(cmsObject, "FORM_DATA", formDataLog.toString());
+                    logInfo(cmsObject, "FORM_DATA", formDataLog.toString());
                     
                     // Process file uploads if this is a multipart request
                     if (ServletFileUpload.isMultipartContent(request)) {
-                        LogUtils.logInfo(cmsObject, "FILE_UPLOAD", "Processing multipart form data for file attachments");
+                        logInfo(cmsObject, "FILE_UPLOAD", "Processing multipart form data for file attachments");
                         
                         // Configure file upload settings
                         DiskFileItemFactory factory = new DiskFileItemFactory();
@@ -629,7 +622,7 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                             // Parse the request
                             List<FileItem> items = upload.parseRequest(request);
                             
-                            LogUtils.logInfo(cmsObject, "FILE_UPLOAD", "Found " + items.size() + " items in multipart request");
+                            logInfo(cmsObject, "FILE_UPLOAD", "Found " + items.size() + " items in multipart request");
                             
                             // Process the uploaded items
                             for (FileItem item : items) {
@@ -639,7 +632,7 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                                     
                                     // Only process if we have a valid file
                                     if (fileName != null && !fileName.isEmpty() && item.getSize() > 0) {
-                                        LogUtils.logInfo(cmsObject, "FILE_UPLOAD", "Found file upload: " + fieldName, 
+                                        logInfo(cmsObject, "FILE_UPLOAD", "Found file upload: " + fieldName, 
                                                       "Filename: " + fileName + ", Size: " + item.getSize() + " bytes");
                                         
                                         // Store in our map for later attachment
@@ -658,7 +651,7 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                                     if (!request.getParameterMap().containsKey(fieldName) && !StringUtils.isEmpty(value)) {
                                         value = A1filter(value);
                                         
-                                        LogUtils.logInfo(cmsObject, "FORM_DATA", "Processing multipart form field: " + fieldName, 
+                                        logInfo(cmsObject, "FORM_DATA", "Processing multipart form field: " + fieldName, 
                                                       "Value: " + (value.length() > 100 ? value.substring(0, 97) + "..." : value));
                                         
                                         if(fieldName.equals("selectTopic")){
@@ -694,10 +687,10 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                                 }
                             }
                             
-                            LogUtils.logInfo(cmsObject, "FILE_UPLOAD", "Processed " + fieldFilesMap.size() + " file fields");
+                            logInfo(cmsObject, "FILE_UPLOAD", "Processed " + fieldFilesMap.size() + " file fields");
                             
                         } catch (Exception e) {
-                            LogUtils.logError(cmsObject, "FILE_UPLOAD", "Error processing file uploads", e);
+                            logError(cmsObject, "FILE_UPLOAD", "Error processing file uploads", e);
                         }
                     }
                     
@@ -735,7 +728,7 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                       emailAddressAdmins = Arrays.asList(emailAddressAdmin.split(","));
                     }
                     
-                    LogUtils.logInfo(cmsObject, "EMAIL_RECIPIENTS", "Admin recipients determined", 
+                    logInfo(cmsObject, "EMAIL_RECIPIENTS", "Admin recipients determined", 
                                   "Count: " + emailAddressAdmins.size() + ", Addresses: " + emailAddressAdmins);
                     
                     // Add attachment information to email body if files were uploaded
@@ -771,9 +764,9 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                                 mailContentUser,
                                 fieldFilesMap
                             );
-                            LogUtils.logInfo(cmsObject, "EMAIL_USER", "Email sent to user", "Address: " + emailAddressUser);
+                            logInfo(cmsObject, "EMAIL_USER", "Email sent to user", "Address: " + emailAddressUser);
                         } catch (Exception e) {
-                            LogUtils.logError(cmsObject, "EMAIL_USER", "Failed to send email to user: " + emailAddressUser, e);
+                            logError(cmsObject, "EMAIL_USER", "Failed to send email to user: " + emailAddressUser, e);
                         }
                     }
                     
@@ -789,31 +782,31 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                                 mailContent,
                                 fieldFilesMap
                             );
-                            LogUtils.logInfo(cmsObject, "EMAIL_ADMIN", "Email sent to admin", "Address: " + emailAdmin);
+                            logInfo(cmsObject, "EMAIL_ADMIN", "Email sent to admin", "Address: " + emailAdmin);
                         } catch (Exception e) {
                             allAdminEmailsSucceeded = false;
-                            LogUtils.logError(cmsObject, "EMAIL_ADMIN", "Failed to send email to admin: " + emailAdmin, e);
+                            logError(cmsObject, "EMAIL_ADMIN", "Failed to send email to admin: " + emailAdmin, e);
                         }
                     }
                     
                     if (allAdminEmailsSucceeded) {
-                        LogUtils.logInfo(cmsObject, "FORM_COMPLETE", "Form processing completed successfully");
+                        logInfo(cmsObject, "FORM_COMPLETE", "Form processing completed successfully");
                         out.print(responeObject(200, "Send mail success"));
                     } else {
-                        LogUtils.logError(cmsObject, "FORM_PARTIAL", "Some admin emails failed to send");
+                        logError(cmsObject, "FORM_PARTIAL", "Some admin emails failed to send");
                         out.print(responeObject(200, "Send mail success (partial)")); // Still return success to user
                     }
                     
                 } catch(Exception e) {
-                    LogUtils.logError(cmsObject, "FORM_ERROR", "Error in contact form processing", e);
+                    logError(cmsObject, "FORM_ERROR", "Error in contact form processing", e);
                     out.print(responeObject(500, errMesageSendMailFails));  
                 }
             } else {
-                LogUtils.logInfo(cmsObject, "EMAIL_DISABLED", "Email sending is disabled, returning success");
+                logInfo(cmsObject, "EMAIL_DISABLED", "Email sending is disabled, returning success");
                 out.print(responeObject(200, "Send mail success"));
             }
         } catch (Exception e) {
-            LogUtils.logError(cmsObject, "SYSTEM_ERROR", "Critical error in form processing", e);
+            logError(cmsObject, "SYSTEM_ERROR", "Critical error in form processing", e);
             out.print(responeObject(500, "An unexpected error occurred"));
         }
 %>
