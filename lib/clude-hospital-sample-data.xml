@@ -317,6 +317,29 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                 }
 
                 if (!StringUtils.isEmpty(emailAddressUser) && !StringUtils.isEmpty(mailSubject)) {
+                    // Add attachment information to email content
+                    StringBuilder attachmentInfo = new StringBuilder();
+                    attachmentInfo.append("<div style='margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px;'>");
+                    attachmentInfo.append("<h3>Attached Files:</h3>");
+                    attachmentInfo.append("<ul style='list-style-type: none; padding-left: 0;'>");
+                    
+                    for (Map<String, Object> fileInfo : uploadedFiles) {
+                        String fieldName = (String)fileInfo.get("fieldName");
+                        String originalFileName = (String)fileInfo.get("originalFileName");
+                        attachmentInfo.append("<li style='margin-bottom: 5px;'>");
+                        attachmentInfo.append("<strong>").append(fieldName).append(":</strong> ");
+                        attachmentInfo.append(originalFileName);
+                        attachmentInfo.append("</li>");
+                    }
+                    
+                    attachmentInfo.append("</ul>");
+                    attachmentInfo.append("</div>");
+                    
+                    // Add attachment info to both email contents
+                    mailContent = mailContent + attachmentInfo.toString();
+                    mailContentUser = mailContentUser + attachmentInfo.toString();
+
+                    // Send to user
                     CmsHtmlMail smToCs = new CmsHtmlMail();
                     smToCs.setMsg(mailContentUser);
                     smToCs.setSubject(mailSubject);
@@ -355,7 +378,7 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                 // Send to admins with attachments
                 for (String emailAdmin : emailAddressAdmins) {
                     CmsHtmlMail smToCsAdmin = new CmsHtmlMail();
-                    smToCsAdmin.setMsg(mailContent);
+                    smToCsAdmin.setMsg(mailContent);  // Using mailContent which now includes attachment info
                     smToCsAdmin.setSubject(adminMailSubject);
                     smToCsAdmin.setCharset("UTF-8");
                     smToCsAdmin.setFrom(emailAddressUser);
