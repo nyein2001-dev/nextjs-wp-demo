@@ -1,421 +1,331 @@
-uploadedFiles != null && !uploadedFiles.isEmpty()
-
-<%@ page session="false" contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.sql.*,
-                 java.io.*,
-                 java.net.*,
-                 javax.net.*,
-                 org.json.JSONObject,
-                 org.opencms.main.OpenCms,
-                 org.apache.commons.logging.Log,
-                 org.opencms.main.CmsLog,
-                 org.apache.commons.lang.StringUtils,
-                 java.util.*,
-                 org.opencms.jsp.util.*,
-                 java.io.IOException,
-                 java.text.*,
-                 org.apache.commons.fileupload.FileItem,
-                 org.apache.commons.fileupload.*,
-                 org.apache.commons.fileupload.disk.*,
-                 org.apache.commons.fileupload.servlet.*" %>
-<%@ page import="org.opencms.mail.CmsHtmlMail"%>
-<%@page import="java.util.Locale" %>
-<%@page import="org.opencms.jsp.CmsJspActionElement"%>
-<%@ page import="org.apache.commons.io.FilenameUtils" %>
-<%@ page import="org.apache.commons.mail.EmailAttachment" %>
-<%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
-<%@page import="org.opencms.jsp.*, org.opencms.file.*, org.opencms.flex.*,org.opencms.util.*, java.util.*" %>
-<c:set var="locale" value="${cms.locale}" />
-<fmt:setLocale value="${param.language}" />
-
-<%
-//paramSelectTopic
-String paramSelectTopic = StringUtils.isEmpty(request.getParameter("selectTopic")) ? "" : request.getParameter("selectTopic");
-String[] paramSelectTopics = paramSelectTopic.split("&&");
-
-String paramSelectTopic2 = StringUtils.isEmpty(request.getParameter("selectTopic2")) ? "" : request.getParameter("selectTopic2");
-String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
-%>
-
-<cms:bundle basename="com.prudential.v2.ph.default">
-  <c:set var="productTitle"><fmt:message key="key.default.have.productTitle" /></c:set>
-  <c:set var="noProductTitle"><fmt:message key="key.default.none.productTitle" /></c:set>
-  <c:set var="adminMailSubject"><fmt:message key="key.default.admin.mail.subject" /></c:set>
-  <c:set var="paramSelectTopics"><%=paramSelectTopics[0]%></c:set>
-  <c:set var="emailEnquiry" value=""/>
-  <c:if test="${not empty paramSelectTopics}">
-  	<c:set var="emailEnquiry"><fmt:message key="key.mail.selected.enquiry.${paramSelectTopics}" /></c:set>
-  </c:if>
-</cms:bundle>
-<%!
-	public String A1filter(String input){
-	    String tem = input;
-	    tem = tem.replaceAll("<", "&lt;");
-	    tem = tem.replaceAll(">", "&gt;");
-	    tem = tem.replaceAll("&", "&amp;");
-	    tem = tem.replaceAll("\"", "&quot;");
-	    tem = tem.replaceAll(" ", "&nbsp;");
-	    tem = tem.replaceAll("'", "&#39;");
-	    return tem;
-	}
-    public String A1filterHidden(String input,String temp){
-	    String tem = temp;
-	    String tmpinput = "content:'" + input + "'; mso-hide:all;display:none;";
-	    tem = tem.replaceAll(tmpinput, "");
-	    return tem;
+/**
+ * Complete Form Data Transmission Handler for OpenCms with reCAPTCHA Support
+ * 
+ * This script ensures:
+ * 1. All form data is properly collected and transmitted
+ * 2. Google reCAPTCHA verification is completed before submission
+ * 3. The form uses proper multipart/form-data encoding for file uploads
+ * 4. Detailed logging for troubleshooting
+ */
+(function() {
+  document.addEventListener('DOMContentLoaded', function() {
+    // Find the form
+    const form = document.querySelector('.dynamic-form-submission');
+    
+    if (!form) {
+      console.error('Form with class .dynamic-form-submission not found');
+      return;
     }
-    public  String A1filter(String input,String value,String temp){
-        String tem = temp;
-        tem = tem.replaceAll(input, value);
-        return tem;
+    
+    // Get the submission URL and redirect URL
+    const submitUrl = form.getAttribute('data-url-submit');
+    const redirectUrl = form.getAttribute('data-url-redirect');
+    
+    if (!submitUrl) {
+      console.error('Form submission URL is missing');
+      return;
     }
-    public String A1filterNoProductTitle(String productTitleName,String temp,String noProductTitle){
-        String tem = temp;
-        tem = tem.replaceAll(productTitleName, noProductTitle);
-        return tem;
+    
+    // Find or create progress and notification elements
+    const progressContainer = document.querySelector('.loader') || createProgressElement();
+    const notificationElement = document.querySelector('[data-notification]') || createNotificationElement();
+    
+    // Check if reCAPTCHA is enabled on this form
+    const recaptchaElement = form.querySelector('.g-recaptcha[data-recaptcha]');
+    const isRecaptchaEnabled = !!recaptchaElement;
+    
+    console.log('reCAPTCHA enabled:', isRecaptchaEnabled);
+    
+    // Function to verify reCAPTCHA
+    function verifyRecaptcha() {
+      if (!isRecaptchaEnabled) {
+        return true; // No reCAPTCHA to verify
+      }
+      
+      // Check if reCAPTCHA has been completed
+      const recaptchaResponse = grecaptcha && grecaptcha.getResponse();
+      
+      if (!recaptchaResponse || recaptchaResponse.length === 0) {
+        console.error('reCAPTCHA verification failed: No response');
+        showNotification('Please complete the reCAPTCHA verification.', true);
+        return false;
+      }
+      
+      console.log('reCAPTCHA verification successful');
+      return true;
     }
-    public String responseObject(int statusCode,String message) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{");
-        sb.append("\"statusCode\":").append(statusCode).append(",");
-        sb.append("\"message\":\"").append(message).append("\"");
-        sb.append("}");
-        return sb.toString();
-    }
-	
-    public File createTempFileFromInputStream(InputStream inputStream, String tmpFileName, String fileExtension) throws IOException {
-        OutputStream outputStream = null;
-        File tempFile = null;
-
-        try {
-            tempFile = File.createTempFile(tmpFileName, fileExtension);
-            outputStream = new FileOutputStream(tempFile);
-            byte[] buffer = new byte[4096];
-            int length;
-            while ((length = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, length);
-            }
-        } finally {
-            if (outputStream != null) {
-                outputStream.close();
-            }
+    
+    // Function to handle form submission
+    function handleFormSubmit(event) {
+      // Prevent default form submission
+      event.preventDefault();
+      
+      console.log('Form submission intercepted');
+      
+      try {
+        // Verify reCAPTCHA first
+        if (!verifyRecaptcha()) {
+          return; // Stop submission if reCAPTCHA verification fails
         }
-        return tempFile;
-    }
-%>
-<%
-        CmsJspActionElement cms = new CmsJspActionElement(pageContext, request, response);
-        CmsObject cmsObject = cms.getCmsObject();
-        Locale locale = cms.getRequestContext().getLocale(); 
-        String productTitleParam = pageContext.getAttribute("productTitle").toString();
-        String noProductTitleParam = pageContext.getAttribute("noProductTitle").toString();
-
-        // Hardcoded values like in new-contact-form.jsp
-        String SendEmail = "true";
-        Boolean isSendEmail = Boolean.valueOf(SendEmail);
-
-        // get content tempalate mail admin
-        String templateContentAdmin = ".galleries/mail-template/pru-admin-email-withdrawal-template.html";
-        CmsResource resource = cmsObject.readResource(templateContentAdmin);
-        CmsFile file = cmsObject.readFile(resource);
-        byte[] contentAdmin = file.getContents();
-        String mailContent = new String(contentAdmin);
-
-        // get content tempalate mail user
-        String templateContentUser = ".galleries/mail-template/pru-email-withdrawal-template.html";
-        CmsResource resourceUser = cmsObject.readResource(templateContentUser);
-        CmsFile fileUser = cmsObject.readFile(resourceUser);
-        byte[] contentUser = fileUser.getContents();
-        String mailContentUser = new String(contentUser);
-
-        // mail admin in dialog
-        String emailAddressAdmin = "nyein@gravitas.my";
-        // mail user in xml file
-        String emailAddressUser = "";
-        // mail subject
-        String topic = StringUtils.isEmpty(paramSelectTopic) ? "" : paramSelectTopics[1];
-        String topic2 = StringUtils.isEmpty(paramSelectTopic2) ? "" : paramSelectTopics2[1];
-        String adminMailSubject = pageContext.getAttribute("adminMailSubject").toString();
-        adminMailSubject = adminMailSubject.replace("#Topic#", topic);
-        String mailSubject = "Partial Benefit Withdrawal";
-        mailSubject = mailSubject.replace("#Topic#", topic);
-
-        String adminMailSubject2 = "";
-        if(!StringUtils.isEmpty(adminMailSubject2)) {
-            adminMailSubject2 = adminMailSubject2.replace("#Topic#", topic);
-            adminMailSubject = adminMailSubject2;
-        }
-
-        // messge send mail fails
-        String errMesageSendMailFails = "The form is incomplete. Please check.";
-        // Section Title 1
-        String section1 = "";
-        if(!StringUtils.isEmpty(section1)){
-            String temp = "%class" + "Section1" + "%";
-            mailContent = A1filterHidden(temp, mailContent);
-            mailContentUser = A1filterHidden(temp, mailContentUser);
-        }
-        // Section Label 2
-        String section2 = "";
-        if(!StringUtils.isEmpty(section2)){
-            String temp = "%class" + "Section2" + "%";
-            mailContent = A1filterHidden(temp, mailContent);
-            mailContentUser = A1filterHidden(temp, mailContentUser);
-        }
-        // Section Label 3
-        String section3 = "";
-        if(!StringUtils.isEmpty(section3)){
-            String temp = "%class" + "Section3" + "%";
-            mailContent = A1filterHidden(temp, mailContent);
-            mailContentUser = A1filterHidden(temp, mailContentUser);
-        }
-        // Section Label 5
-        String section5 = "";
-        if(!StringUtils.isEmpty(section5)){
-            String temp = "%class" + "Section5" + "%";
-            mailContent = A1filterHidden(temp, mailContent);
-            mailContentUser = A1filterHidden(temp, mailContentUser);
-        } 
         
-        if(isSendEmail){
-            try{
-                String firstName = "";
-                String lastName = "";
-                String policy_number = "";
-                String marketingConsent = "";
-                String selectedService = "";
-                List<Map<String, Object>> uploadedFiles = new ArrayList<Map<String, Object>>();
-                long totalFileSize = 0;
-                final long MAX_TOTAL_SIZE = 20 * 1024 * 1024; // 20MB in bytes
-
-                if (ServletFileUpload.isMultipartContent(request)) {
-                    // Create a factory for disk-based file items
-                    DiskFileItemFactory factory = new DiskFileItemFactory();
-                    // Create a new file upload handler
-                    ServletFileUpload upload = new ServletFileUpload(factory);
-                    // Set overall request size constraint
-                    upload.setSizeMax(MAX_TOTAL_SIZE);
-                    
-                    // Parse the request
-                    List<FileItem> items = upload.parseRequest(request);
-
-                    for (FileItem item : items) {
-                        try {
-                            if (item.isFormField()) {
-                                String parameterName = item.getFieldName();
-                                String value = item.getString();
-
-                                if ("selectTopic".equals(parameterName)) {
-                                    value = topic;
-                                } else {
-                                    value = A1filter(value);
-                                }
-                                if ("selectTopic2".equals(parameterName)) {
-                                    value = topic2;
-                                }
-                                if (!StringUtils.isEmpty(value)) {
-                                    String temp = "%class" + parameterName + "%";
-                                    mailContent = A1filterHidden(temp, mailContent);
-                                    mailContentUser = A1filterHidden(temp, mailContentUser);
-                                    mailContent = A1filter("%" + parameterName + "%", value, mailContent);
-                                    mailContentUser = A1filter("%" + parameterName + "%", value, mailContentUser);
-                                }
-
-                                if ("first-name".equals(parameterName)) {
-                                    firstName = value;
-                                }
-                                if ("last-name".equals(parameterName)) {
-                                    lastName = value;
-                                }
-                                if ("email-address".equals(parameterName)) {
-                                    emailAddressUser = value;
-                                }
-                                if ("product-title".equals(parameterName)) {
-                                    String nameTitle = "%key-" + parameterName + "%";
-                                    if (StringUtils.isEmpty(value)) {
-                                        mailContent = A1filterNoProductTitle(nameTitle, mailContent, noProductTitleParam);
-                                        mailContentUser = A1filterNoProductTitle(nameTitle, mailContentUser, noProductTitleParam);
-                                    } else {
-                                        String productTitle = productTitleParam + " " + value;
-                                        mailContent = A1filter(nameTitle, productTitle, mailContent);
-                                        mailContentUser = A1filter(nameTitle, productTitle, mailContentUser);
-                                    }
-                                }
-                                if ("policy-number".equals(parameterName)) {
-                                    policy_number = value;
-                                }
-                                if ("marketingConsent".equals(parameterName)) {
-                                    marketingConsent = "Yes";
-                                }
-                                if ("select-service".equals(parameterName)) {
-                                    selectedService = value;
-                                    selectedService = selectedService.replace("&nbsp;", " ");
-                                }
-                            } else {
-                                // Handle file upload
-                                String fileName = item.getName();
-                                if (fileName != null && !fileName.isEmpty() && item.getSize() > 0) {
-                                    // Check if adding this file would exceed the total size limit
-                                    if (totalFileSize + item.getSize() > MAX_TOTAL_SIZE) {
-                                        throw new Exception("Total file size exceeds 20MB limit");
-                                    }
-                                    
-                                    String fieldName = item.getFieldName();
-                                    String fileExtension = FilenameUtils.getExtension(fileName);
-                                    if (fileExtension != null && !fileExtension.isEmpty()) {
-                                        fileExtension = "." + fileExtension;
-                                    }
-                                    
-                                    Map<String, Object> fileInfo = new HashMap<String, Object>();
-                                    fileInfo.put("originalFileName", fileName);
-                                    fileInfo.put("fieldName", fieldName);
-                                    fileInfo.put("fileSize", item.getSize());
-                                    fileInfo.put("fileExtension", fileExtension);
-                                    fileInfo.put("fileContent", item.getInputStream());
-                                    
-                                    uploadedFiles.add(fileInfo);
-                                    totalFileSize += item.getSize();
-                                }
-                            }
-                        } catch (NullPointerException e) {
-                            out.print(responseObject(500, "NullPointerException: " + e.getMessage()));
-                        } catch (Exception e) {
-                            out.print(responseObject(500, "Exception: " + e.getMessage()));
-                        }
-                    }
-                }
-
-                if (StringUtils.isEmpty(marketingConsent)) {
-                    mailContent = mailContent.replace("%marketingConsent2%", "No");
-                    mailContentUser = mailContentUser.replace("%marketingConsent2%", "No");
-                } else {
-                    mailContent = mailContent.replace("%marketingConsent2%", "Yes");
-                    mailContentUser = mailContentUser.replace("%marketingConsent2%", "Yes");
-                }
-
-                if (StringUtils.isEmpty(policy_number)) {
-                    mailContent = mailContent.replace("%policy-number%", "-");
-                    mailContentUser = mailContentUser.replace("%policy-number%", "-");
-                }
-
-                String fullName = firstName + " " + lastName;
-                if (!StringUtils.isEmpty(fullName.trim())) {
-                    String temp = "%class" + "fullName" + "%";
-                    mailContent = A1filterHidden(temp, mailContent);
-                    mailContentUser = A1filterHidden(temp, mailContentUser);
-                    mailContent = A1filter("%" + "fullName" + "%", fullName, mailContent);
-                    mailContentUser = A1filter("%" + "fullName" + "%", fullName, mailContentUser);
-                }
-
-                List<String> emailAddressAdmins = new ArrayList<String>();
-                String emailEnquiry = pageContext.getAttribute("emailEnquiry").toString();
-                if (!StringUtils.isEmpty(emailEnquiry) && !StringUtils.isEmpty(paramSelectTopic)) {
-                    emailAddressAdmins = Arrays.asList(emailEnquiry.split(","));
-                } else {
-                    emailAddressAdmins = Arrays.asList(emailAddressAdmin.split(","));
-                }
-
-                if (!StringUtils.isEmpty(emailAddressUser) && !StringUtils.isEmpty(mailSubject)) {
-                    // Add attachment information to email content
-                    StringBuilder attachmentInfo = new StringBuilder();
-                    attachmentInfo.append("<div style='margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px;'>");
-                    attachmentInfo.append("<h3>Attached Files:</h3>");
-                    attachmentInfo.append("<ul style='list-style-type: none; padding-left: 0;'>");
-                    
-                    for (Map<String, Object> fileInfo : uploadedFiles) {
-                        String fieldName = (String)fileInfo.get("fieldName");
-                        String originalFileName = (String)fileInfo.get("originalFileName");
-                        attachmentInfo.append("<li style='margin-bottom: 5px;'>");
-                        attachmentInfo.append("<strong>").append(fieldName).append(":</strong> ");
-                        attachmentInfo.append(originalFileName);
-                        attachmentInfo.append("</li>");
-                    }
-                    
-                    attachmentInfo.append("</ul>");
-                    attachmentInfo.append("</div>");
-                    
-                    // Add attachment info to both email contents
-                    mailContent = mailContent + attachmentInfo.toString();
-                    mailContentUser = mailContentUser + attachmentInfo.toString();
-
-                    // Send to user
-                    CmsHtmlMail smToCs = new CmsHtmlMail();
-                    smToCs.setMsg(mailContentUser);
-                    smToCs.setSubject(mailSubject);
-                    smToCs.setCharset("UTF-8");
-                    smToCs.setFrom("nyein@gravitas.my");
-                    smToCs.addTo(emailAddressUser);
-
-                    // Add all file attachments
-                    List<File> tempFiles = new ArrayList<File>();
-                    for (Map<String, Object> fileInfo : uploadedFiles) {
-                        String fileNameMTP = (String)fileInfo.get("fieldName") + "_" + fullName + "_";
-                        File tempFile = createTempFileFromInputStream(
-                            (InputStream)fileInfo.get("fileContent"),
-                            fileNameMTP,
-                            (String)fileInfo.get("fileExtension")
-                        );
-                        tempFiles.add(tempFile);
-
-                        EmailAttachment attachment = new EmailAttachment();
-                        attachment.setPath(tempFile.getAbsolutePath());
-                        attachment.setName((String)fileInfo.get("originalFileName"));
-                        attachment.setDisposition(EmailAttachment.ATTACHMENT);
-                        smToCs.attach(attachment);
-                    }
-
-                    smToCs.send();
-
-                    // Clean up temp files
-                    for (File tempFile : tempFiles) {
-                        tempFile.deleteOnExit();
-                    }
-                } else {
-                    out.print(responseObject(500, "send mail failed"));
-                }
-
-                // Send to admins with attachments
-                for (String emailAdmin : emailAddressAdmins) {
-                    CmsHtmlMail smToCsAdmin = new CmsHtmlMail();
-                    smToCsAdmin.setMsg(mailContent);  // Using mailContent which now includes attachment info
-                    smToCsAdmin.setSubject(adminMailSubject);
-                    smToCsAdmin.setCharset("UTF-8");
-                    smToCsAdmin.setFrom(emailAddressUser);
-                    smToCsAdmin.addTo("nyein@gravitas.my");
-
-                    // Add all file attachments
-                    List<File> tempFiles = new ArrayList<File>();
-                    for (Map<String, Object> fileInfo : uploadedFiles) {
-                        String fileNameMTP = (String)fileInfo.get("fieldName") + "_" + fullName + "_";
-                        File tempFile = createTempFileFromInputStream(
-                            (InputStream)fileInfo.get("fileContent"),
-                            fileNameMTP,
-                            (String)fileInfo.get("fileExtension")
-                        );
-                        tempFiles.add(tempFile);
-
-                        EmailAttachment attachment = new EmailAttachment();
-                        attachment.setPath(tempFile.getAbsolutePath());
-                        attachment.setName((String)fileInfo.get("originalFileName"));
-                        attachment.setDisposition(EmailAttachment.ATTACHMENT);
-                        smToCsAdmin.attach(attachment);
-                    }
-
-                    smToCsAdmin.send();
-
-                    // Clean up temp files
-                    for (File tempFile : tempFiles) {
-                        tempFile.deleteOnExit();
-                    }
-                }
-                out.print(responseObject(200, "send mail success"));
-            } catch (Exception e) {
-                out.print(responseObject(500, "Error: " + e.getMessage()));
+        // Always ensure the correct enctype
+        form.setAttribute('enctype', 'multipart/form-data');
+        
+        // Create FormData object from the form
+        const formData = new FormData(form);
+        
+        // Log all form data for debugging
+        console.log('Form data being submitted:');
+        logFormData(formData);
+        
+        // Check for file inputs specifically
+        const fileInputs = form.querySelectorAll('input[type="file"]');
+        let hasFiles = false;
+        
+        fileInputs.forEach(input => {
+          if (input.files && input.files.length > 0) {
+            hasFiles = true;
+            console.log(`File input ${input.name} contains ${input.files.length} file(s)`);
+            for (let i = 0; i < input.files.length; i++) {
+              console.log(`- File: ${input.files[i].name}, Size: ${input.files[i].size} bytes, Type: ${input.files[i].type}`);
             }
+          } else {
+            console.log(`File input ${input.name} has no files selected`);
+          }
+        });
+        
+        // Show progress indicator
+        showProgress();
+        
+        // Create and configure XMLHttpRequest
+        const xhr = new XMLHttpRequest();
+        
+        // Setup progress tracking
+        xhr.upload.addEventListener('progress', function(e) {
+          if (e.lengthComputable) {
+            const percentComplete = (e.loaded / e.total) * 100;
+            console.log(`Upload progress: ${percentComplete.toFixed(2)}%`);
+          }
+        });
+        
+        xhr.addEventListener('load', function() {
+          hideProgress();
+          
+          console.log(`Server response status: ${xhr.status}`);
+          console.log(`Server response text: ${xhr.responseText}`);
+          
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              // Parse the response
+              const response = JSON.parse(xhr.responseText.trim());
+              
+              console.log('Parsed response:', response);
+              
+              if (response.statusCode === 200) {
+                console.log('Form submitted successfully, redirecting to:', redirectUrl);
+                // Success - redirect if URL is provided
+                if (redirectUrl) {
+                  window.location.href = redirectUrl;
+                } else {
+                  showNotification('Form submitted successfully!', false);
+                }
+              } else {
+                // Server returned an error
+                console.error('Server returned error:', response);
+                showNotification(response.message || 'An error occurred during form submission.', true);
+              }
+            } catch (e) {
+              console.error('Error parsing response:', e, 'Raw response:', xhr.responseText);
+              showNotification('An unexpected error occurred. Please try again.', true);
+            }
+          } else {
+            // HTTP error
+            console.error(`HTTP error: ${xhr.status} ${xhr.statusText}`);
+            showNotification(`Server error: ${xhr.status} ${xhr.statusText}`, true);
+          }
+        });
+        
+        xhr.addEventListener('error', function(e) {
+          console.error('XHR error:', e);
+          hideProgress();
+          showNotification('Network error. Please check your connection and try again.', true);
+        });
+        
+        xhr.addEventListener('abort', function() {
+          console.log('XHR aborted');
+          hideProgress();
+          showNotification('Form submission was aborted.', true);
+        });
+        
+        // Open the request and send the form data
+        xhr.open('POST', submitUrl, true);
+        xhr.send(formData);
+        
+        console.log('Form data sent to server');
+      } catch (error) {
+        console.error('Error in form submission:', error);
+        hideProgress();
+        showNotification('An error occurred while preparing the form data. Please try again.', true);
+      }
+    }
+    
+    // Helper function to log FormData contents
+    function logFormData(formData) {
+      for (const pair of formData.entries()) {
+        const [name, value] = pair;
+        if (value instanceof File) {
+          console.log(`${name}: File - ${value.name} (${value.size} bytes)`);
         } else {
-            out.print(responseObject(500, "send mail failed"));
+          console.log(`${name}: ${value}`);
         }
-%>
+      }
+    }
+    
+    // Helper functions for UI feedback
+    function showProgress() {
+      progressContainer.classList.remove('--hide');
+    }
+    
+    function hideProgress() {
+      progressContainer.classList.add('--hide');
+    }
+    
+    function showNotification(message, isError = true) {
+      const messageElement = notificationElement.querySelector('[data-notification-message]');
+      if (messageElement) {
+        messageElement.textContent = message;
+      }
+      
+      notificationElement.classList.remove('d-none');
+      
+      if (isError) {
+        notificationElement.classList.add('error');
+      } else {
+        notificationElement.classList.remove('error');
+      }
+      
+      // Scroll to notification
+      notificationElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    function createProgressElement() {
+      const element = document.createElement('div');
+      element.className = 'loader --hide';
+      element.innerHTML = `
+        <div class="loader-wrapper">
+          <div class="loader-wrapper-item">
+            <div class="loader-item"></div>
+            <div class="loader-item loader-item-2"></div>
+            <div class="loader-item loader-item-3"></div>
+            <div class="loader-item loader-item-4"></div>
+            <div class="loader-item loader-item-5"></div>
+            <div class="loader-item loader-item-6"></div>
+            <div class="loader-item loader-item-7"></div>
+            <div class="loader-item loader-item-8"></div>
+            <div class="loader-item loader-item-9"></div>
+            <div class="loader-item loader-item-10"></div>
+            <div class="loader-item loader-item-11"></div>
+            <div class="loader-item loader-item-12"></div>
+          </div>
+        </div>
+      `;
+      form.parentNode.appendChild(element);
+      return element;
+    }
+    
+    function createNotificationElement() {
+      const element = document.createElement('div');
+      element.className = 'notification-form d-none';
+      element.setAttribute('data-notification', '');
+      
+      element.innerHTML = `
+        <span class="icon icon-warning-triangle notification-form__icon"></span>
+        <div class="notification-form__content">
+          <div class="notification-form__title">Error</div>
+          <div class="notification-form__desc" data-notification-message></div>
+        </div>
+      `;
+      
+      form.insertBefore(element, form.firstChild);
+      return element;
+    }
+    
+    // Ensure the form has the correct enctype
+    form.setAttribute('enctype', 'multipart/form-data');
+    
+    // Create a MutationObserver to ensure enctype remains correct
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'enctype') {
+          if (form.getAttribute('enctype') !== 'multipart/form-data') {
+            console.log('Enctype changed, resetting to multipart/form-data');
+            form.setAttribute('enctype', 'multipart/form-data');
+          }
+        }
+      });
+    });
+    
+    // Start observing the form for attribute changes
+    observer.observe(form, { attributes: true });
+    
+    // Add the submit event listener
+    form.addEventListener('submit', handleFormSubmit);
+    
+    // Handle any existing AJAX submission code
+    // This ensures our code works alongside any existing submission logic
+    if (window.$ && $.ajax) {
+      const originalAjaxSubmit = $.ajax;
+      $.ajax = function(options) {
+        if (options && options.url === submitUrl) {
+          console.log('Intercepted jQuery AJAX call to form submission URL');
+          
+          // Check if this is a form submission
+          if (options.data instanceof FormData) {
+            // Verify reCAPTCHA before allowing the AJAX call to proceed
+            if (!verifyRecaptcha()) {
+              // Reject the promise if jQuery is expecting one
+              if (options.error && typeof options.error === 'function') {
+                options.error(null, 'error', 'reCAPTCHA verification failed');
+              }
+              return {
+                abort: function() {},
+                fail: function() { return this; },
+                always: function() { return this; }
+              };
+            }
+          }
+        }
+        // Otherwise, proceed with the original $.ajax
+        return originalAjaxSubmit.apply(this, arguments);
+      };
+    }
+    
+    // Also intercept the existing form submission handler if it exists
+    const existingSubmitHandler = form.onsubmit;
+    if (existingSubmitHandler) {
+      form.onsubmit = function(event) {
+        // Prevent default submission
+        event.preventDefault();
+        
+        // Verify reCAPTCHA first
+        if (!verifyRecaptcha()) {
+          return false;
+        }
+        
+        // Call the original handler
+        return existingSubmitHandler.call(this, event);
+      };
+    }
+    
+    console.log('Form data transmission handler with reCAPTCHA support initialized');
+    console.log('Target URL:', submitUrl);
+    console.log('Redirect URL:', redirectUrl);
+    
+    // Log all form fields for verification
+    const allFields = form.querySelectorAll('input, select, textarea');
+    console.log(`Form contains ${allFields.length} fields:`);
+    allFields.forEach(field => {
+      console.log(`- ${field.name} (${field.type})`);
+    });
+  });
+})();
