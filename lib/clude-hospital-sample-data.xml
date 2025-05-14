@@ -1,9 +1,15 @@
-Great news! 
-
-Your selected transaction is now available on our customer portal PRUServices. 
-
-Click here to log in or create your account, and effortlessly manage your policy anytime, anywhere.
-
-Alternatively, you can check out our FAQs for quick answers to your questions.
-
-https://www.prulifeuk.com.ph/en/policy-services-information/policy-faqs/
+ <div style='margin: 0 auto;'>
+        <p style='font-weight: bold; margin-bottom: 15px; font-size: 16px;'>Great news!</p>
+        
+        <p style='margin-bottom: 15px; line-height: 1.5; font-size: 16px;'>
+            Your selected transaction is now available on our customer portal <a href='https://pruservices.prulifeuk.com.ph/welcome' style='color: #e30613; font-weight: bold;'>PRUServices</a>.
+        </p>
+        
+        <p style='margin-bottom: 15px; line-height: 1.5; font-size: 16px;'>
+            Click here to log in or create your account, and effortlessly manage your policy anytime, anywhere.
+        </p>
+        
+        <p style='margin-bottom: 15px; line-height: 1.5; font-size: 16px;'>
+            Alternatively, you can check out our <a href='https://www.prulifeuk.com.ph/en/policy-services-information/policy-faqs/' style="color: #e30613; font-weight: bold;">FAQs</a> for quick answers to your questions.
+        </p>
+    </div>
