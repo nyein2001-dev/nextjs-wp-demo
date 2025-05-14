@@ -1,32 +1,48 @@
-Change Payment Freqency : Please log on PRUServices for the transaction.
-Change Beneficiary  : Please log on PRUServices for the transaction.
+<script>
+  const radios = document.querySelectorAll('input[type="radio"]');
+  const sectionInputForm = document.getElementById('section-input-form');
+  const formBottomSection = document.getElementById('form-bottom-section');
 
+  let lastCheckedRadio = null;
 
-Change Method of Payment to Credit Card or Credit Card Enrollment
-For change method of payment to credit card, please take advantage of following convenient facilities
+  radios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      // Check if there was a previously checked radio
+      if (lastCheckedRadio && lastCheckedRadio !== radio) {
+        const uncheckedRadioId = lastCheckedRadio.id;
+        console.log('Unchecked Radio ID:', uncheckedRadioId);
 
-Pay Premium 
+        const prevDropdownId = lastCheckedRadio.getAttribute('data-dropdown-id') || '';
+        const prevSelectedId = prevDropdownId + "_" + uncheckedRadioId;
 
-For premium payment, please take advantage of following convenient facilities
+        const prevView = document.getElementById(prevSelectedId);
+        if (prevView) {
+          prevView.style.display = 'none';
+          console.log('Hiding view for:', prevSelectedId);
+        }
+      }
 
-PRUServices
-Payment link page
+      // Now handle the currently checked radio
+      const radioId = radio.id;
+      const dropdownId = radio.getAttribute('data-dropdown-id') || '';
+      const selectedId = dropdownId + "_" + radioId;
 
+      console.log("Radio ID:", radioId);
+      console.log("Dropdown ID:", dropdownId);
+      console.log("Selected ID:", selectedId);
 
+      const selectedView = document.getElementById(selectedId);
+      if (selectedView) {
+        selectedView.style.display = 'block';
+        console.log('Showing view for:', selectedId);
+        sectionInputForm.style.display = 'block';
+        formBottomSection.style.display = 'block';
+      } else {
+        console.log('No element found with ID:', selectedId);
+      }
 
-
- <div style='margin: 0 auto;'>
-        <p style='font-weight: bold; margin-bottom: 15px; font-size: 16px;'>Great news!</p>
-        
-        <p style='margin-bottom: 15px; line-height: 1.5; font-size: 16px;'>
-            Your selected transaction is now available on our customer portal <a href='https://pruservices.prulifeuk.com.ph/welcome' style='color: #e30613; font-weight: bold;'>PRUServices</a>.
-        </p>
-        
-        <p style='margin-bottom: 15px; line-height: 1.5; font-size: 16px;'>
-            Click here to log in or create your account, and effortlessly manage your policy anytime, anywhere.
-        </p>
-        
-        <p style='margin-bottom: 15px; line-height: 1.5; font-size: 16px;'>
-            Alternatively, you can check out our <a href='https://www.prulifeuk.com.ph/en/policy-services-information/policy-faqs/' style="color: #e30613; font-weight: bold;">FAQs</a> for quick answers to your questions.
-        </p>
-    </div>
+      // Update last checked radio
+      lastCheckedRadio = radio;
+    });
+  });
+</script>
