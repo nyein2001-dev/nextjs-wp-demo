@@ -3,6 +3,7 @@ String deleteQuery = "DELETE FROM enquiry_form WHERE field1 = ?";
     pstmt.setString(1, "Simplified Leads");
 
     int rowsDeleted = pstmt.executeUpdate();
+ out.println("Deleted " + rowsDeleted + " rows where CampaignName = 'Simplified Leads'.");
 
 String alterQuery = "ALTER TABLE enquiry_form " +
                         "ADD COLUMN product TEXT, " +
