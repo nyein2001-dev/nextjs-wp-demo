@@ -1,16 +1,8 @@
-<%@ page import="java.io.StringWriter" %>
-<%@ page import="java.io.PrintWriter" %>
-<%@ page import="java.sql.SQLException" %>
+String deleteQuery = "DELETE FROM enquiry_form WHERE field1 = ?";
+    pstmt = conn.prepareStatement(deleteQuery);
+    pstmt.setString(1, "Simplified Leads");
 
- StringWriter sw = new StringWriter();
-    PrintWriter pw = new PrintWriter(sw);
-    e.printStackTrace(pw);
-    String stackTrace = sw.toString();
-    out.print(responeObject(700, "Error executeUpdate : " + stackTrace));
-
-crm.uat@prulifeuk.com.ph
-jamilaanne.g.asiga@prulifeuk.com.ph
-Edlin.Q.Dadivas@prulifeuk.com.ph
+    int rowsDeleted = pstmt.executeUpdate();
 
 String alterQuery = "ALTER TABLE enquiry_form " +
                         "ADD COLUMN product TEXT, " +
