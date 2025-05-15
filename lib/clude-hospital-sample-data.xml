@@ -1,6 +1,14 @@
-data-is-required="true"
-crm.uat@prulifeuk.com.ph
-contactus.uat@prulifeuk.com.ph
+String alterQuery = "ALTER TABLE enquiry_form " +
+                        "ADD COLUMN product TEXT, " +
+                        "ADD COLUMN utm_source TEXT, " +
+                        "ADD COLUMN utm_medium TEXT, " +
+                        "ADD COLUMN utm_campaign TEXT, " +
+                        "ADD COLUMN utm_term TEXT, " +
+                        "ADD COLUMN utm_content TEXT" +
+                        "ADD COLUMN utm_adgroup TEXT, " +
+                        "ADD COLUMN utm_adname TEXT";
+
+    stmt.executeUpdate(alterQuery);
 <script>
 (function() {
   document.addEventListener('DOMContentLoaded', function() {
