@@ -1,48 +1,68 @@
+data-is-required="true"
+crm.uat@prulifeuk.com.ph
+contactus.uat@prulifeuk.com.ph
 <script>
-  const radios = document.querySelectorAll('input[type="radio"]');
-  const sectionInputForm = document.getElementById('section-input-form');
-  const formBottomSection = document.getElementById('form-bottom-section');
+document.addEventListener('DOMContentLoaded', function () {
+    const select = document.getElementById('select-service');
+    const sectionInputForm = document.getElementById('section-input-form');
+    const formBottomSection = document.getElementById('form-bottom-section');
+    const allViews = document.querySelectorAll('.dropdown-view');
+    const unavailableText = document.getElementById('unavailable-text');
+    const radios = document.querySelectorAll('input[type="radio"]');
 
-  let lastCheckedRadio = null;
+    function showSelectedView() {
+        const selectedOption = select.options[select.selectedIndex];
+        const selectedId = selectedOption.getAttribute('data-option-id'); 
+        const isAvailable = selectedOption.getAttribute('data-available') === 'true';
+        const isIncludeRadio = selectedOption.getAttribute('data-include-radio') === 'true';
+        const text = selectedOption.getAttribute('data-unavailable-text') || 'This option is unavailable.';
 
-  radios.forEach(radio => {
-    radio.addEventListener('change', () => {
-      // Check if there was a previously checked radio
-      if (lastCheckedRadio && lastCheckedRadio !== radio) {
-        const uncheckedRadioId = lastCheckedRadio.id;
-        console.log('Unchecked Radio ID:', uncheckedRadioId);
+        allViews.forEach(view => {
+            view.style.display = 'none';
+        });
 
-        const prevDropdownId = lastCheckedRadio.getAttribute('data-dropdown-id') || '';
-        const prevSelectedId = prevDropdownId + "_" + uncheckedRadioId;
+        unavailableText.style.display = 'none';
+        unavailableText.textContent = '';
 
-        const prevView = document.getElementById(prevSelectedId);
-        if (prevView) {
-          prevView.style.display = 'none';
-          console.log('Hiding view for:', prevSelectedId);
+        radios.forEach(radio => {
+            if (radio.name !== "policyRadios") {
+                radio.checked = false;
+            }
+        });
+
+        document.querySelectorAll('.dropdown-view input[type="file"]').forEach(fileInput => {
+            fileInput.removeAttribute('required');
+        });
+
+        if (selectedId) {
+            if (isAvailable) {
+                const selectedView = document.getElementById(selectedId);
+
+                sectionInputForm.style.display = isIncludeRadio ? 'none' : 'block';
+                formBottomSection.style.display = isIncludeRadio ? 'none' : 'block';
+
+                if (selectedView) {
+                    selectedView.style.display = 'block';
+
+                    selectedView.querySelectorAll('input[type="file"]').forEach(fileInput => {
+                        const isRequired = fileInput.getAttribute('data-is-required') === 'true';
+                        if (isRequired) {
+                            fileInput.setAttribute('required', 'required');
+                        }
+                    });
+                }
+
+            } else {
+                sectionInputForm.style.display = 'none';
+                formBottomSection.style.display = 'none';
+                unavailableText.innerHTML = text;
+                unavailableText.style.display = 'block';
+            }
         }
-      }
+    }
 
-      // Now handle the currently checked radio
-      const radioId = radio.id;
-      const dropdownId = radio.getAttribute('data-dropdown-id') || '';
-      const selectedId = dropdownId + "_" + radioId;
+    showSelectedView();
 
-      console.log("Radio ID:", radioId);
-      console.log("Dropdown ID:", dropdownId);
-      console.log("Selected ID:", selectedId);
-
-      const selectedView = document.getElementById(selectedId);
-      if (selectedView) {
-        selectedView.style.display = 'block';
-        console.log('Showing view for:', selectedId);
-        sectionInputForm.style.display = 'block';
-        formBottomSection.style.display = 'block';
-      } else {
-        console.log('No element found with ID:', selectedId);
-      }
-
-      // Update last checked radio
-      lastCheckedRadio = radio;
-    });
-  });
+    select.addEventListener('change', showSelectedView);
+});
 </script>
