@@ -1,3 +1,13 @@
+ StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    e.printStackTrace(pw);
+    String stackTrace = sw.toString();
+    out.print(responeObject(700, "Error executeUpdate : " + stackTrace));
+
+crm.uat@prulifeuk.com.ph
+jamilaanne.g.asiga@prulifeuk.com.ph
+Edlin.Q.Dadivas@prulifeuk.com.ph
+
 String alterQuery = "ALTER TABLE enquiry_form " +
                         "ADD COLUMN product TEXT, " +
                         "ADD COLUMN utm_source TEXT, " +
