@@ -1,3 +1,7 @@
+<%@ page import="java.io.StringWriter" %>
+<%@ page import="java.io.PrintWriter" %>
+<%@ page import="java.sql.SQLException" %>
+
  StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter(sw);
     e.printStackTrace(pw);
