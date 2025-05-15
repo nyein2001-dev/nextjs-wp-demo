@@ -11,6 +11,17 @@ String alterQuery = "ALTER TABLE enquiry_form " +
                         "ADD COLUMN utm_adgroup TEXT, " +
                         "ADD COLUMN utm_adname TEXT";
 
+    stmt.executeUpdate(alterQuery);
+
+
+String alterQuery = "ALTER TABLE enquiry_form " +
+                        "ADD COLUMN product TEXT, " +
+                        "ADD COLUMN utm_source TEXT, " +
+                        "ADD COLUMN utm_medium TEXT, " +
+                        "ADD COLUMN utm_campaign TEXT, " +
+                        "ADD COLUMN utm_adgroup TEXT, " +
+                        "ADD COLUMN utm_adname TEXT";
+
 
 String alterQuery = "ALTER TABLE enquiry_form " +
                         "ADD COLUMN product TEXT, " +
