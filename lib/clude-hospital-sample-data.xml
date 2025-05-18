@@ -35,7 +35,8 @@
     }
     
     function validateFiles() {
-      const fileInputs = form.querySelectorAll('input[type="file"]');
+      const allFileInputs = form.querySelectorAll('input[type="file"]');
+      const fileInputs = Array.from(allFileInputs).filter(input => input.id === 'evidence-document');
       let totalSize = 0;
       let isValid = true;
       let errorMessage = '';
