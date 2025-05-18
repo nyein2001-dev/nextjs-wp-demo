@@ -1,3 +1,14 @@
+document.querySelectorAll('.dropdown-view input[type="file"]').forEach(fileInput => {
+            fileInput.removeAttribute('required');
+        });
+
+ selectedView.querySelectorAll('.dropdown-view input[type="file"]').forEach(fileInput => {
+                        const isRequired = fileInput.getAttribute('data-is-required') === 'true';
+                        if (isRequired) {
+                            fileInput.setAttribute('required', 'required');
+                        }
+                    });
+
 (function() {
   document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('.dynamic-form-submission');
