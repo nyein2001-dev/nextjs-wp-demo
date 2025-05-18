@@ -1,40 +1,3 @@
-String deleteQuery = "DELETE FROM enquiry_form WHERE field1 = 'Simplified Leads'";
-    int rowsDeleted = stmt.executeUpdate(deleteQuery);
-    
-    out.println("Deleted " + rowsDeleted + " rows where field1 = 'Simplified Leads'.");
-
-String alterQuery = "ALTER TABLE enquiry_form " +
-                        "ADD COLUMN product TEXT, " +
-                        "ADD COLUMN utm_source TEXT, " +
-                        "ADD COLUMN utm_medium TEXT, " +
-                        "ADD COLUMN utm_campaign TEXT, " +
-                        "ADD COLUMN utm_adgroup TEXT, " +
-                        "ADD COLUMN utm_adname TEXT";
-
-    stmt.executeUpdate(alterQuery);
-
-
-String alterQuery = "ALTER TABLE enquiry_form " +
-                        "ADD COLUMN product TEXT, " +
-                        "ADD COLUMN utm_source TEXT, " +
-                        "ADD COLUMN utm_medium TEXT, " +
-                        "ADD COLUMN utm_campaign TEXT, " +
-                        "ADD COLUMN utm_adgroup TEXT, " +
-                        "ADD COLUMN utm_adname TEXT";
-
-
-String alterQuery = "ALTER TABLE enquiry_form " +
-                        "ADD COLUMN product TEXT, " +
-                        "ADD COLUMN utm_source TEXT, " +
-                        "ADD COLUMN utm_medium TEXT, " +
-                        "ADD COLUMN utm_campaign TEXT, " +
-                        "ADD COLUMN utm_term TEXT, " +
-                        "ADD COLUMN utm_content TEXT" +
-                        "ADD COLUMN utm_adgroup TEXT, " +
-                        "ADD COLUMN utm_adname TEXT";
-
-    stmt.executeUpdate(alterQuery);
-<script>
 (function() {
   document.addEventListener('DOMContentLoaded', function() {
     const form = document.querySelector('.dynamic-form-submission');
@@ -316,4 +279,3 @@ String alterQuery = "ALTER TABLE enquiry_form " +
     }
   });
 })();
-</script>
