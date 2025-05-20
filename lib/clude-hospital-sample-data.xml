@@ -71,6 +71,23 @@ Field marked with * are required
 Attachment*
 *.  Note: The maximum file size for each document is 5 MB. Acceptable doc type to be uploaded: png, jpeg, pdf, doc, docx, heic, jpg.
 
+Attachment
+  - Mandatory field
+Error message: "Mandatory document
+required. Please upload to proceed."
+    - The maximum file size for each document is 5 MB.
+Error message: "The uploaded file exceeds the maximum allowed size of 5 MB. Please upload a file that is 5 MB or smaller to proceed." 
+  - Acceptable doc type to be uploaded: png, jpeg, pdf, doc, docx, .heic, .jpg 
+Error message: "The uploaded file type is not supported. Please upload a file in acceptable formats to proceed.  
+  - (D1) Upload Field Name:  Reinstatement form
+Mandatory upload
+  - (D2) Upload Field Name:  Clear copy of one (1) valid government-issued ID or two (2) valid non-government IDs of policyowner
+Mandatory upload
+  - (D3) Upload Field Name: Proof of payment for the reinstatement cost
+Non-mandatory 
+   -There will be 1 upload field for each mandatory requirement (based on the chosen transaction)
+  - All the attachment will be stored on share point. User will approve the attachment on SharePoint and then the file will be transferred/ pushed to FileNet.
+
 
 I can opt out anytime by sending an email to contact.us@prulifeuk.com.ph
 https://www.prulifeuk.com.ph/en/privacy-policy/
