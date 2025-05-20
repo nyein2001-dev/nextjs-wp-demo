@@ -1,3 +1,6 @@
+File tempDir = new File(System.getProperty("java.io.tmpdir"));
+                    factory.setRepository(tempDir);
+
 String fileExtension = "";
                                     if (fileName.lastIndexOf(".") != -1) {
                                         fileExtension = fileName.substring(fileName.lastIndexOf("."));
