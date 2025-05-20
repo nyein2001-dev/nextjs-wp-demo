@@ -1,6 +1,39 @@
-if (!/^\d{8}$/.test(policyNumber)) {
+String fileExtension = "";
+                                    if (fileName.lastIndexOf(".") != -1) {
+                                        fileExtension = fileName.substring(fileName.lastIndexOf("."));
+                                    }
+                                    
+                                    // Create temporary file
+                                    String fileNamePrefix = fieldName + "_" + firstName + "_" + lastName + "_";
+                                    fileNamePrefix = fileNamePrefix.replaceAll("\\s+", "_"); // Replace spaces with underscores
+                                    File tempFile = File.createTempFile(fileNamePrefix, fileExtension, tempDir);
+                                    
+                                    // Write to temporary file
+                                    item.write(tempFile);
 
-if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+
+---------------
+fileInfo.put("tempFile", tempFile);
+------------------
+
+for (int i = 0; i < uploadedFiles.size(); i++) {
+                            Map<String, Object> fileInfo = (Map<String, Object>)uploadedFiles.get(i);
+                            File tempFile = (File)fileInfo.get("tempFile");
+                            
+                            EmailAttachment attachment = new EmailAttachment();
+                            attachment.setPath(tempFile.getAbsolutePath());
+                            attachment.setName((String)fileInfo.get("originalFileName"));
+                            attachment.setDisposition(EmailAttachment.ATTACHMENT);
+                            smToCsAdmin.attach(attachment);
+                        }
+
+---------------------------------
+
+for (int i = 0; i < uploadedFiles.size(); i++) {
+                        Map<String, Object> fileInfo = (Map<String, Object>)uploadedFiles.get(i);
+                        File tempFile = (File)fileInfo.get("tempFile");
+                        tempFile.delete();
+                    }
 
 <p style='margin: 15px 0; line-height: 1.6; color: #5a6872;'>Thank you for reaching out to us!</p>
         
