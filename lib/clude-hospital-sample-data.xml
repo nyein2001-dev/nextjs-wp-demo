@@ -17,3 +17,45 @@
         'width': 'auto !important'
     });
 });
+
+
+  <style>
+  /* Target the dropdown button text */
+  .bootstrap-select .filter-option-inner-inner,
+  .dropdown-toggle .filter-option-inner-inner {
+    text-overflow: clip !important;
+    overflow: visible !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    width: auto !important;
+  }
+  
+  /* Target the dropdown menu items */
+  .bootstrap-select .dropdown-menu li a,
+  .dropdown-menu > li > a {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    text-overflow: clip !important;
+    overflow: visible !important;
+  }
+  
+  /* Ensure dropdown width is sufficient */
+  .bootstrap-select .dropdown-menu {
+    width: auto !important;
+    min-width: 100% !important;
+    max-width: none !important;
+  }
+  
+  /* For custom implementations */
+  .custom-dropdown-select,
+  .custom-dropdown-select__inner {
+    overflow: visible !important;
+  }
+  
+  /* Override any other potential truncation */
+  * {
+    text-overflow: inherit !important;
+  }
+</style>
+
+  
