@@ -1,61 +1,52 @@
-<select  style="text-overflow: unset !important; white-space: normal !important; overflow: visible !important; width: auto !important;"
-
- <option style="text-overflow: unset !important; white-space: normal !important; overflow: visible !important; width: auto !important;">
-
-
-  <div class="custom-dropdown-select" style="width: auto !important; min-width: 100% !important;">
-    <div class="custom-dropdown-select__inner" style="width: auto !important; overflow: visible !important;">
-        <!-- rest of the code -->
-    </div>
-</div>
-
-
-
- $('select').on('shown.bs.select', function() {
-    $('.dropdown-menu').css({
-        'max-width': 'none !important',
-        'width': 'auto !important'
-    });
-});
-
-
-  <style>
-  /* Target the dropdown button text */
-  .bootstrap-select .filter-option-inner-inner,
-  .dropdown-toggle .filter-option-inner-inner {
-    text-overflow: clip !important;
-    overflow: visible !important;
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    width: auto !important;
-  }
-  
-  /* Target the dropdown menu items */
+<style>
+  /* Target the dropdown items to enable text wrapping */
+  .dropdown-item,
+  .dropdown-menu > li > a,
   .bootstrap-select .dropdown-menu li a,
-  .dropdown-menu > li > a {
+  .custom-dropdown-select__inner .dropdown-menu li a {
     white-space: normal !important;
     word-wrap: break-word !important;
-    text-overflow: clip !important;
-    overflow: visible !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    width: 100% !important;
+    line-height: 1.4 !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
   }
   
-  /* Ensure dropdown width is sufficient */
-  .bootstrap-select .dropdown-menu {
-    width: auto !important;
-    min-width: 100% !important;
-    max-width: none !important;
+  /* Ensure the dropdown maintains its width */
+  .dropdown-menu {
+    width: 100% !important;
   }
   
-  /* For custom implementations */
-  .custom-dropdown-select,
-  .custom-dropdown-select__inner {
-    overflow: visible !important;
+  /* Add more padding if needed for readability */
+  .dropdown-menu > li {
+    padding: 0 !important;
   }
   
-  /* Override any other potential truncation */
-  * {
-    text-overflow: inherit !important;
+  /* For any custom implementation classes */
+  .custom-dropdown-select__inner select option {
+    white-space: normal !important;
+  }
+  
+  /* If this is a select element that's styled with CSS */
+  select.w-100 option {
+    white-space: normal !important;
   }
 </style>
 
+<style>
+  /* For Bootstrap dropdowns */
+  .dropdown-menu .text {
+    white-space: normal !important;
+    display: inline-block !important;
+    width: 100% !important;
+  }
   
+  /* Additional specificity for Bootstrap Select */
+  .bootstrap-select.btn-group .dropdown-menu li a span.text {
+    display: inline-block !important;
+    width: 100% !important;
+    white-space: normal !important;
+  }
+</style>
