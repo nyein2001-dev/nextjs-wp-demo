@@ -1,12 +1,19 @@
-By clicking the Submit button below, I agree to the collection and use by Pru Life UK of my information in accordance with the company's privacy policy.
+<select  style="text-overflow: unset !important; white-space: normal !important; overflow: visible !important; width: auto !important;"
 
-/export/sites/prudential-ph/en/.galleries/pdf/prulink-application-for-premium-redirection-fund-switch-form.pdf
+ <option style="text-overflow: unset !important; white-space: normal !important; overflow: visible !important; width: auto !important;">
 
-(For individually owned policies) 
 
-(For corporate/entity-owned policies) 
+  <div class="custom-dropdown-select" style="width: auto !important; min-width: 100% !important;">
+    <div class="custom-dropdown-select__inner" style="width: auto !important; overflow: visible !important;">
+        <!-- rest of the code -->
+    </div>
+</div>
 
-style="white-space: normal; word-wrap: break-word; overflow: visible; text-overflow: clip;">
 
- aria-expanded="true"
-        style="width: auto !important; min-width: 300px !important;"
+
+ $('select').on('shown.bs.select', function() {
+    $('.dropdown-menu').css({
+        'max-width': 'none !important',
+        'width': 'auto !important'
+    });
+});
