@@ -7,3 +7,6 @@ By clicking the Submit button below, I agree to the collection and use by Pru Li
 (For corporate/entity-owned policies) 
 
 style="white-space: normal; word-wrap: break-word; overflow: visible; text-overflow: clip;">
+
+<select class="w-100" data-select-dropdown data-style data-live-search="true" aria-expanded="true"
+        style="text-overflow: clip; white-space: normal; word-wrap: break-word;"
