@@ -1,52 +1,8 @@
-<style>
-  /* Target the dropdown items to enable text wrapping */
-  .dropdown-item,
-  .dropdown-menu > li > a,
-  .bootstrap-select .dropdown-menu li a,
-  .custom-dropdown-select__inner .dropdown-menu li a {
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    word-break: break-word !important;
-    overflow-wrap: break-word !important;
-    width: 100% !important;
-    line-height: 1.4 !important;
-    padding-top: 8px !important;
-    padding-bottom: 8px !important;
-  }
-  
-  /* Ensure the dropdown maintains its width */
-  .dropdown-menu {
-    width: 100% !important;
-  }
-  
-  /* Add more padding if needed for readability */
-  .dropdown-menu > li {
-    padding: 0 !important;
-  }
-  
-  /* For any custom implementation classes */
-  .custom-dropdown-select__inner select option {
-    white-space: normal !important;
-  }
-  
-  /* If this is a select element that's styled with CSS */
-  select.w-100 option {
-    white-space: normal !important;
-  }
-</style>
+Our PRU Contact Center will be in touch with you in 2 business days. Here are the details of your request:
 
-<style>
-  /* For Bootstrap dropdowns */
-  .dropdown-menu .text {
-    white-space: normal !important;
-    display: inline-block !important;
-    width: 100% !important;
-  }
-  
-  /* Additional specificity for Bootstrap Select */
-  .bootstrap-select.btn-group .dropdown-menu li a span.text {
-    display: inline-block !important;
-    width: 100% !important;
-    white-space: normal !important;
-  }
-</style>
+“You are receiving this because a request was submitted through Pru Life UK website.
+If you did not make this request, please report it to us via +63 (2) 887 5433 or 1800 10 7785465”
+
+(For individually owned policies)
+
+(For corporate/entity-owned policies) 
