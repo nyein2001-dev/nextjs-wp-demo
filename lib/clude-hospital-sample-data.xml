@@ -1,8 +1,67 @@
-Our PRU Contact Center will be in touch with you in 2 business days. Here are the details of your request:
-
-“You are receiving this because a request was submitted through Pru Life UK website.
-If you did not make this request, please report it to us via +63 (2) 887 5433 or 1800 10 7785465”
-
-(For individually owned policies)
-
-(For corporate/entity-owned policies) 
+function validateFiles() {
+  const fileInputs = form.querySelectorAll('input[type="file"]');
+  let totalSize = 0;
+  let isValid = true;
+  let errorMessage = '';
+  
+  // Allowed file types
+  const allowedFileTypes = ['.png', '.jpeg', '.pdf', '.doc', '.docx', '.heic', '.jpg'];
+  
+  // Check each file input
+  for (let i = 0; i < fileInputs.length; i++) {
+    const input = fileInputs[i];
+    const isRequired = input.hasAttribute('required');
+    const files = input.files;
+    
+    // Check if required file input is empty
+    if (isRequired && (!files || files.length === 0)) {
+      isValid = false;
+      const placeholder = input.getAttribute('placeholder') || 'File';
+      errorMessage = `Please select a file for ${placeholder}.`;
+      break;
+    }
+    
+    // Check file size limits and file types
+    if (files && files.length > 0) {
+      for (let j = 0; j < files.length; j++) {
+        const file = files[j];
+        const fileSizeMB = file.size / (1024 * 1024);
+        totalSize += file.size;
+        
+        // Check individual file size (5MB limit)
+        if (fileSizeMB > 5) {
+          isValid = false;
+          errorMessage = `File ${file.name} exceeds the maximum size of 5MB.`;
+          break;
+        }
+        
+        // Check file type
+        const fileName = file.name.toLowerCase();
+        const isValidFileType = allowedFileTypes.some(type => 
+          fileName.endsWith(type.toLowerCase())
+        );
+        
+        if (!isValidFileType) {
+          isValid = false;
+          errorMessage = "The uploaded file type is not supported. Please upload a file in acceptable formats to proceed";
+          break;
+        }
+      }
+      
+      if (!isValid) break;
+    }
+  }
+  
+  // Check total file size (20MB limit)
+  const totalSizeMB = totalSize / (1024 * 1024);
+  if (isValid && totalSizeMB > 20) {
+    isValid = false;
+    errorMessage = `Total file size exceeds the maximum of 20MB. Current total: ${totalSizeMB.toFixed(2)}MB.`;
+  }
+  
+  if (!isValid) {
+    showNotification(errorMessage, true);
+  }
+  
+  return isValid;
+}
