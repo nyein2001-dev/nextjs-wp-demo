@@ -2,3 +2,7 @@ For email to Admin:
 
 Send to contactus.uat@prulifeuk.com.ph
 Cc: edlin.q.dadivas@prulifeuk.com.ph
+
+ for (String ccEmail : ccEmailAddresses) {
+        smToCsAdmin.addCc(ccEmail);
+    }
