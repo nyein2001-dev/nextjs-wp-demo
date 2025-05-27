@@ -1,1625 +1,565 @@
- <%@include file="../ph/ph.jsp"%>
-<fmt:setLocale value="${cms.locale}" />
-<cms:bundle basename="com.prudential.v2.ph.default">
-<cms:formatter var="content">
-    <c:if test="${cms.isEditMode}">
-        <c:out value='<div>' escapeXml="false" />
-    </c:if>
-        <c:choose>
-            <c:when test ="${content.value.GeneralForm.value.DefaultFormTitleBold == ''}">
-                <c:if test = "${cms.isEditMode}">
-                    <div class="color-red"><fmt:message key = "label.default.Title"/></div>
-                </c:if>
-            </c:when>
-            <c:otherwise>
-              <c:set var="filename" value="${content.filename}" />
-               <%
-                   String filename = pageContext.getAttribute("filename").toString();
-                   byte[] bytesEncoded = filename.getBytes("UTF-8");
-                   String filenameEncode = DatatypeConverter.printBase64Binary(bytesEncoded);
-                %>
-              <div data-pru-link class="container">
-                 <div class="contact-form row pd-100-60">
-                    <div class="col-md-7 col-lg-6 contact-form__input">
-                       <form id="form" data-submit-form="" class="dynamic-form-submission"  data-url-submit="<cms:link>../action/dynamic-contact-form.jsp</cms:link>" 
-                          data-analytics='{"event":"formStarts","formName":"Contact us form ph","formType":"Contact us ph"}'
-                          data-url-redirect="<cms:link> ${content.value.GeneralForm.value.SuccessPageLink} </cms:link>" data-method="POST"  novalidate="" enctype="multipart/form-data">
-                       <div class="title-form__wrapper">
-                          <h1 class="title-form" data-product-title><span class="title-form__bold">${content.value.GeneralForm.value.DefaultFormTitleBold}</span> ${content.value.GeneralForm.value.DefaultFormTitleNonBold}</h1>
-                          <c:if test ="${content.value.GeneralForm.value.DescriptionText.isSet}">
-                              <div class="title-form__desc">${content.value.GeneralForm.value.DescriptionText}</div>
-                          </c:if>
-                       </div>
-					   <div style="display: none;" class="notification-form d-none" data-notification ><span class="icon icon-warning-triangle notification-form__icon"></span>
-                           <div class="notification-form__content">
-                             <div class="notification-form__title">${content.value.GeneralForm.value.FormIncompleteFieldsErrorBoldText}</div>
-                             <div class="notification-form__desc" data-notification-message>${content.value.GeneralForm.value.FormIncompleteFieldsError}</div>
-                           </div>
-                       </div>
-					   <div class="notification-form d-none" data-noti ><span class="icon icon-warning-triangle notification-form__icon"></span>
-                           <div class="notification-form__content">
-                             <div class="notification-form__title">${content.value.GeneralForm.value.FormIncompleteFieldsErrorBoldText}</div>
-                             <div class="notification-form__desc" data-noti-message>${content.value.GeneralForm.value.FormIncompleteFieldsError}</div>
-                           </div>
-                       </div>
-                       <p class="mandatory-text">${content.value.GeneralForm.value.DefaultRedDisplayText}</p>
-                      <!-- Section1 title "Are you a policy holder?" -->
-                       <c:if test ="${content.value.Section1.value.SectionTitle.isSet}">
-                          <!-- (Are you a policy holder?) -->
-                        <c:set var="isRequiredLable"></c:set>
-                        <c:if test ="${content.value.Section1.value.MandatoryOptional == 'Mandatory'}">
-                          <c:set var="isRequiredLable">data-required</c:set>
-                        </c:if>
-                        <h2 class="group-field__title" ${isRequiredLable}>${content.value.Section1.value.SectionTitle}</h2>
-                        <fieldset class="section-radio-checkbox" data-radio-checkbox-popup>
-                            <legend class="sr-only">${content.value.Section1.value.SectionTitle}</legend>
-                            <div class="radio-checkbox__wrapper field-item">
-                                <c:if test ="${content.value.Section1.value.RadioOptionsYesLabel.isSet}">
-                                    <div class="radio-checkbox">
-                                        <c:set var="isRadioYes" value=""></c:set>
-                                        <c:if test ="${content.value.Section1.value.MandatoryOptional == 'Mandatory'}">
-                                            <c:set var="isRadioYes" value ="required data-parsley-required-message ='${content.value.Section1.value.ErrorMessageMandatoryField}'"></c:set>
-                                        </c:if>
-                                        <label class="radio-checkbox__label" for="yes">
-                                            <input class="radio-checkbox__input" type="radio" name="policyRadios" id="yes" ${isRadioYes} value="Yes" /><span></span>${content.value.Section1.value.RadioOptionsYesLabel}
-                                        </label>
-                                    </div>
-                                </c:if>
-                                <c:if test ="${content.value.Section1.value.RadioOptionsNoLabel.isSet}">
-                                    <div class="radio-checkbox">
-                                        <label class="radio-checkbox__label" for="no">
-                                            <input class="radio-checkbox__input" type="radio" name="policyRadios" id="no" value="No" checked /><span></span>${content.value.Section1.value.RadioOptionsNoLabel}
-                                        </label>
-                                    </div>     
-                                </c:if>
-                            </div>
-							
-                                    <div class="popup-policy-number d-none" data-policy-number>
-					 <!-- Available Services -->
-					 <c:if test = "${content.value.Dropdown.value.SelectAPruService.isSet }">
-                            <c:if test="${fn:length(content.value.Dropdown.valueList.DropdownOption) > 0}">
-                               <c:set var = "isCheckRequireATopic" value = ""></c:set>
-                               <!-- <c:if test ="${content.value.Section5.value.ValuesLabelContainerValidation.value.Title == 'Mandatory'}">
-                                  <c:set var = "isCheckRequireATopic" value = "required data-parsley-required-message='${content.value.Section5.value.ValuesLabelContainerValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                               </c:if> -->
-                               <div class="input-text-field">
-                                 <div class="field-item">
-                                   <div class="custom-dropdown-select">
-                                     <div class="custom-dropdown-select__inner" >
-                                       <label class="sr-only" for="select-service">${content.value.Dropdown.value.SelectAPruService}</label>
-                                       <select class="w-100" data-select-dropdown data-style data-live-search="true" aria-expanded="true" 
-                                                ${isCheckRequireATopic} id="select-service" name="select-service" >
-                                              <option disabled selected data-hidden="true" value="" >${content.value.Dropdown.value.SelectAPruService}</option>
-                                             <c:forEach var="item" items="${content.value.Dropdown.valueList.DropdownOption}" varStatus="loop">
-                                                 <option value="${item.value.OptionName}"
-												     data.option-id="${item.value.OptionId}"
-												     data-available="${item.value.IsAvailable}"
-                                                     data-include-radio="${item.value.IncludeRadioSection}"
-                                                     data-unavailable-text="${item.value.UnavailableText}" >
-													 ${item.value.OptionName}
-												 </option>
-                                             </c:forEach>
-                                       </select>
-                                     </div>
-                                   </div>
-                                 </div>
-                               </div>
-                            </c:if>
-                         </c:if>
-						 <div class="agreement-form__label" id="unavailable-text" style="display:none;"></div>
-						 <!-- Related Radio Button -->
-						 <c:if test="${fn:length(content.value.Dropdown.valueList.RadioSection) > 0}">
-						    <c:forEach var="item" items="${content.value.Dropdown.valueList.RadioSection}" varStatus="loop">
-							<div id="${item.value.RootId}" class="dropdown-view" style="display:none;">
-							    <div class="radio-checkbox__wrapper field-item" >
-                                <c:if test ="${item.value.RadioOptionsYesLabel.isSet}">
-                                    <div class="radio-checkbox">
-                                        <c:if test ="${item.value.MandatoryOptional == 'Mandatory'}">
-                                            <c:set value ="required data-parsley-required-message ='${item.value.ErrorMessageMandatoryField}'"></c:set>
-                                        </c:if>
-                                        <label class="radio-checkbox__label" for="${item.value.RadioOptionsYes}">
-                                            <input type="radio" name="${item.value.Label}" id="${item.value.RadioOptionsYes}" value="${item.value.RadioOptionsYesLabel}" data-dropdown-id="${item.value.RootId}" /><span></span>${item.value.RadioOptionsYesLabel}
-                                        </label>
-                                    </div>
-                                </c:if>
-                                <c:if test ="${item.value.RadioOptionsNoLabel.isSet}">
-                                    <div class="radio-checkbox">
-                                        <label class="radio-checkbox__label" for="${item.value.RadioOptionsNo}">
-                                            <input type="radio" name="${item.value.Label}" id="${item.value.RadioOptionsNo}" value="${item.value.RadioOptionsNoLabel}" data-dropdown-id="${item.value.RootId}" /><span></span>${item.value.RadioOptionsNoLabel}
-                                        </label>
-                                    </div>     
-                                </c:if>
-                            </div>
-							
-							</div>
-							</c:forEach>
-						 </c:if>
-                      <!-- Section2 title "Your details -->
-                        <!-- Section2 title -->
-                         <div class="section-input-form" id="section-input-form" style="display:none">
-						 <c:if test = "${content.value.Section2.value.SectionLabel.isSet}">
-                           <div class="agreement-form__label">${content.value.Section2.value.SectionLabel}</div>
-						   </c:if>
-						   
-                           <c:if test ="${content.value.Section1.value.PolicyNumberLabel.isSet}">
-                                    <c:set var="isCheckPolicy" value =""></c:set>
-                                    <c:set var="isText" value ="number"></c:set>
-                                    <c:set var="isMandatory" value =""></c:set>
-                                    <c:if test ="${content.value.Section1.value.PolicyNumberValidationRegex.isSet}">
-                                         <c:set var="isText" value ="text"></c:set>
-                                         <c:set var="isCheckPolicy" 
-                                          value ="data-parsley-pattern='${fn:trim(content.value.Section1.value.PolicyNumberValidationRegex)}'
-                                          data-parsley-pattern-message='${content.value.Section1.value.PolicyNumberValidationErrorMessage}' "></c:set>
-                                    </c:if>
-                                     <c:if test ="${content.value.Section1.value.MandatoryOptional == 'Mandatory'}">
-                                             <c:set var="isMandatory" value =" required data-parsley-required-message='${content.value.Section1.value.PolicyNumberErrorMessage}'"></c:set>
-                                     </c:if>  
-                                        <div class="input-text-field">
-                                            <div class="field-item">
-                                                <input class="field-input" type="${isText}" name="policy-number" id="policy-number"  placeholder=" "
-                                                   ${isCheckPolicy}  ${isMandatory}   />
-                                                <label class="field-placeholder" for="policy-number">${content.value.Section1.value.PolicyNumberLabel}</label>
-                                            </div>
-                                        </div>
-                                </c:if>
-                             <!-- First Name -->
-                            <c:if test = "${content.value.Section2.value.FirstNameLabel.isSet}">
-                                  <div class="input-text-field">
-                                  <c:set var = "isCheckRequireFirstName" value = ""></c:set>
-                                  <c:set var="isCheckRegex" value =""></c:set>
-                                  <c:if test ="${content.value.Section2.value.FirstNameValidation.value.ValidationRegex.isSet}">
-                                     <c:set var="isCheckRegex" 
-                                      value ="data-parsley-pattern='${fn:trim(content.value.Section2.value.FirstNameValidation.value.ValidationRegex)}'
-                                      data-parsley-pattern-message='${content.value.Section2.value.FirstNameValidation.value.ValidationErrorMessage}' "></c:set>
-                                  </c:if>
-                                  <c:if test ="${content.value.Section2.value.FirstNameValidation.value.Title == 'Mandatory'}">
-                                     <c:set var = "isCheckRequireFirstName" value = "required data-parsley-required-message='${content.value.Section2.value.FirstNameValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                  </c:if>
-                                  <div class="field-item d-none">
-                                      <input class="field-input" type="text" name="first-name" id="first-name" 
-                                      ${isCheckRegex} ${isCheckRequireFirstName}  placeholder=" " />
-                                      <label class="field-placeholder" for="first-name">${content.value.Section2.value.FirstNameLabel}</label>
-                                  </div>
-                                </div>
-                            </c:if>
-                             <!-- Last Name -->
-                            <c:if test = "${content.value.Section2.value.LastNameLabel.isSet }">
-                                  <div class="input-text-field">
-                                      <c:set var ="isCheckRequireLastName" value = ""></c:set>
-                                      <c:set var="isCheckRegex" value =""></c:set>
-                                      <c:if test ="${content.value.Section2.value.LastNameValidation.value.ValidationRegex.isSet}">
-                                         <c:set var="isCheckRegex" 
-                                          value ="data-parsley-pattern='${fn:trim(content.value.Section2.value.LastNameValidation.value.ValidationRegex)}'
-                                          data-parsley-pattern-message='${content.value.Section2.value.LastNameValidation.value.ValidationErrorMessage}' "></c:set>
-                                      </c:if>
-                                      <c:if test ="${content.value.Section2.value.LastNameValidation.value.Title == 'Mandatory'}">
-                                          <c:set var = "isCheckRequireLastName" value = "required data-parsley-required-message='${content.value.Section2.value.LastNameValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                      </c:if>
-                                      <div class="field-item">
-                                           <input class="field-input" type="text" name="last-name" id="last-name" 
-                                           ${isCheckRegex} ${isCheckRequireLastName}  placeholder=" " />
-                                           <label class="field-placeholder" for="last-name">${content.value.Section2.value.LastNameLabel}</label>
-                                      </div>
-                                </div>
-                            </c:if>
-                            
-                            <div class="field-wrapper row">
-                              <!-- Country code  -->
-                              <c:if test = "${content.value.Section2.value.CountryCodeLabel1.isSet}">
-                                <div class="col-sm-5 field-code">
-                                  <div class="input-text-field">
-                                    <div class="field-item">
-                                      <div class="custom-dropdown-select">
-                                        <div class="custom-dropdown-select__inner">
-                                         <label class="sr-only" for="country-code">${content.value.Section2.value.CountryCodeLabel1}</label>
-                                          <select class="w-100" data-dropdown-country data-style 
-                                            data-live-search="true" aria-expanded="true" name="country-code" id="country-code"
-                                            data-default-country="${content.value.Section2.value.DefaultValue1}" 
-                                            data-url-countries="<cms:link>${content.value.Section2.value.CountryCodeLinkFirst}</cms:link>">
-                                          </select>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                               </c:if>
-                               <!-- Phone Number -->
-                               <c:if test = "${content.value.Section2.value.PhoneNumberLabel.isSet}">
-                                    <div class="col-sm-7 field-phone">
-                                      <div class="input-text-field">
-                                          <c:set var = "isCheckRequirePhoneNumber" value = ""></c:set>
-                                          <c:set var="isText" value ="number"></c:set>
-                                          <c:set var="isCheckRegex" value =""></c:set>
-                                          <c:if test ="${content.value.Section2.value.PhoneNumberValidation.value.ValidationRegex.isSet}">
-                                             <c:set var="isText" value ="text"></c:set>
-                                             <c:set var="isCheckRegex" 
-                                              value ="data-parsley-pattern='${fn:trim(content.value.Section2.value.PhoneNumberValidation.value.ValidationRegex)}'
-                                              data-parsley-pattern-message='${content.value.Section2.value.PhoneNumberValidation.value.ValidationErrorMessage}' "></c:set>
-                                           </c:if>
-                                           <c:set var = "isCheckRequirePhone" value = ""></c:set>
-		                                   <c:if test ="${content.value.Section2.value.PhoneNumberValidation.value.Title == 'Mandatory'}">
-		                                     <c:set var = "isCheckRequirePhone" value ="required data-parsley-required-message ='${content.value.Section2.value.PhoneNumberValidation.value.ErrorMessageMandatoryField}'"></c:set>
-		                                   </c:if>
-                                        <div class="field-item">
-                                          <input class="field-input" type="${isText}" name="phone-no" id="phone-no" 
-                                               ${isCheckRegex}
-                                               ${isCheckRequirePhone}
-                                               placeholder=" "/>
-                                        <label class="field-placeholder" for="phone-no">${content.value.Section2.value.PhoneNumberLabel}</label>
-                                        </div>
-                                      </div>
-                                    </div>
-                                </c:if>
-                            </div>
-                            <div class="field-wrapper row">
-                              <!-- Secondary Country code  -->
-                              <c:if test = "${content.value.Section2.value.CountryCodeLabel2.isSet}">
-                                <div class="col-sm-5 field-code">
-                                  <div class="input-text-field">
-                                    <div class="field-item">
-                                      <div class="custom-dropdown-select">
-                                        <div class="custom-dropdown-select__inner">
-                                          <label class="sr-only" for="country-codeSecondary">${content.value.Section2.value.CountryCodeLabel2}</label>
-                                          <select class="w-100" data-dropdown-country data-style 
-                                            data-live-search="true" aria-expanded="true"  name="country-codeSecondary" id="country-codeSecondary"
-                                            data-default-country="${content.value.Section2.value.DefaultValue2}" 
-                                            data-url-countries="<cms:link>${content.value.Section2.value.CountryCodeLinkSecondary}</cms:link>">
-                                          </select>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                               </c:if>
-                               <!-- Secondary Phone Number -->
-                               <c:if test = "${content.value.Section2.value.SecondaryPhoneNumberLabel.isSet}">
-                                    <div class="col-sm-7 field-phone">
-                                      <div class="input-text-field">
-                                          <c:set var = "isCheckRequireSecondaryPhoneNumber" value = ""></c:set>
-                                          <c:set var="isText" value ="number"></c:set>
-                                          <c:set var="isCheckRegex" value =""></c:set>
-                                          <c:if test ="${content.value.Section2.value.SecondaryPhoneNumberValidation.value.Title == 'Mandatory'}">
-                                            <c:set var = "isCheckRequireSecondaryPhoneNumber"
-                                               value = "required data-parsley-required-message='${content.value.Section2.value.SecondaryPhoneNumberValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                          </c:if>
-                                          <c:if test ="${content.value.Section2.value.SecondaryPhoneNumberValidation.value.ValidationRegex.isSet}">
-                                             <c:set var="isText" value ="text"></c:set>
-                                             <c:set var="isCheckRegex" 
-                                              value ="data-parsley-pattern='${fn:trim(content.value.Section2.value.SecondaryPhoneNumberValidation.value.ValidationRegex)}'
-                                              data-parsley-pattern-message='${content.value.Section2.value.SecondaryPhoneNumberValidation.value.ValidationErrorMessage}' "></c:set>
-                                           </c:if>
-                                        <div class="field-item">
-                                          <input class="field-input" type="${isText}" name="phone-no2" id="phone-no2" title="${content.value.Section2.value.SecondaryPhoneNumberLabel}"
-                                              ${isCheckRegex}
-                                              ${isCheckRequireSecondaryPhoneNumber} 
-                                              placeholder=" "/>
-                                        <label class="field-placeholder" for="phone-no2">${content.value.Section2.value.SecondaryPhoneNumberLabel}</label>
-                                        </div>
-                                      </div>
-                                    </div>
-                                </c:if>
-                            </div>
-							<!--Email address -->
-                            <c:if test = "${content.value.Section2.value.EmailAddressLabel.isSet }">
-                                  <div class="input-text-field">
-                                   <c:set var="isEmail" value ="email"></c:set>
-                                   <c:set var="isCheckRegex" value =""></c:set>
-                                   <c:set var="isCheckTypeRegex" value ="data-parsley-type='email'"></c:set>
-                                   <c:set var = "isCheckRequireEmailAddress" value = ""></c:set>
-                                   <c:if test ="${content.value.Section2.value.EmailAddressValidation.value.Title == 'Mandatory'}">
-                                     <c:set var = "isCheckRequireEmailAddress" value ="required data-parsley-required-message ='${content.value.Section2.value.EmailAddressValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                   </c:if>
-                                   <c:if test ="${content.value.Section2.value.EmailAddressValidation.value.ValidationRegex.isSet}">
-                                      <c:set var="isEmail" value ="text"></c:set>
-                                      <c:set var="isCheckRegex" 
-                                       value ="data-parsley-pattern='${fn:trim(content.value.Section2.value.EmailAddressValidation.value.ValidationRegex)}'
-                                       data-parsley-pattern-message='${content.value.Section2.value.EmailAddressValidation.value.ValidationErrorMessage}' "></c:set>
-                                        <c:set var="isCheckTypeRegex" value =""></c:set>
-                                    </c:if>
-                                   <div class="field-item">
-                                       <input class="field-input" type="${isEmail}" name="email-address" id="email-address"  placeholder=" " 
-                                           ${isCheckTypeRegex} 
-                                           ${isCheckRegex}
-                                           ${isCheckRequireEmailAddress}
-                                           data-parsley-trigger="keyup input"/>
-                                       <label class="field-placeholder" for="email-address">${content.value.Section2.value.EmailAddressLabel}</label>
-                                  </div>
-                                </div>
-                            </c:if>
-                             <!--Location -->
-                            <c:if test = "${content.value.Section2.value.LocationLabel.isSet}">
-                               <c:if test="${fn:length(content.value.Section2.valueList.LocationContainer) > 0}">
-                                   <c:set var = "isCheckRequireLocation" value = ""></c:set>
-                                   <c:if test ="${content.value.Section2.value.LocationContainerValidation.value.Title == 'Mandatory'}">
-                                          <c:set var = "isCheckRequireLocation" value = "required data-parsley-required-message='${content.value.Section2.value.LocationContainerValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                   </c:if>
-                                   <div class="input-text-field">
-                                      <div class="field-item">
-                                        <div class="custom-dropdown-select">
-                                          <div class="custom-dropdown-select__inner">
-                                            <label class="sr-only" for="location">${content.value.Section2.value.LocationLabel}</label>
-                                            <select class="w-100" data-select-dropdown data-style data-live-search="true" aria-expanded="true" 
-                                               ${isCheckRequireLocation} data-parsley-trigger="change" id="location" name="location">
-                                               <option disabled selected data-hidden="true" value="" >${content.value.Section2.value.LocationLabel}</option>
-                                               <c:forEach var="item" items="${content.value.Section2.valueList.LocationContainer}" varStatus="ctr">
-                                                  <optgroup label="${item.value.FirstLevelValue}">
-                                                     <c:forEach var="itemChil" items="${item.valueList.ChildContainer}">
-                                                         <option value="${itemChil.value.ChildLevelValues}">${itemChil.value.ChildLevelValues}</option>
-                                                     </c:forEach>
-                                                  </optgroup>
-                                               </c:forEach>
-                                            </select>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                 </c:if>
-                               </c:if>
-                           </div>
+/**
+ * Form Management System
+ * Handles dynamic form behavior, validation, and submission
+ */
 
-                           <a id="clickHereLink" href="#" style="color: #0066cc; text-decoration: underline;" target="_blank">click here</a>
-						   
-						   <!--   Instructions And Attachements -->
-						   <c:if test="${fn:length(content.value.Dropdown.valueList.AdditionalSection) > 0}">
-						      <c:forEach var="item" items="${content.value.Dropdown.valueList.AdditionalSection}">
-							     <div id="${item.value.ParentId}" class="dropdown-view" style="display:none;">
-							        <div class="agreement-form__label">${item.value.Instructions}</div>
-									<c:if test="${fn:length(item.valueList.Attachment) > 0}">
-									<c:if test = "${item.value.AttachmentNotice.isSet}">
-									      <br>
-                                          <h2 class="agreement-form__label">Attachment:</h2>
-										  <div class="agreement-form__label">${item.value.AttachmentNotice}</div>
-						           </c:if>
-									</c:if>
-								        <c:if test="${fn:length(item.valueList.Attachment) > 0}">
-						                     <c:forEach var="attachment" items="${item.valueList.Attachment}">
-							                     <h2 class="group-field__title" ${attachment.value.IsRequired == 'true' ? 'data-required' : ''} >${attachment.value.Description}</h2>
-                                                 <fieldset class="section-radio-checkbox" data-radio-checkbox-popup="">
-                                                     <legend class="sr-only">${attachment.value.Description}</legend>
-                                                     <div class="radio-checkbox__wrapper field-item">
-                                                        <div class="radio-checkbox">
-														   <c:set var = "isCheckRequireATopic" value = ""></c:set>
-                                                           <c:if test ="${attachment.value.AttachementValidation.value.Title == 'Mandatory'}">
-                                                               <c:set var = "isCheckRequireATopic" value = "required data-parsley-required-message='${attachment.value.AttachementValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                                           </c:if>
-                                                           <input class="field-input" ${isCheckRequireATopic} type="file" name="${attachment.value.Description}" placeholder="${attachment.value.Description}" data-is-required="${attachment.value.IsRequired}" data-parsley-trigger="keyup input" accept="${attachment.value.AcceptFileType}">
-                                                        </div>   
-                                                     </div>
-                                                 </fieldset> 
-						                      </c:forEach>
-						               </c:if>
-								  </div>
-						      </c:forEach>
-						   </c:if>
-                        
-                      <!-- Section3 title "More details" -->
-                   
-                         <!-- Section3 title -->
-                         <div class=" section-input-form-error">
-						    <c:if test = "${content.value.Section3.value.SectionLabel.isSet}">
-                               <h2 class="group-field__title">${content.value.Section3.value.SectionLabel}</h2>
-							</c:if>
-                              <!-- Address -->
-                              <c:if test ="${content.value.Section3.value.AddressLabel.isSet}">
-                                <div class="input-text-field">
-                                   <c:set var = "isCheckRequireAddress" value = ""></c:set>
-                                   <c:if test ="${content.value.Section3.value.AddressValidation.value.Title == 'Mandatory'}">
-                                           <c:set var = "isCheckRequireAddress" value = "required data-parsley-required-message='${content.value.Section3.value.AddressValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                   </c:if>
-                                   <c:set var="isCheckRegex" value =""></c:set>
-                                    <c:if test ="${content.value.Section3.value.AddressValidation.value.ValidationRegex.isSet}">
-                                       <c:set var="isCheckRegex" 
-                                        value ="data-parsley-pattern='${fn:trim(content.value.Section3.value.AddressValidation.value.ValidationRegex)}'
-                                        data-parsley-pattern-message='${content.value.Section3.value.AddressValidation.value.ValidationErrorMessage}' "></c:set>
-                                    </c:if>
-                                    <div class="field-item">
-                                       <input class="field-input" type="text" name="address" id="address" ${isCheckRegex} ${isCheckRequireAddress} placeholder=" "/>
-                                       <label class="field-placeholder" for="address">${content.value.Section3.value.AddressLabel}</label>
-                                  </div>
-                                </div>
-                              </c:if>
-                              <!-- Type of identity document -->
-                                <c:if test = "${content.value.Section3.value.TypeOfIdentityDocumentLabel.isSet }">
-                                <c:set var="isRequiredLable"></c:set>
-                                <c:if test ="${content.value.Section3.value.TypeOfIdentityDocumentValidation.value.Title == 'Mandatory'}">
-                                  <c:set var="isRequiredLable">data-required</c:set> 
-                                </c:if>
-                                    <h2 class="group-field__title" ${isRequiredLable}>${content.value.Section3.value.TypeOfIdentityDocumentLabel}</h2> 
-                                </c:if>
-                                 <fieldset class="section-radio-checkbox">
-                                     <legend class="sr-only">${content.value.Section3.value.TypeOfIdentityDocumentLabel}</legend>
-                                     <c:set var = "isCheckRequireTypeOfIdentity" value = ""></c:set>
-                                     <c:if test ="${content.value.Section3.value.TypeOfIdentityDocumentValidation.value.Title == 'Mandatory'}">
-                                           <c:set var = "isCheckRequireTypeOfIdentity" value = "required data-parsley-required-message='${content.value.Section3.value.TypeOfIdentityDocumentValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                     </c:if>
-                                     <c:if test="${fn:length(content.value.Section3.valueList.ValuesLabelContainerTypeOfIdentity) > 0}">
-                                       <c:set var = "isValueStacked" value = ""></c:set>
-                                       <c:if test="${fn:length(content.value.Section3.valueList.ValuesLabelContainerTypeOfIdentity) > 2}">
-                                          <c:set var = "isValueStacked" value = "value-stacked"></c:set>
-                                        </c:if>
-                                        <div class="radio-checkbox__wrapper field-item ${isValueStacked} ">
-                                            <c:forEach var="item" 
-                                               items="${content.value.Section3.valueList.ValuesLabelContainerTypeOfIdentity}" varStatus="loop">
-                                               <c:if test="${item.value.Label.isSet}">
-                                                <div class="radio-checkbox">
-                                                  <label class="radio-checkbox__label" for="Enquiry-${loop.index}">
-                                                    <input class="radio-checkbox__input" type="radio" name="enquirytype" 
-                                                    id="Enquiry-${loop.index}" value="${item.value.Label}" ${isCheckRequireTypeOfIdentity}/><span></span>${item.value.Label}
-                                                  </label>
-                                                </div>
-                                               </c:if>
-                                            </c:forEach>
-                                        </div>
-                                      </c:if>
-                                  </fieldset>
-                              <!--I.D./passport number -->
-                              <c:if test ="${content.value.Section3.value.IDPassportNumberLabel.isSet}">
-                                <div class="input-text-field">
-                                    <c:set var = "isCheckRequireIDPassportNumber" value = ""></c:set>
-                                    <c:if test ="${content.value.Section3.value.IDPassportNumberValidation.value.Title == 'Mandatory'}">
-                                        <c:set var = "isCheckRequireIDPassportNumber" value = "required data-parsley-required-message='${content.value.Section3.value.IDPassportNumberValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                    </c:if>
-                                    <c:set var="isCheckRegex" value =""></c:set>
-                                    <c:if test ="${content.value.Section3.value.IDPassportNumberValidation.value.ValidationRegex.isSet}">
-                                       <c:set var="isCheckRegex" 
-                                        value ="data-parsley-pattern='${fn:trim(content.value.Section3.value.IDPassportNumberValidation.value.ValidationRegex)}'
-                                        data-parsley-pattern-message='${content.value.Section3.value.IDPassportNumberValidation.value.ValidationErrorMessage}' "></c:set>
-                                    </c:if>
-                                    <div class="field-item">
-                                       <input class="field-input" type="text" name="id-passport-number" id="id-passport-number" ${isCheckRegex} ${isCheckRequireIDPassportNumber} placeholder=" "/>
-                                       <label class="field-placeholder" for="id-passport-number">${content.value.Section3.value.IDPassportNumberLabel}</label>
-                                  </div>
-                                </div>
-                              </c:if>
-                              <!--Gender -->
-                               <c:if test = "${content.value.Section3.value.GenderLabel.isSet }">
-                                    <c:set var="isRequiredLable"></c:set>
-                                    <c:if test ="${content.value.Section3.value.ValuesContainerGenderValidation.value.Title == 'Mandatory'}">
-                                      <c:set var="isRequiredLable">data-required</c:set> 
-                                    </c:if>
-                                    <h2 class="group-field__title" ${isRequiredLable}>${content.value.Section3.value.GenderLabel}</h2>
-                               </c:if>
-                               <fieldset class="section-radio-checkbox">
-                                   <legend class="sr-only">${content.value.Section3.value.GenderLabel}</legend>
-                                   <c:if test="${fn:length(content.value.Section3.valueList.ValuesLabelContainerGender) > 0}">
-                                      <c:set var = "isValueStacked" value = ""></c:set>
-                                      <c:if test="${fn:length(content.value.Section3.valueList.ValuesContainerGenderValidation) > 2}">
-                                         <c:set var = "isValueStacked" value = "value-stacked"></c:set>
-                                      </c:if>
-                                      <div class="radio-checkbox__wrapper field-item ${isValueStacked}">
-                                          <c:set var = "isCheckRequireGender" value = ""></c:set>
-                                          <c:if test ="${content.value.Section3.value.ValuesContainerGenderValidation.value.Title == 'Mandatory'}">
-                                                <c:set var = "isCheckRequireGender" value = "required data-parsley-required-message='${content.value.Section3.value.ValuesContainerGenderValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                          </c:if>
-                                          <c:forEach var="item" items="${content.value.Section3.valueList.ValuesLabelContainerGender}" varStatus="loop">
-                                             <c:if test="${item.value.Label.isSet}">
-                                              <div class="radio-checkbox">
-                                                <label class="radio-checkbox__label" for="Gender-${loop.index}">
-                                                  <input class="radio-checkbox__input" type="radio" name="optionGender" 
-                                                  id="Gender-${loop.index}" value="${item.value.Label}" ${isCheckRequireGender} /><span></span>${item.value.Label}
-                                                </label>
-                                              </div>
-                                             </c:if>
-                                          </c:forEach>
-                                      </div>
-                                     </c:if>
-                               </fieldset>                            
-                              <!-- Marital status -->
-                              <c:if test = "${content.value.Section3.value.MaritalStatusLabel.isSet }">
-                                <!-- Title-->
-                                <c:if test="${fn:length(content.value.Section3.valueList.ValuesLabelContainerMarital) > 0}">
-                                   <c:set var = "isCheckRequireMarital" value = ""></c:set>
-                                   <c:if test ="${content.value.Section3.value.ValuesContainerMaritalValidation.value.Title == 'Mandatory'}">
-                                       <c:set var = "isCheckRequireMarital" value = "required data-parsley-required-message='${content.value.Section3.value.ValuesContainerMaritalValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                   </c:if>
-                                   <div class="input-text-field">
-                                     <div class="field-item">
-                                       <div class="custom-dropdown-select">
-                                         <div class="custom-dropdown-select__inner">
-                                           <label class="sr-only" for="marital">${content.value.Section3.value.MaritalStatusLabel}</label>
-                                           <select class="w-100" data-select-dropdown data-style data-live-search="true" aria-expanded="true"
-                                               ${isCheckRequireMarital} id="marital" name="maritalStatus">
-                                             <option disabled selected data-hidden="true" value="" >${content.value.Section3.value.MaritalStatusLabel}</option>
-                                             <c:forEach var="item" items="${content.value.Section3.valueList.ValuesLabelContainerMarital}">
-                                                  <option value="${item.value.Label}">${item.value.Label}</option>
-                                             </c:forEach>
-                                           </select>
-                                         </div>
-                                       </div>
-                                     </div>
-                                   </div>
-                                </c:if>
-                              </c:if>
-                              <!--  Age-->
-                              <c:if test ="${content.value.Section3.value.AgeLabel.isSet}">
-                                <div class="input-text-field">
-                                   <c:set var = "isCheckRequireAge" value = ""></c:set>
-                                    <c:if test ="${content.value.Section3.value.AgeValidation.value.Title == 'Mandatory'}">
-                                         <c:set var = "isCheckRequireAge" value = "required data-parsley-required-message='${content.value.Section3.value.AgeValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                    </c:if>
-                                     <c:set var="isText" value ="number"></c:set>
-                                     <c:set var="isCheckRegex" value =""></c:set>
-                                     <c:if test ="${content.value.Section3.value.AgeValidation.value.ValidationRegex.isSet}">
-                                        <c:set var="isText" value ="text"></c:set>
-                                        <c:set var="isCheckRegex" 
-                                         value ="data-parsley-pattern='${fn:trim(content.value.Section3.value.AgeValidation.value.ValidationRegex)}'
-                                         data-parsley-pattern-message='${content.value.Section3.value.AgeValidation.value.ValidationErrorMessage}' "></c:set>
-                                      </c:if>
-                                    <div class="field-item">
-                                       <input class="field-input" type="${isText}" name="age" id="age" ${isCheckRegex}   ${isCheckRequireAge} placeholder=" "/>
-                                       <label class="field-placeholder" for="age">${content.value.Section3.value.AgeLabel}</label>
-                                  </div>
-                                </div>
-                             </c:if>
-                          </div>
-                    
-                      <!-- Section4 title "Emergency Contact"  -->
-                     <c:if test ="${content.value.Section4.value.SectionLabel.isSet}">
-                           <div class="section-input-form">
-                              <h2 class="group-field__title">${content.value.Section4.value.SectionLabel}</h2>
-                                <!--Emergency contact name  -->
-                                <c:if test ="${content.value.Section4.value.EmergencyContactNameLabel.isSet}">
-                                     <div class="input-text-field">
-                                       <c:set var = "isCheckRequireEmergencyContact" value = ""></c:set>
-                                       <c:set var="isCheckRegex" value =""></c:set>
-                                       <c:if test ="${content.value.Section4.value.EmergencyContactNameValidation.value.Title == 'Mandatory'}">
-                                              <c:set var = "isCheckRequireEmergencyContact" 
-                                              value = "required data-parsley-required-message='${content.value.Section4.value.EmergencyContactNameValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                       </c:if>
-                                        <c:if test ="${content.value.Section4.value.EmergencyContactNameValidation.value.ValidationRegex.isSet}">
-                                           <c:set var="isCheckRegex" 
-                                            value ="data-parsley-pattern='${fn:trim(content.value.Section4.value.EmergencyContactNameValidation.value.ValidationRegex)}'
-                                            data-parsley-pattern-message='${content.value.Section4.value.EmergencyContactNameValidation.value.ValidationErrorMessage}' "></c:set>
-                                        </c:if>
-                                        <div class="field-item">
-                                           <input class="field-input" type="text" name="contact-name" id="contact-name" ${isCheckRegex} ${isCheckRequireEmergencyContact} placeholder=" "/>
-                                           <label class="field-placeholder" for="contact-name">${content.value.Section4.value.EmergencyContactNameLabel}</label>
-                                      </div>
-                                    </div>
-                                </c:if>
-                                <!-- Relationship -->
-                                <c:if test = "${content.value.Section4.value.RelationshipLabel.isSet }">
-                                   <%--  <h2 class="group-field__title">${content.value.Section4.value.RelationshipLabel}</h2> --%>
-                                    <c:if test="${fn:length(content.value.Section4.valueList.ValuesLabelContainer) > 0}">
-                                       <c:set var = "isCheckRequireRelationship" value = ""></c:set>
-                                       <c:if test ="${content.value.Section4.value.ValuesLabelContainerValidation.value.Title == 'Mandatory'}">
-                                          <c:set var = "isCheckRequireRelationship" value = "required data-parsley-required-message='${content.value.Section4.value.ValuesLabelContainerValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                       </c:if>
-                                       <div class="input-text-field">
-                                         <div class="field-item">
-                                           <div class="custom-dropdown-select">
-                                             <div class="custom-dropdown-select__inner">
-                                               <label class="sr-only" for="relationship">${content.value.Section4.value.RelationshipLabel}</label>
-                                               <select class="w-100" data-select-dropdown data-style data-live-search="true" aria-expanded="true"
-                                                      ${isCheckRequireRelationship} id="relationship" name="relationship">
-                                                     <option disabled selected data-hidden="true" value="" >${content.value.Section4.value.RelationshipLabel}</option>
-                                                     <c:forEach var="item" items="${content.value.Section4.valueList.ValuesLabelContainer}">
-                                                         <option value="${item.value.Label}">${item.value.Label}</option>
-                                                     </c:forEach>
-                                               </select>
-                                             </div>
-                                           </div>
-                                         </div>
-                                       </div>
-                                    </c:if>
-                                </c:if>
-                                <div class="field-wrapper row">
-                                     <!-- Emergency contact number Country code  -->
-                                     <c:if test = "${content.value.Section4.value.CountryCodeLabel.isSet}">
-                                       <div class="col-sm-5 field-code">
-                                         <div class="input-text-field">
-                                           <div class="field-item">
-                                             <div class="custom-dropdown-select">
-                                               <div class="custom-dropdown-select__inner">
-                                                 <label class="sr-only" for="country-codeEmergency">${content.value.Section4.value.CountryCodeLabel}</label>
-                                                 <select class="w-100" data-dropdown-country data-style 
-                                                   data-live-search="true" aria-expanded="true" name="country-codeEmergency" id="country-codeEmergency"
-                                                   data-default-country="${content.value.Section4.value.DefaultValue}" 
-                                                   data-url-countries="<cms:link>${content.value.Section4.value.CountryCodeLink}</cms:link>">
-                                                 </select>
-                                               </div>
-                                             </div>
-                                           </div>
-                                         </div>
-                                       </div>
-                                      </c:if>
-                                     <!-- Emergency contact number  Phone Number -->
-                                      <c:if test = "${content.value.Section4.value.EmergencyContactNumberLabel.isSet}">
-                                           <c:set var="isText" value ="number"></c:set>
-                                           <c:set var="isCheckRegex" value =""></c:set>
-                                           <c:set var = "isCheckRequireEmergencyPhoneNumber" value = ""></c:set>
-                                           <c:if test ="${content.value.Section4.value.EmergencyContactNumberValidation.value.ValidationRegex.isSet}">
-                                              <c:set var="isText" value ="text"></c:set>
-                                              <c:set var="isCheckRegex" 
-                                               value ="data-parsley-pattern='${fn:trim(content.value.Section4.value.EmergencyContactNumberValidation.value.ValidationRegex)}'
-                                               data-parsley-pattern-message='${content.value.Section4.value.EmergencyContactNumberValidation.value.ValidationErrorMessage}' "></c:set>
-                                            </c:if>
-                                          <c:if test ="${content.value.Section4.value.EmergencyContactNumberValidation.value.Title == 'Mandatory'}">
-                                              <c:set var = "isCheckRequireEmergencyPhoneNumber" value = "required data-parsley-required-message='${content.value.Section4.value.EmergencyContactNumberValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                          </c:if>
-                                          <div class="col-sm-7 field-phone">
-                                            <div class="input-text-field">
-                                              <div class="field-item">
-                                                <input class="field-input" type="${isText}" ${isCheckRegex} name="phone-no" id="phone-no" 
-                                                   ${isCheckRequireEmergencyPhoneNumber} placeholder=" "/>
-                                              <label class="field-placeholder" for="phone-no">${content.value.Section4.value.EmergencyContactNumberLabel}</label>
-                                              </div>
-                                            </div>
-                                          </div>
-                                      </c:if>
-                                </div>
-                            </div>
-                      </c:if>
-                       <!-- Section title "Let's get this sorted. Is there a specific topic you want to discuss?" -->
-                      <c:if test ="${content.value.Section5.value.SectionLabel.isSet}">
-                        <div class="section-input-form">
-                         <h2 class="group-field__title">${content.value.Section5.value.SectionLabel}</h2>
-                            <!-- Select a topic -->
-                         <c:if test = "${content.value.Section5.value.SelectATopicLabel.isSet }">
-                            <c:if test="${fn:length(content.value.Section5.valueList.ValuesLabelContainer) > 0}">
-                               <c:set var = "isCheckRequireATopic" value = ""></c:set>
-                               <c:if test ="${content.value.Section5.value.ValuesLabelContainerValidation.value.Title == 'Mandatory'}">
-                                  <c:set var = "isCheckRequireATopic" value = "required data-parsley-required-message='${content.value.Section5.value.ValuesLabelContainerValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                               </c:if>
-                               <div class="input-text-field">
-                                 <div class="field-item">
-                                   <div class="custom-dropdown-select">
-                                     <div class="custom-dropdown-select__inner">
-                                       <label class="sr-only" for="selectTopic">${content.value.Section5.value.SelectATopicLabel}</label>
-                                       <select class="w-100" data-select-dropdown data-style data-live-search="true" aria-expanded="true"
-                                                ${isCheckRequireATopic} id="selectTopic" name="selectTopic">
-                                              <option disabled selected data-hidden="true" value="" >${content.value.Section5.value.SelectATopicLabel}</option>
-                                             <c:forEach var="item" items="${content.value.Section5.valueList.ValuesLabelContainer}" varStatus="loop">
-                                                 <option value="${loop.index}&&${item.value.Label}">${item.value.Label}</option>
-                                             </c:forEach>
-                                       </select>
-                                     </div>
-                                   </div>
-                                 </div>
-                               </div>
-                            </c:if>
-                         </c:if>
-						 
-						 <c:if test = "${content.value.Section5.value.SelectATopicLabel2.isSet }">
-                            <c:if test="${fn:length(content.value.Section5.valueList.ValuesLabelContainer2) > 0}">
-                               <c:set var = "isCheckRequireATopic" value = ""></c:set>
-                               <c:if test ="${content.value.Section5.value.ValuesLabelContainerValidation2.value.Title == 'Mandatory'}">
-                                  <c:set var = "isCheckRequireATopic" value = "required data-parsley-required-message='${content.value.Section5.value.ValuesLabelContainerValidation2.value.ErrorMessageMandatoryField}'"></c:set>
-                               </c:if>
-                               <div class="input-text-field">
-                                 <div class="field-item">
-                                   <div class="custom-dropdown-select">
-                                     <div class="custom-dropdown-select__inner">
-                                       <label class="sr-only" for="selectTopic2">${content.value.Section5.value.SelectATopicLabel2}</label>
-                                       <select class="w-100" data-select-dropdown data-style data-live-search="true" aria-expanded="true"
-                                                ${isCheckRequireATopic} id="selectTopic2" name="selectTopic2">
-                                              <option disabled selected data-hidden="true" value="" >${content.value.Section5.value.SelectATopicLabel2}</option>
-                                             <c:forEach var="item" items="${content.value.Section5.valueList.ValuesLabelContainer2}" varStatus="loop">
-                                                 <option value="${loop.index}&&${item.value.Label}">${item.value.Label}</option>
-                                             </c:forEach>
-                                       </select>
-                                     </div>
-                                   </div>
-                                 </div>
-                               </div>
-                            </c:if>
-                         </c:if>
-						
-                         <!-- Please provide more details. -->
-                          <c:if test = "${content.value.Section5.value.PleaseProvideMoreDetailsLabel.isSet }">
-                             <c:set var = "isCheckRequireProvide" value = ""></c:set>
-                             <c:if test ="${content.value.Section5.value.PleaseProvideMoreDetailsValidation.value.Title == 'Mandatory'}">
-                                  <c:set var = "isCheckRequireProvide" 
-                                   value = "required data-parsley-required-message='${content.value.Section5.value.PleaseProvideMoreDetailsValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                             </c:if>
-                              <c:set var="isCheckRegex" value =""></c:set>
-                              <c:if test ="${content.value.Section5.value.PleaseProvideMoreDetailsValidation.value.ValidationRegex.isSet}">
-                                 <c:set var="isCheckRegex" 
-                                  value ="data-parsley-pattern='${fn:trim(content.value.Section5.value.PleaseProvideMoreDetailsValidation.value.ValidationRegex)}'
-                                  data-parsley-pattern-message='${content.value.Section5.value.PleaseProvideMoreDetailsValidation.value.ValidationErrorMessage}' "></c:set>
-                              </c:if>
-                             <div class="input-text-field">
-                                 <div class="field-item">
-                                   <textarea class="text-area" name="provide-area" id="provide-area" placeholder=" " 
-                                   title="${content.value.Section5.value.PleaseProvideMoreDetailsLabel}"
-                                   ${isCheckRegex}  ${isCheckRequireProvide}  ></textarea>
-                                    <label class="txtplaceholder" for="provide-area">${content.value.Section5.value.PleaseProvideMoreDetailsLabel}</label>
-                                 </div>
-                             </div>
-                         </c:if>
-                        </div>
-                      </c:if>
-                      <!-- Section title "Would you like to be contacted through your social media account?" -->
-                      <c:if test ="${content.value.Section6.value.SectionLabel.isSet}">
-                        <div class="section-input-form">
-                         <h2 class="group-field__title"> ${content.value.Section6.value.SectionLabel}</h2>
-                          <!-- Facebook/Messenger account name -->
-                          <c:if test ="${content.value.Section6.value.FacebookMessengerAccountNameLabel.isSet}">
-                              <div class="input-text-field">
-                                  <c:set var = "isCheckFacebook" value = ""></c:set>
-                                  <c:set var="isCheckRegex" value =""></c:set>
-                                  <c:if test ="${content.value.Section6.value.FacebookMessengerAccountNameValidation.value.ValidationRegex.isSet}">
-                                     <c:set var="isCheckRegex" 
-                                      value ="data-parsley-pattern='${fn:trim(content.value.Section6.value.FacebookMessengerAccountNameValidation.value.ValidationRegex)}'
-                                      data-parsley-pattern-message='${content.value.Section6.value.FacebookMessengerAccountNameValidation.value.ValidationErrorMessage}' "></c:set>
-                                  </c:if>
-                                  <c:if test ="${content.value.Section6.value.FacebookMessengerAccountNameValidation.value.Title == 'Mandatory'}">
-                                     <c:set var = "isCheckFacebook" value = "required data-parsley-required-message='${content.value.Section6.value.FacebookMessengerAccountNameValidation.value.ErrorMessageMandatoryField}'">
-                                     </c:set>
-                                  </c:if>
-                                  <div class="field-item">
-                                      <input class="field-input" type="text" name="facebook" id="facebook" ${isCheckRegex} ${isCheckFacebook}  placeholder=" "/>
-                                      <label class="field-placeholder" for="facebook">${content.value.Section6.value.FacebookMessengerAccountNameLabel}</label>
-                                 </div>
-                               </div>
-                          </c:if>
-                           <!-- Line ID/name -->
-                           <c:if test ="${content.value.Section6.value.LineIDNameLabel.isSet}">
-                               <div class="input-text-field">
-                                  <c:set var = "isCheckLine" value = ""></c:set>
-                                  <c:set var="isCheckRegex" value =""></c:set>
-                                  <c:if test ="${content.value.Section6.value.LineIDNameValidation.value.ValidationRegex.isSet}">
-                                     <c:set var="isCheckRegex" 
-                                      value ="data-parsley-pattern='${fn:trim(content.value.Section6.value.LineIDNameValidation.value.ValidationRegex)}'
-                                      data-parsley-pattern-message='${content.value.Section6.value.LineIDNameValidation.value.ValidationErrorMessage}' "></c:set>
-                                  </c:if>
-                                  <c:if test ="${content.value.Section6.value.LineIDNameValidation.value.Title == 'Mandatory'}">
-                                     <c:set var = "isCheckLine" value = "required data-parsley-required-message='${content.value.Section6.value.LineIDNameValidation.value.ErrorMessageMandatoryField}'">
-                                     </c:set>
-                                  </c:if>
-                                  <div class="field-item">
-                                      <input class="field-input" type="text" name="line" id="line" ${isCheckRegex} ${isCheckLine}  placeholder=" "/>
-                                      <label class="field-placeholder" for="line">${content.value.Section6.value.LineIDNameLabel}</label>
-                                 </div>
-                               </div>
-                           </c:if>
-                           <!-- Viber account name-->
-                           <c:if test ="${content.value.Section6.value.ViberAccountNameLabel.isSet}">
-                               <div class="input-text-field">
-                                  <c:set var = "isCheckViber" value = ""></c:set>
-                                  <c:set var="isCheckRegex" value =""></c:set>
-                                  <c:if test ="${content.value.Section6.value.ViberAccountNameValidation.value.ValidationRegex.isSet}">
-                                     <c:set var="isCheckRegex" 
-                                      value ="data-parsley-pattern='${fn:trim(content.value.Section6.value.ViberAccountNameValidation.value.ValidationRegex)}'
-                                      data-parsley-pattern-message='${content.value.Section6.value.ViberAccountNameValidation.value.ValidationErrorMessage}' "></c:set>
-                                  </c:if>
-                                  <c:if test ="${content.value.Section6.value.ViberAccountNameValidation.value.Title == 'Mandatory'}">
-                                     <c:set var = "isCheckViber" value = "required data-parsley-required-message = '${content.value.Section6.value.ViberAccountNameValidation.value.ErrorMessageMandatoryField}'">
-                                     </c:set>
-                                  </c:if>
-                                  <div class="field-item">
-                                      <input class="field-input" type="text" name="viber" id="viber" ${isCheckRegex} ${isCheckViber}  placeholder=" "/>
-                                      <label class="field-placeholder" for="viber">${content.value.Section6.value.ViberAccountNameLabel}</label>
-                                 </div>
-                               </div>
-                           </c:if>
-                           <!-- WeChat account name -->
-                           <c:if test ="${content.value.Section6.value.WeChatAccountNameLabel.isSet}">
-                               <div class="input-text-field">
-                                  <c:set var = "isCheckWeChat" value = ""></c:set>
-                                  <c:set var="isCheckRegex" value =""></c:set>
-                                  <c:if test ="${content.value.Section6.value.WeChatAccountNameValidation.value.ValidationRegex.isSet}">
-                                     <c:set var="isCheckRegex" 
-                                      value ="data-parsley-pattern='${fn:trim(content.value.Section6.value.WeChatAccountNameValidation.value.ValidationRegex)}'
-                                      data-parsley-pattern-message='${content.value.Section6.value.WeChatAccountNameValidation.value.ValidationErrorMessage}' "></c:set>
-                                  </c:if>
-                                  <c:if test ="${content.value.Section6.value.WeChatAccountNameValidation.value.Title == 'Mandatory'}">
-                                     <c:set var = "isCheckWeChat" value = "required data-parsley-required-message = '${content.value.Section6.value.WeChatAccountNameValidation.value.ErrorMessageMandatoryField}'">
-                                     </c:set>
-                                  </c:if>
-                                  <div class="field-item">
-                                      <input class="field-input" type="text" name="weChat" id="weChat" ${isCheckRegex} ${isCheckWeChat}  placeholder=" "/>
-                                      <label class="field-placeholder" for="weChat">${content.value.Section6.value.WeChatAccountNameLabel}</label>
-                                 </div>
-                               </div>
-                           </c:if>
-                           <!-- WhatsApp ID-->
-                           <c:if test ="${content.value.Section6.value.WhatsAppIDLabel.isSet}">
-                               <div class="input-text-field">
-                                  <c:set var = "isCheckWhatsApp" value = ""></c:set>
-                                  <c:set var="isCheckRegex" value =""></c:set>
-                                  <c:if test ="${content.value.Section6.value.WhatsAppIDValidation.value.ValidationRegex.isSet}">
-                                     <c:set var="isCheckRegex" 
-                                      value ="data-parsley-pattern='${fn:trim(content.value.Section6.value.WhatsAppIDValidation.value.ValidationRegex)}'
-                                      data-parsley-pattern-message='${content.value.Section6.value.WhatsAppIDValidation.value.ValidationErrorMessage}' "></c:set>
-                                  </c:if>
-                                  <c:if test ="${content.value.Section6.value.WhatsAppIDValidation.value.Title == 'Mandatory'}">
-                                     <c:set var = "isCheckWhatsApp" value = "required data-parsley-required-message = '${content.value.Section6.value.WhatsAppIDValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                  </c:if>
-                                  <div class="field-item">
-                                      <input class="field-input" type="text" name="whatsApp" id="whatsApp" ${isCheckRegex} ${isCheckWhatsApp}   placeholder=" "/>
-                                      <label class="field-placeholder" for="whatsApp">${content.value.Section6.value.WhatsAppIDLabel}</label>
-                                 </div>
-                               </div>
-                           </c:if>
-                           <!-- Skype ID-->
-                           <c:if test ="${content.value.Section6.value.SkypeIDLabel.isSet}">
-                               <div class="input-text-field">
-                                  <c:set var = "isCheckSkype" value = ""></c:set>
-                                  <c:set var="isCheckRegex" value =""></c:set>
-                                  <c:if test ="${content.value.Section6.value.SkypeIDValidation.value.ValidationRegex.isSet}">
-                                     <c:set var="isCheckRegex" 
-                                      value ="data-parsley-pattern='${fn:trim(content.value.Section6.value.SkypeIDValidation.value.ValidationRegex)}'
-                                      data-parsley-pattern-message='${content.value.Section6.value.SkypeIDValidation.value.ValidationErrorMessage}' "></c:set>
-                                  </c:if>
-                                  <c:if test ="${content.value.Section6.value.SkypeIDValidation.value.Title == 'Mandatory'}">
-                                     <c:set var = "isCheckSkype" value = "required data-parsley-required-message = '${content.value.Section6.value.SkypeIDValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                  </c:if>
-                                  <div class="field-item">
-                                      <input class="field-input" type="text" name="skypeId" id="skypeId" ${isCheckRegex} ${isCheckSkype}  placeholder=" "/>
-                                      <label class="field-placeholder" for="skypeId">${content.value.Section6.value.SkypeIDLabel}</label>
-                                 </div>
-                               </div>
-                           </c:if>
-                           <!--Others (please specify)-->
-                           <c:if test ="${content.value.Section6.value.OthersPleaseSpecifyLabel.isSet}">
-                               <div class="input-text-field">
-                                  <c:set var = "isCheckRequireOthers" value = ""></c:set>
-                                  <c:set var="isCheckRegex" value =""></c:set>
-                                  <c:if test ="${content.value.Section6.value.OthersPleaseSpecifyValidation.value.ValidationRegex.isSet}">
-                                     <c:set var="isCheckRegex" 
-                                      value ="data-parsley-pattern='${fn:trim(content.value.Section6.value.OthersPleaseSpecifyValidation.value.ValidationRegex)}'
-                                      data-parsley-pattern-message='${content.value.Section6.value.OthersPleaseSpecifyValidation.value.ValidationErrorMessage}' "></c:set>
-                                  </c:if>
-                                  <c:if test ="${content.value.Section6.value.OthersPleaseSpecifyValidation.value.Title == 'Mandatory'}">
-                                     <c:set var = "isCheckRequireOthers" value = "required data-parsley-required-message = '${content.value.Section6.value.OthersPleaseSpecifyValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                  </c:if>
-                                  <div class="field-item">
-                                      <input class="field-input" type="text" name="others" id="others" ${isCheckRegex} ${isCheckRequireOthers} placeholder=" "/>
-                                      <label class="field-placeholder" for="others">${content.value.Section6.value.OthersPleaseSpecifyLabel}</label>
-                                 </div>
-                               </div>
-                           </c:if>
-                        </div>
-                      </c:if>
-					  <div id="form-bottom-section" style="display:none">
-                       <c:set var="capcha">
-                          <fmt:message key = "key.default.EnableGoogleRecaptcha"/>
-                       </c:set>
-                        <c:if test ="${content.value.GeneralForm.value.EnableGoogleRecaptcha == 'true'}">
-                           <div class="g-recaptcha" data-recaptcha data-sitekey=${capcha}></div>
-                        </c:if>
-                        <!--Marketing Consent  -->
-                       <c:if test ="${content.value.GeneralForm.value.MarketingConsentLabel.isSet}">
-                          <div class="agreement-form__wrapper field-item">
-                           <c:set var = "isCheckMarketingConsent" value = ""></c:set>
-                             <c:if test ="${content.value.GeneralForm.value.MarketingConsent == 'Mandatory'}">
-                                 <c:set var = "isCheckMarketingConsent" value = "required data-parsley-required-message='${content.value.GeneralForm.value.MarketingConsentErrorMessage}'">
-                                 </c:set>
-                            </c:if>
-                            <label class="agreement-form" for="marketingConsent">
-                              <input class="agreement-form__input" type="checkbox" name="marketingConsent" id="marketingConsent" data-agreement value="marketingConsent" title = "marketingConsent" ${isCheckMarketingConsent} />
-                              <span class="agreement-form__checkbox"><span class="icon icon-check"></span></span>
-                            </label>
-                            <div class="agreement-form__label"> ${content.value.GeneralForm.value.MarketingConsentLabel} </div>
-                          </div>
-                       </c:if>
-                       <!-- T & C -->
-                        <c:if test ="${content.value.GeneralForm.value.TCLabel.isSet}">
-                              <div class="agreement-form__wrapper field-item">
-                                 <c:set var = "isCheckTC" value = ""></c:set>
-                                 <c:if test ="${content.value.GeneralForm.value.TC == 'Mandatory'}">
-                                     <c:set var = "isCheckTC" value = "required data-parsley-required-message='${content.value.GeneralForm.value.TCErrorMessage}'">
-                                     </c:set>
-                                </c:if>
-                                <label class="agreement-form" for="tc">
-                                  <input class="agreement-form__input" type="checkbox" name="tc" id="tc" data-agreement value="Term and coditions" ${isCheckTC} title="Term and coditions" />
-                                  <span class="agreement-form__checkbox"><span class="icon icon-check"></span></span>
-                                </label>
-                                <div class="agreement-form__label">${content.value.GeneralForm.value.TCLabel}</div>
-                               </div>
-                         </c:if>
-                         <c:if test ="${content.value.GeneralForm.value.SubmitButtonText.isSet}">
-                          <button form="form" class="cta-primary submit-form" type="submit" ><span>${content.value.GeneralForm.value.SubmitButtonText}</span></button>
-                         </c:if>
-                         <input type="hidden"  name="product-title" id="product-title" />
-                         <input type="hidden"  name="file-path" value="<%=filenameEncode%>" />
-						 <input type="hidden" id="form-source-name" name="form-source-name" value="${content.value.GeneralForm.value.FormSourceName}"/> 
-					  
-					  </div>
-                                    </div>
-									<div class="popup-policy-number" data-empty-widget>
-							   ${content.value.Dropdown.value.EmptyWidget}
-							</div>
-                        </fieldset>
-                     </c:if>
-                        </form>
-                       </div>
-                       <c:if test ="${content.value.GeneralForm.value.Image.isSet}">
-                            <div class="col-md-5 col-lg-6 contact-form__img">
-                                <div class="img-contact-form">
-                                <img class="lazyload" src='<cms:link>/system/modules/com.prudential.v2.global/resources/images/spinner.gif</cms:link>' data-src="<cms:link>${content.value.GeneralForm.value.Image}</cms:link>"  alt="${content.value.GeneralForm.value.ImageAlt}" />
-                                </div>
-                            </div>
-                        </c:if>
-                        <div class="loader --hide">
-                         <div class="loader-wrapper">
-                          <div class="loader-wrapper-item">
-                            <div class="loader-item"></div>
-                            <div class="loader-item loader-item-2"></div>
-                            <div class="loader-item loader-item-3"></div>
-                            <div class="loader-item loader-item-4"></div>
-                            <div class="loader-item loader-item-5"></div>
-                            <div class="loader-item loader-item-6"></div>
-                            <div class="loader-item loader-item-7"></div>
-                            <div class="loader-item loader-item-8"></div>
-                            <div class="loader-item loader-item-9"></div>
-                            <div class="loader-item loader-item-10"></div>
-                            <div class="loader-item loader-item-11"></div>
-                            <div class="loader-item loader-item-12"></div>
-                          </div>
-                        </div>
-                     </div>
-                    </div>
-              </div>
-			 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const select = document.getElementById('select-service');
-	const sectionInputForm = document.getElementById('section-input-form');
-	const formBottomSection = document.getElementById('form-bottom-section');
-    const allViews = document.querySelectorAll('.dropdown-view');
-	const unavailableText = document.getElementById('unavailable-text');
-	const radios = document.querySelectorAll('input[type="radio"]');
-	const transitionOption = document.getElementById('product-title');
+class FormManager {
+    constructor() {
+        this.elements = this.initializeElements();
+        this.state = {
+            lastCheckedRadio: null,
+            isSubmitting: false
+        };
+        this.config = {
+            maxFileSize: 5 * 1024 * 1024, // 5MB
+            maxTotalSize: 20 * 1024 * 1024, // 20MB
+            allowedFileTypes: ['.png', '.jpeg', '.pdf', '.doc', '.docx', '.heic', '.jpg']
+        };
+        
+        this.init();
+    }
 
-    function showSelectedView() {
-		const selectedOption = select.options[select.selectedIndex];
-		console.log('Selected Option:', selectedOption);
-        const selectedId = selectedOption.getAttribute('data.option-id'); 
-		console.log('Selected value:', selectedId);
+    initializeElements() {
+        return {
+            select: document.getElementById('select-service'),
+            sectionInputForm: document.getElementById('section-input-form'),
+            formBottomSection: document.getElementById('form-bottom-section'),
+            allViews: document.querySelectorAll('.dropdown-view'),
+            unavailableText: document.getElementById('unavailable-text'),
+            radios: document.querySelectorAll('input[type="radio"]'),
+            transitionOption: document.getElementById('product-title'),
+            form: document.querySelector('.dynamic-form-submission'),
+            emailInput: document.getElementById('email-address'),
+            policyInput: document.getElementById('policy-number'),
+            clickHereLink: document.getElementById('clickHereLink')
+        };
+    }
 
-        allViews.forEach(view => {
-            view.style.display = 'none';
+    init() {
+        this.initDropdownHandler();
+        this.initRadioHandler();
+        this.initFormSubmission();
+        this.initSimpleSubmission();
+        this.initBootstrapSelect();
+    }
+
+    // Dropdown Management
+    initDropdownHandler() {
+        if (!this.elements.select) return;
+        
+        this.showSelectedView();
+        this.elements.select.addEventListener('change', () => this.showSelectedView());
+    }
+
+    showSelectedView() {
+        const selectedOption = this.elements.select.options[this.elements.select.selectedIndex];
+        const selectedId = selectedOption?.getAttribute('data.option-id');
+        
+        console.log('Selected Option:', selectedOption, 'ID:', selectedId);
+
+        this.resetViews();
+
+        if (!selectedId) {
+            console.log('No value selected');
+            return;
+        }
+
+        const isAvailable = selectedOption.getAttribute('data-available') === 'true';
+        const isIncludeRadio = selectedOption.getAttribute('data-include-radio') === 'true';
+        const unavailableText = selectedOption.getAttribute('data-unavailable-text') || 'This option is unavailable.';
+
+        if (isAvailable) {
+            this.showAvailableOption(selectedId, isIncludeRadio);
+        } else {
+            this.showUnavailableOption(unavailableText);
+        }
+    }
+
+    resetViews() {
+        this.elements.allViews.forEach(view => view.style.display = 'none');
+        this.elements.unavailableText.style.display = 'none';
+        this.elements.unavailableText.textContent = '';
+        this.elements.transitionOption.value = '';
+        
+        this.elements.radios.forEach(radio => {
+            if (radio.name !== "policyRadios") {
+                radio.checked = false;
+            }
         });
-		unavailableText.style.display = 'none';
-        unavailableText.textContent = '';
-		transitionOption.value = '';
-        radios.forEach(radio => {
-		  if(radio.name != "policyRadios") {
-             radio.checked = false;
-		  }
+        
+        this.resetFileRequirements();
+    }
+
+    showAvailableOption(selectedId, isIncludeRadio) {
+        const selectedView = document.getElementById(selectedId);
+        
+        if (selectedView) {
+            selectedView.style.display = 'block';
+            this.setFileRequirements(selectedView);
+            console.log('Showing view for:', selectedId);
+        }
+
+        this.toggleFormSections(!isIncludeRadio);
+    }
+
+    showUnavailableOption(text) {
+        this.toggleFormSections(false);
+        this.elements.unavailableText.innerHTML = text;
+        this.elements.unavailableText.style.display = 'block';
+        console.log('Showing unavailable text:', text);
+    }
+
+    toggleFormSections(show) {
+        const display = show ? 'block' : 'none';
+        this.elements.sectionInputForm.style.display = display;
+        this.elements.formBottomSection.style.display = display;
+    }
+
+    // Radio Button Management
+    initRadioHandler() {
+        this.elements.radios.forEach(radio => {
+            radio.addEventListener('change', () => this.handleRadioChange(radio));
         });
-		
-		document.querySelectorAll('.dropdown-view input[type="file"]').forEach(fileInput => {
+    }
+
+    handleRadioChange(radio) {
+        this.hidePreviousRadioView();
+        this.showCurrentRadioView(radio);
+        this.state.lastCheckedRadio = radio;
+    }
+
+    hidePreviousRadioView() {
+        if (!this.state.lastCheckedRadio) return;
+
+        const prevDropdownId = this.state.lastCheckedRadio.getAttribute('data-dropdown-id') || '';
+        const prevSelectedId = `${prevDropdownId}_${this.state.lastCheckedRadio.id}`;
+        const prevView = document.getElementById(prevSelectedId);
+
+        if (prevView) {
+            prevView.style.display = 'none';
+            this.resetFileRequirements(prevView);
+            console.log('Hiding view for:', prevSelectedId);
+        }
+    }
+
+    showCurrentRadioView(radio) {
+        const radioId = radio.id;
+        const radioValue = radio.value;
+        const dropdownId = radio.getAttribute('data-dropdown-id') || '';
+        const selectedId = `${dropdownId}_${radioId}`;
+
+        console.log("Radio ID:", radioId, "Value:", radioValue, "Selected ID:", selectedId);
+
+        const selectedView = document.getElementById(selectedId);
+        if (selectedView) {
+            this.elements.select.value = "";
+            this.elements.transitionOption.value = radioValue;
+            selectedView.style.display = 'block';
+            this.setFileRequirements(selectedView);
+            this.toggleFormSections(true);
+            console.log('Showing view for:', selectedId);
+        }
+    }
+
+    // File Management
+    resetFileRequirements(container = document) {
+        container.querySelectorAll('.dropdown-view input[type="file"]').forEach(fileInput => {
             fileInput.removeAttribute('required');
         });
+    }
 
-        if (selectedId) {
-            const isAvailable = selectedOption.getAttribute('data-available') === 'true';
-			const isIncludeRadio = selectedOption.getAttribute('data-include-radio') === 'true';
-            const text = selectedOption.getAttribute('data-unavailable-text') || 'This option is unavailable.';
-
-            console.log('Is available:', isAvailable);
-            console.log('Unavailable text:', text);
-			console.log('Is Include Radio:', isIncludeRadio);
-
-            if (isAvailable) {
-                const selectedView = document.getElementById(selectedId);
-                console.log('Selected view element:', selectedView);
-				
-				if(isIncludeRadio) {
-				  sectionInputForm.style.display = 'none';
-				  formBottomSection.style.display = 'none';
-				} else {
-				  sectionInputForm.style.display = 'block';
-				  formBottomSection.style.display = 'block';
-				}
-
-                if (selectedView) {
-                    selectedView.style.display = 'block';
-                    console.log('Showing view for:', selectedId);
-					selectedView.querySelectorAll('.dropdown-view input[type="file"]').forEach(fileInput => {
-                        const isRequired = fileInput.getAttribute('data-is-required') === 'true';
-                        if (isRequired) {
-                            fileInput.setAttribute('required', 'required');
-                        }
-                    });
-                } else {
-                    console.log('No view found for:', selectedId);
-                }
-            } else {
-			    sectionInputForm.style.display = 'none';
-				formBottomSection.style.display = 'none';
-                unavailableText.innerHTML = text;
-                unavailableText.style.display = 'block';
-                console.log('Showing unavailable text:', text);
+    setFileRequirements(container) {
+        container.querySelectorAll('.dropdown-view input[type="file"]').forEach(fileInput => {
+            const isRequired = fileInput.getAttribute('data-is-required') === 'true';
+            if (isRequired) {
+                fileInput.setAttribute('required', 'required');
             }
-        } else {
-            console.log('No value selected');
+        });
+    }
+
+    // Form Validation
+    validateBasicFields() {
+        const email = this.elements.emailInput?.value.trim() || '';
+        const policyNumber = this.elements.policyInput?.value.trim() || '';
+
+        if (!email || !policyNumber) {
+            this.showNotification('All fields marked with * are mandatory', true);
+            return false;
         }
-    }
-	
-    showSelectedView();
 
-    select.addEventListener('change', showSelectedView);
-	
-	
- $('select').on('shown.bs.select', function() {
-    $('.dropdown-menu').css({
-        'max-width': 'none !important',
-        'width': 'auto !important'
-    });
-});
-});
-</script>
-<script>
-  const radios = document.querySelectorAll('input[type="radio"]');
-  const sectionInputForm = document.getElementById('section-input-form');
-  const formBottomSection = document.getElementById('form-bottom-section');
-  const transitionOption = document.getElementById('product-title');
-
-  let lastCheckedRadio = null;
-
-  radios.forEach(radio => {
-    radio.addEventListener('change', () => {
-      // Check if there was a previously checked radio
-      if (lastCheckedRadio && lastCheckedRadio !== radio) {
-        const uncheckedRadioId = lastCheckedRadio.id;
-        console.log('Unchecked Radio ID:', uncheckedRadioId);
-
-        const prevDropdownId = lastCheckedRadio.getAttribute('data-dropdown-id') || '';
-        const prevSelectedId = prevDropdownId + "_" + uncheckedRadioId;
-
-        const prevView = document.getElementById(prevSelectedId);
-        if (prevView) {
-          prevView.style.display = 'none';
-          console.log('Hiding view for:', prevSelectedId);
-		  prevView.querySelectorAll('.dropdown-view input[type="file"]').forEach(fileInput => {
-                        const isRequired = fileInput.getAttribute('data-is-required') === 'true';
-                        if (isRequired) {
-                            fileInput.removeAttribute('required');
-                        }
-                    });
+        if (!/^\d{8}$/.test(policyNumber)) {
+            this.showNotification('Invalid Policy Number.', true);
+            return false;
         }
-      }
 
-      // Now handle the currently checked radio
-      const radioId = radio.id;
-	  const radioValue = radio.value;
-      const dropdownId = radio.getAttribute('data-dropdown-id') || '';
-      const selectedId = dropdownId + "_" + radioId;
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            this.showNotification('Please enter a valid email address.', true);
+            return false;
+        }
 
-      console.log("Radio ID:", radioId);
-	  console.log("Radio Value:", radioValue);
-      console.log("Dropdown ID:", dropdownId);
-      console.log("Selected ID:", selectedId);
-
-      const selectedView = document.getElementById(selectedId);
-      if (selectedView) {
-	    const select = document.getElementById('select-service');
-		select.value = "";
-		transitionOption.value = radioValue;
-		//console.log("Selected Value:", select.value);
-        selectedView.style.display = 'block';
-        console.log('Showing view for:', selectedId);
-        sectionInputForm.style.display = 'block';
-        formBottomSection.style.display = 'block';
-		selectedView.querySelectorAll('.dropdown-view input[type="file"]').forEach(fileInput => {
-                        const isRequired = fileInput.getAttribute('data-is-required') === 'true';
-                        if (isRequired) {
-                            fileInput.setAttribute('required', 'required');
-                        }
-                    });
-      } else {
-        console.log('No element found with ID:', selectedId);
-      }
-
-      // Update last checked radio
-      lastCheckedRadio = radio;
-    });
-  });
-</script>
-
-<script>
-  (function() {
-  document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('.dynamic-form-submission');
-    
-    if (!form) {
-      return;
-    }
-    
-    const submitUrl = form.getAttribute('data-url-submit');
-    const redirectUrl = form.getAttribute('data-url-redirect');
-    
-    if (!submitUrl) {
-      return;
-    }
-    
-    const progressContainer = document.querySelector('.loader') || createProgressElement();
-    const notiElement = document.querySelector('[data-noti]') || createNotiElement();
-    
-    const recaptchaElement = form.querySelector('.g-recaptcha[data-recaptcha]');
-    const isRecaptchaEnabled = !!recaptchaElement;
-    
-    function verifyRecaptcha() {
-      if (!isRecaptchaEnabled) {
         return true;
-      }
-      
-      const recaptchaResponse = grecaptcha && grecaptcha.getResponse();
-      
-      if (!recaptchaResponse || recaptchaResponse.length === 0) {
-        showNoti('Please complete the reCAPTCHA verification.', true);
-        return false;
-      }
-      
-      return true;
     }
-    
-    function validateFiles() {
-      const fileInputs = form.querySelectorAll('input[type="file"]');
-      let totalSize = 0;
-      let isValid = true;
-      let errorMessage = '';
-	  
-	  const allowedFileTypes = ['.png', '.jpeg', '.pdf', '.doc', '.docx', '.heic', '.jpg'];
-      
-      // Check each file input
-      for (let i = 0; i < fileInputs.length; i++) {
-        const input = fileInputs[i];
+
+    validateFiles() {
+        const fileInputs = this.elements.form?.querySelectorAll('input[type="file"]') || [];
+        let totalSize = 0;
+
+        for (const input of fileInputs) {
+            const validation = this.validateSingleFileInput(input);
+            if (!validation.isValid) {
+                this.showNotification(validation.message, true);
+                return false;
+            }
+            totalSize += validation.size;
+        }
+
+        if (totalSize > this.config.maxTotalSize) {
+            const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+            this.showNotification(`Total file size exceeds the maximum of 20MB. Current total: ${totalSizeMB}MB.`, true);
+            return false;
+        }
+
+        return true;
+    }
+
+    validateSingleFileInput(input) {
         const isRequired = input.hasAttribute('required');
         const files = input.files;
-        
-        // Check if required file input is empty
+        let totalSize = 0;
+
         if (isRequired && (!files || files.length === 0)) {
-          isValid = false;
-          const placeholder = input.getAttribute('placeholder') || 'File';
-          errorMessage = "Mandatory document required. Please upload to proceed.";
-          break;
+            return {
+                isValid: false,
+                message: "Mandatory document required. Please upload to proceed.",
+                size: 0
+            };
         }
-        
-        // Check file size limits
+
         if (files && files.length > 0) {
-          for (let j = 0; j < files.length; j++) {
-            const file = files[j];
-            const fileSizeMB = file.size / (1024 * 1024);
-            totalSize += file.size;
-            
-            // Check individual file size (5MB limit)
-            if (fileSizeMB > 5) {
-              isValid = false;
-              errorMessage = "The uploaded file exceeds the maximum allowed size of 5 MB. Please upload a file that is 5 MB or smaller to proceed.";
-              break;
-            }
-			
-			// Check file type
-            const fileName = file.name.toLowerCase();
-            const isValidFileType = allowedFileTypes.some(type => 
-               fileName.endsWith(type.toLowerCase())
-            );
-        
-            if (!isValidFileType) {
-              isValid = false;
-              errorMessage = "The uploaded file type is not supported. Please upload a file in acceptable formats to proceed";
-              break;
-            }
-          }
-          
-          if (!isValid) break;
-        }
-      }
-      
-      // Check total file size (20MB limit)
-      const totalSizeMB = totalSize / (1024 * 1024);
-      if (isValid && totalSizeMB > 20) {
-        isValid = false;
-        errorMessage = `Total file size exceeds the maximum of 20MB. Current total: ${totalSizeMB.toFixed(2)}MB.`;
-      }
-      
-      if (!isValid) {
-        showNoti(errorMessage, true);
-      }
-      
-      return isValid;
-    }
-    
-    function handleFormSubmit(event) {
-      event.preventDefault();
-      
-      hideNoti();
-	  var email = document.getElementById('email-address').value.trim();
-      var policy_number = document.getElementById('policy-number').value.trim();
-	  
-	  
-	  
-	  if (!email) {
-	      showNoti('All fields marked with * are mandatory', true);
-          return;
-       }
-		
-	  if (!policy_number) {
-	      showNoti('All fields marked with * are mandatory.', true);
-          return;
-        }
-		
-        if (!/^\d{8}$/.test(policy_number)) {
-		    showNoti('Invalid Policy Number.', true);
-            return;
-        }
-		
-		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-		    showNoti('Please enter a valid email address.', true);
-            return;
-        }
-      
-      // Verify reCAPTCHA first
-      if (!verifyRecaptcha()) {
-        return;
-      }
-      
-      // Validate files
-      if (!validateFiles()) {
-        return;
-      }
-      
-      try {
-        form.setAttribute('enctype', 'multipart/form-data');
-        
-        const formData = new FormData(form);
-        
-        showProgress();
-        
-        const xhr = new XMLHttpRequest();
-        
-        xhr.upload.addEventListener('progress', function(e) {
-          // Progress tracking if needed
-        });
-        
-        xhr.addEventListener('load', function() {
-          hideProgress();
-          
-          if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              const response = JSON.parse(xhr.responseText.trim());
-              
-              if (response.statusCode === 200) {
-                if (redirectUrl) {
-                  window.location.href = redirectUrl;
-                } else {
-                  showNoti('Form submitted successfully!', false);
+            for (const file of files) {
+                const fileSizeMB = file.size / (1024 * 1024);
+                totalSize += file.size;
+
+                if (fileSizeMB > 5) {
+                    return {
+                        isValid: false,
+                        message: "The uploaded file exceeds the maximum allowed size of 5 MB. Please upload a file that is 5 MB or smaller to proceed.",
+                        size: totalSize
+                    };
                 }
-              } else {
-                showNoti(response.message || 'An error occurred during form submission.', true);
-              }
-            } catch (e) {
-			  hideProgress();
-              showNoti('An unexpected error occurred. Please try again.', true);
+
+                if (!this.isValidFileType(file.name)) {
+                    return {
+                        isValid: false,
+                        message: "The uploaded file type is not supported. Please upload a file in acceptable formats to proceed",
+                        size: totalSize
+                    };
+                }
             }
-          } else {
-            showNoti(`Server error: ${xhr.status} ${xhr.statusText}`, true);
-          }
-        });
-        
-        xhr.addEventListener('error', function(e) {
-          hideProgress();
-          showNoti('Network error. Please check your connection and try again.', true);
-        });
-        
-        xhr.addEventListener('abort', function() {
-          hideProgress();
-          showNoti('Form submission was aborted.', true);
-        });
-        
-        xhr.open('POST', submitUrl, true);
-        xhr.send(formData);
-      } catch (error) {
-        hideProgress();
-        showNoti('An error occurred while preparing the form data. Please try again.', true);
-      }
-    }
-    
-    function showProgress() {
-      progressContainer.classList.remove('--hide');
-    }
-    
-    function hideProgress() {
-      progressContainer.classList.add('--hide');
-	  progressContainer.classList.remove('d-none');
-    }
-    
-    function showNoti(message, isError = true) {
-      const messageElement = notiElement.querySelector('[data-noti-message]');
-      if (messageElement) {
-        messageElement.textContent = message;
-      }
-      
-      notiElement.classList.remove('d-none');
-      
-      if (isError) {
-        notiElement.classList.add('error');
-      } else {
-        notiElement.classList.remove('error');
-      }
-      
-      notiElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-    
-    function hideNoti() {
-      notiElement.classList.add('d-none');
-    }
-    
-    function createProgressElement() {
-      const element = document.createElement('div');
-      element.className = 'loader --hide';
-      element.innerHTML = `
-        <div class="loader-wrapper">
-          <div class="loader-wrapper-item">
-            <div class="loader-item"></div>
-            <div class="loader-item loader-item-2"></div>
-            <div class="loader-item loader-item-3"></div>
-            <div class="loader-item loader-item-4"></div>
-            <div class="loader-item loader-item-5"></div>
-            <div class="loader-item loader-item-6"></div>
-            <div class="loader-item loader-item-7"></div>
-            <div class="loader-item loader-item-8"></div>
-            <div class="loader-item loader-item-9"></div>
-            <div class="loader-item loader-item-10"></div>
-            <div class="loader-item loader-item-11"></div>
-            <div class="loader-item loader-item-12"></div>
-          </div>
-        </div>
-      `;
-      form.parentNode.appendChild(element);
-      return element;
-    }
-    
-    function createNotiElement() {
-      const element = document.createElement('div');
-      element.className = 'notification-form d-none';
-      element.setAttribute('data-noti', '');
-      
-      element.innerHTML = `
-        <span class="icon icon-warning-triangle notification-form__icon"></span>
-        <div class="notification-form__content">
-          <div class="notification-form__title">Error</div>
-          <div class="notification-form__desc" data-noti-message></div>
-        </div>
-      `;
-      
-      form.insertBefore(element, form.firstChild);
-      return element;
-    }
-    
-    form.setAttribute('enctype', 'multipart/form-data');
-    
-    const observer = new MutationObserver(function(mutations) {
-      mutations.forEach(function(mutation) {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'enctype') {
-          if (form.getAttribute('enctype') !== 'multipart/form-data') {
-            form.setAttribute('enctype', 'multipart/form-data');
-          }
         }
-      });
-    });
-    
-    observer.observe(form, { attributes: true });
-    
-    form.addEventListener('submit', handleFormSubmit);
-    
-    if (window.$ && $.ajax) {
-      const originalAjaxSubmit = $.ajax;
-      $.ajax = function(options) {
-        if (options && options.url === submitUrl) {
-          if (options.data instanceof FormData) {
-            if (!verifyRecaptcha() || !validateFiles()) {
-              if (options.error && typeof options.error === 'function') {
-                options.error(null, 'error', 'Validation failed');
-              }
-              return {
-                abort: function() {},
-                fail: function() { return this; },
-                always: function() { return this; }
-              };
-            }
-          }
-        }
-        return originalAjaxSubmit.apply(this, arguments);
-      };
+
+        return { isValid: true, message: '', size: totalSize };
     }
-    
-    const existingSubmitHandler = form.onsubmit;
-    if (existingSubmitHandler) {
-      form.onsubmit = function(event) {
+
+    isValidFileType(fileName) {
+        const lowerFileName = fileName.toLowerCase();
+        return this.config.allowedFileTypes.some(type => 
+            lowerFileName.endsWith(type.toLowerCase())
+        );
+    }
+
+    verifyRecaptcha() {
+        const recaptchaElement = this.elements.form?.querySelector('.g-recaptcha[data-recaptcha]');
+        if (!recaptchaElement) return true;
+
+        const recaptchaResponse = window.grecaptcha?.getResponse();
+        if (!recaptchaResponse || recaptchaResponse.length === 0) {
+            this.showNotification('Please complete the reCAPTCHA verification.', true);
+            return false;
+        }
+
+        return true;
+    }
+
+    // Form Submission
+    initFormSubmission() {
+        if (!this.elements.form) return;
+
+        this.elements.form.setAttribute('enctype', 'multipart/form-data');
+        this.elements.form.addEventListener('submit', (event) => this.handleFormSubmit(event));
+        this.setupFormObserver();
+        this.overrideAjaxIfExists();
+    }
+
+    handleFormSubmit(event) {
         event.preventDefault();
         
-        if (!verifyRecaptcha() || !validateFiles()) {
-          return false;
-        }
-        
-        return existingSubmitHandler.call(this, event);
-      };
-    }
-  });
-})();
-</script>
+        if (this.state.isSubmitting) return;
 
-<!-- NEW FUNCTIONALITY FOR "CLICK HERE" BUTTON - ADDED BELOW -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Get the click here link
-    const clickHereLink = document.getElementById('clickHereLink');
-    
-    if (clickHereLink) {
-        clickHereLink.addEventListener('click', function(event) {
+        this.hideNotification();
+
+        if (!this.validateBasicFields() || !this.verifyRecaptcha() || !this.validateFiles()) {
+            return;
+        }
+
+        this.submitForm();
+    }
+
+    async submitForm() {
+        const submitUrl = this.elements.form.getAttribute('data-url-submit');
+        const redirectUrl = this.elements.form.getAttribute('data-url-redirect');
+
+        if (!submitUrl) return;
+
+        try {
+            this.state.isSubmitting = true;
+            this.showProgress();
+
+            const formData = new FormData(this.elements.form);
+            const response = await this.makeRequest('POST', submitUrl, formData);
+
+            this.handleFormResponse(response, redirectUrl);
+        } catch (error) {
+            this.showNotification('An error occurred while submitting the form. Please try again.', true);
+        } finally {
+            this.state.isSubmitting = false;
+            this.hideProgress();
+        }
+    }
+
+    handleFormResponse(response, redirectUrl) {
+        if (response.statusCode === 200) {
+            if (redirectUrl) {
+                window.location.href = redirectUrl;
+            } else {
+                this.showNotification('Form submitted successfully!', false);
+            }
+        } else {
+            this.showNotification(response.message || 'An error occurred during form submission.', true);
+        }
+    }
+
+    // Simple Submission (Click Here Link)
+    initSimpleSubmission() {
+        if (!this.elements.clickHereLink) return;
+
+        this.elements.clickHereLink.addEventListener('click', (event) => {
             event.preventDefault();
+            this.handleSimpleSubmission();
+        });
+    }
+
+    async handleSimpleSubmission() {
+        this.hideNotification();
+
+        if (!this.validateBasicFields()) return;
+
+        try {
+            this.showProgress();
             
-            // Get form elements
-            const form = document.getElementById('form');
-            const notiElement = document.querySelector('[data-noti]');
-            const progressContainer = document.querySelector('.loader');
+            const formData = this.createSimpleFormData();
+            const response = await this.makeRequest('POST', '../action/simple-contact-form.jsp', formData);
             
-            // Get policy number and email values
-            const policyNumberInput = document.getElementById('policy-number');
-            const emailInput = document.getElementById('email-address');
+            this.handleSimpleResponse(response);
+        } catch (error) {
+            this.showNotification('Network error. Please check your connection and try again.', true);
+        } finally {
+            this.hideProgress();
+        }
+    }
+
+    createSimpleFormData() {
+        const formData = new FormData();
+        formData.append('policy-number', this.elements.policyInput.value.trim());
+        formData.append('email-address', this.elements.emailInput.value.trim());
+
+        // Add optional fields
+        const formSourceInput = document.getElementById('form-source-name');
+        if (formSourceInput?.value) {
+            formData.append('form-source-name', formSourceInput.value);
+        }
+
+        const filePathInput = document.querySelector('input[name="file-path"]');
+        if (filePathInput?.value) {
+            formData.append('file-path', filePathInput.value);
+        }
+
+        return formData;
+    }
+
+    handleSimpleResponse(response) {
+        if (response.statusCode === 200) {
+            this.showNotification('Your request has been submitted successfully!', false);
+            this.clearBasicFields();
             
-            const policyNumber = policyNumberInput ? policyNumberInput.value.trim() : '';
-            const email = emailInput ? emailInput.value.trim() : '';
-            
-            // Hide any existing notifications
-            if (notiElement) {
-                notiElement.classList.add('d-none');
-            }
-            
-            // Validate required fields
-            if (!email) {
-                showSimpleNoti('Email address is required.', true);
-                return;
-            }
-            
-            if (!policyNumber) {
-                showSimpleNoti('Policy number is required.', true);
-                return;
-            }
-            
-            // Validate policy number format (8 digits)
-            if (!/^\d{8}$/.test(policyNumber)) {
-                showSimpleNoti('Invalid Policy Number. Must be 8 digits.', true);
-                return;
-            }
-            
-            // Validate email format
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                showSimpleNoti('Please enter a valid email address.', true);
-                return;
-            }
-            
-            // Prepare simple form data (only policy number and email)
-            const simpleFormData = new FormData();
-            simpleFormData.append('policy-number', policyNumber);
-            simpleFormData.append('email-address', email);
-            
-            // Add form source name if available
-            const formSourceInput = document.getElementById('form-source-name');
-            if (formSourceInput && formSourceInput.value) {
-                simpleFormData.append('form-source-name', formSourceInput.value);
-            }
-            
-            // Add file path if available
-            const filePathInput = document.querySelector('input[name="file-path"]');
-            if (filePathInput && filePathInput.value) {
-                simpleFormData.append('file-path', filePathInput.value);
-            }
-            
-            // Show progress
-            if (progressContainer) {
-                progressContainer.classList.remove('--hide');
-            }
-            
-            // Submit to simple contact form endpoint
+            // Auto-hide success message
+            setTimeout(() => this.hideNotification(), 5000);
+        } else {
+            this.showNotification(response.message || 'An error occurred during submission.', true);
+        }
+    }
+
+    clearBasicFields() {
+        if (this.elements.policyInput) this.elements.policyInput.value = '';
+        if (this.elements.emailInput) this.elements.emailInput.value = '';
+    }
+
+    // HTTP Request Helper
+    makeRequest(method, url, data) {
+        return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             
-            xhr.addEventListener('load', function() {
-                // Hide progress
-                if (progressContainer) {
-                    progressContainer.classList.add('--hide');
-                }
-                
+            xhr.addEventListener('load', () => {
                 if (xhr.status >= 200 && xhr.status < 300) {
                     try {
                         const response = JSON.parse(xhr.responseText.trim());
-                        
-                        if (response.statusCode === 200) {
-                            // Success - show success message but don't redirect
-                            showSimpleNoti('Your request has been submitted successfully!', false);
-                            
-                            // Optional: Clear the form fields
-                            if (policyNumberInput) policyNumberInput.value = '';
-                            if (emailInput) emailInput.value = '';
-                            
-                        } else {
-                            showSimpleNoti(response.message || 'An error occurred during submission.', true);
-                        }
+                        resolve(response);
                     } catch (e) {
-                        showSimpleNoti('An unexpected error occurred. Please try again.', true);
+                        reject(new Error('Invalid JSON response'));
                     }
                 } else {
-                    showSimpleNoti(`Server error: ${xhr.status} ${xhr.statusText}`, true);
+                    reject(new Error(`Server error: ${xhr.status} ${xhr.statusText}`));
                 }
             });
             
-            xhr.addEventListener('error', function() {
-                if (progressContainer) {
-                    progressContainer.classList.add('--hide');
-                }
-                showSimpleNoti('Network error. Please check your connection and try again.', true);
-            });
+            xhr.addEventListener('error', () => reject(new Error('Network error')));
+            xhr.addEventListener('abort', () => reject(new Error('Request aborted')));
             
-            xhr.addEventListener('abort', function() {
-                if (progressContainer) {
-                    progressContainer.classList.add('--hide');
-                }
-                showSimpleNoti('Request was aborted.', true);
-            });
-            
-            // Open connection to simple contact form endpoint
-            xhr.open('POST', '<cms:link>../action/simple-contact-form.jsp</cms:link>', true);
-            xhr.send(simpleFormData);
+            xhr.open(method, url, true);
+            xhr.send(data);
         });
     }
-    
-    // Helper function to show notifications for simple submission
-    function showSimpleNoti(message, isError = true) {
-        let notiElement = document.querySelector('[data-noti]');
-        
-        // Create notification element if it doesn't exist
-        if (!notiElement) {
-            notiElement = document.createElement('div');
-            notiElement.className = 'notification-form d-none';
-            notiElement.setAttribute('data-noti', '');
-            
-            notiElement.innerHTML = `
-                <span class="icon icon-warning-triangle notification-form__icon"></span>
-                <div class="notification-form__content">
-                    <div class="notification-form__title">${isError ? 'Error' : 'Success'}</div>
-                    <div class="notification-form__desc" data-noti-message></div>
-                </div>
-            `;
-            
-            const form = document.getElementById('form');
-            if (form) {
-                form.insertBefore(notiElement, form.firstChild);
-            }
-        }
-        
-        const messageElement = notiElement.querySelector('[data-noti-message]');
-        if (messageElement) {
-            messageElement.textContent = message;
-        }
-        
-        // Update title based on message type
-        const titleElement = notiElement.querySelector('.notification-form__title');
-        if (titleElement) {
-            titleElement.textContent = isError ? 'Error' : 'Success';
-        }
-        
-        notiElement.classList.remove('d-none');
-        
-        if (isError) {
-            notiElement.classList.add('error');
-        } else {
-            notiElement.classList.remove('error');
-        }
-        
-        // Scroll to notification
-        notiElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
-        // Auto-hide success messages after 5 seconds
-        if (!isError) {
-            setTimeout(function() {
-                notiElement.classList.add('d-none');
-            }, 5000);
+
+    // UI Helpers
+    showProgress() {
+        const progressContainer = this.getOrCreateProgressElement();
+        progressContainer.classList.remove('--hide');
+    }
+
+    hideProgress() {
+        const progressContainer = document.querySelector('.loader');
+        if (progressContainer) {
+            progressContainer.classList.add('--hide');
         }
     }
+
+    showNotification(message, isError = true) {
+        const notiElement = this.getOrCreateNotificationElement();
+        const messageElement = notiElement.querySelector('[data-noti-message]');
+        const titleElement = notiElement.querySelector('.notification-form__title');
+
+        if (messageElement) messageElement.textContent = message;
+        if (titleElement) titleElement.textContent = isError ? 'Error' : 'Success';
+
+        notiElement.classList.remove('d-none');
+        notiElement.classList.toggle('error', isError);
+        notiElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    hideNotification() {
+        const notiElement = document.querySelector('[data-noti]');
+        if (notiElement) {
+            notiElement.classList.add('d-none');
+        }
+    }
+
+    getOrCreateProgressElement() {
+        let element = document.querySelector('.loader');
+        if (!element && this.elements.form) {
+            element = document.createElement('div');
+            element.className = 'loader --hide';
+            element.innerHTML = this.getProgressHTML();
+            this.elements.form.parentNode.appendChild(element);
+        }
+        return element;
+    }
+
+    getOrCreateNotificationElement() {
+        let element = document.querySelector('[data-noti]');
+        if (!element && this.elements.form) {
+            element = document.createElement('div');
+            element.className = 'notification-form d-none';
+            element.setAttribute('data-noti', '');
+            element.innerHTML = this.getNotificationHTML();
+            this.elements.form.insertBefore(element, this.elements.form.firstChild);
+        }
+        return element;
+    }
+
+    getProgressHTML() {
+        const items = Array.from({ length: 12 }, (_, i) => 
+            `<div class="loader-item${i > 0 ? ` loader-item-${i + 1}` : ''}"></div>`
+        ).join('');
+        
+        return `
+            <div class="loader-wrapper">
+                <div class="loader-wrapper-item">
+                    ${items}
+                </div>
+            </div>
+        `;
+    }
+
+    getNotificationHTML() {
+        return `
+            <span class="icon icon-warning-triangle notification-form__icon"></span>
+            <div class="notification-form__content">
+                <div class="notification-form__title">Error</div>
+                <div class="notification-form__desc" data-noti-message></div>
+            </div>
+        `;
+    }
+
+    // Setup Helpers
+    setupFormObserver() {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && 
+                    mutation.attributeName === 'enctype' && 
+                    this.elements.form.getAttribute('enctype') !== 'multipart/form-data') {
+                    this.elements.form.setAttribute('enctype', 'multipart/form-data');
+                }
+            });
+        });
+        observer.observe(this.elements.form, { attributes: true });
+    }
+
+    overrideAjaxIfExists() {
+        if (!window.$ || !window.$.ajax) return;
+
+        const submitUrl = this.elements.form.getAttribute('data-url-submit');
+        const originalAjaxSubmit = window.$.ajax;
+        
+        window.$.ajax = (options) => {
+            if (options?.url === submitUrl && options.data instanceof FormData) {
+                if (!this.verifyRecaptcha() || !this.validateFiles()) {
+                    if (options.error && typeof options.error === 'function') {
+                        options.error(null, 'error', 'Validation failed');
+                    }
+                    return {
+                        abort: () => {},
+                        fail: function() { return this; },
+                        always: function() { return this; }
+                    };
+                }
+            }
+            return originalAjaxSubmit.apply(this, arguments);
+        };
+    }
+
+    initBootstrapSelect() {
+        if (window.$) {
+            window.$('select').on('shown.bs.select', function() {
+                window.$('.dropdown-menu').css({
+                    'max-width': 'none !important',
+                    'width': 'auto !important'
+                });
+            });
+        }
+    }
+}
+
+// Initialize the form manager when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    new FormManager();
 });
-</script>
-            </c:otherwise>
-        </c:choose>
-        <c:if test="${not cms.element.inMemoryOnly && cms.edited}">
-                    ${cms.reloadMarker}
-        </c:if>
-    <c:if test="${cms.isEditMode}">
-        <c:out value='</div>' escapeXml="false" />
-    </c:if>
-</cms:formatter>
-</cms:bundle>
