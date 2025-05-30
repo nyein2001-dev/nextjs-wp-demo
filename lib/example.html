@@ -1,32 +1,202 @@
 <%@ page session="false" contentType="text/html;charset=UTF-8" %>
+<%@ page import="org.opencms.main.OpenCms" %>
+<%@ page import="org.opencms.mail.CmsMailSettings" %>
 <%@ page import="org.opencms.main.CmsSystemInfo" %>
+<%@ page import="org.opencms.configuration.CmsSystemConfiguration" %>
 <%@ page import="java.util.Properties" %>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
 <html>
 <head>
-    <title>SMTP Settings Checker</title>
+    <title>SMTP Settings Checker - OpenCms 9.5.1</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .config-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; }
+        .error { color: red; font-weight: bold; }
+        .success { color: green; }
+        .info { color: blue; }
+        .warning { color: orange; }
+    </style>
 </head>
 <body>
 <cms:contentload collector="singleFile" param="index.html" editable="true">
-    <h2>SMTP Configuration - OpenCms 9.5.1</h2>
-    <%
-        Properties smtpProps = CmsSystemInfo.getMailProperties();
-        String smtpHost = smtpProps.getProperty("mail.smtp.host", "Not Set");
-        String smtpPort = smtpProps.getProperty("mail.smtp.port", "Not Set");
-        String smtpAuth = smtpProps.getProperty("mail.smtp.auth", "Not Set");
-        String starttls = smtpProps.getProperty("mail.smtp.starttls.enable", "Not Set");
-        String fromDefault = smtpProps.getProperty("mail.from.default", "Not Set");
-    %>
+    <h2>SMTP Configuration Check - OpenCms 9.5.1</h2>
+    
+    <div class="config-section">
+        <h3>SMTP Configuration via CmsMailSettings</h3>
+        <%
+        try {
+            CmsMailSettings mailSettings = OpenCms.getSystemInfo().getMailSettings();
+            if (mailSettings != null) {
+        %>
+            <ul>
+                <li><strong>SMTP Server:</strong> 
+                    <span class="<%= (mailSettings.getMailHost() != null && !mailSettings.getMailHost().trim().isEmpty()) ? "success" : "error" %>">
+                        <%= mailSettings.getMailHost() != null ? mailSettings.getMailHost() : "Not Set" %>
+                    </span>
+                </li>
+                <li><strong>SMTP Port:</strong> 
+                    <span class="info"><%= mailSettings.getMailPort() %></span>
+                </li>
+                <li><strong>SMTP Security:</strong> 
+                    <span class="info"><%= mailSettings.getMailSecurity() != null ? mailSettings.getMailSecurity() : "None" %></span>
+                </li>
+                <li><strong>SMTP Authentication:</strong> 
+                    <span class="<%= mailSettings.isAuthenticationEnabled() ? "success" : "info" %>">
+                        <%= mailSettings.isAuthenticationEnabled() ? "Enabled" : "Disabled" %>
+                    </span>
+                </li>
+                <li><strong>SMTP Username:</strong> 
+                    <span class="info"><%= mailSettings.getUsername() != null ? mailSettings.getUsername() : "Not Set" %></span>
+                </li>
+                <li><strong>Default From Address:</strong> 
+                    <span class="<%= (mailSettings.getDefaultFromAddress() != null && !mailSettings.getDefaultFromAddress().trim().isEmpty()) ? "success" : "error" %>">
+                        <%= mailSettings.getDefaultFromAddress() != null ? mailSettings.getDefaultFromAddress() : "Not Set" %>
+                    </span>
+                </li>
+            </ul>
+        <%
+            } else {
+        %>
+            <p class="error">Mail settings object is null - check OpenCms configuration</p>
+        <%
+            }
+        } catch (Exception e) {
+        %>
+            <p class="error">Error accessing CmsMailSettings: <%= e.getMessage() %></p>
+            <p class="warning">This might indicate that mail configuration is not properly set up in opencms-system.xml</p>
+        <%
+        }
+        %>
+    </div>
 
-    <ul>
-        <li><strong>SMTP Host:</strong> <%= smtpHost %></li>
-        <li><strong>SMTP Port:</strong> <%= smtpPort %></li>
-        <li><strong>SMTP Auth:</strong> <%= smtpAuth %></li>
-        <li><strong>StartTLS Enabled:</strong> <%= starttls %></li>
-        <li><strong>Default From Address:</strong> <%= fromDefault %></li>
-    </ul>
+    <div class="config-section">
+        <h3>Alternative: System Properties Check</h3>
+        <%
+        try {
+            // Check system properties that might be set for JavaMail
+            Properties sysProps = System.getProperties();
+            String[] mailProps = {
+                "mail.smtp.host",
+                "mail.smtp.port", 
+                "mail.smtp.auth",
+                "mail.smtp.starttls.enable",
+                "mail.smtp.ssl.enable",
+                "mail.from",
+                "mail.user"
+            };
+            
+            boolean hasMailProps = false;
+            for (String prop : mailProps) {
+                String value = sysProps.getProperty(prop);
+                if (value != null) {
+                    hasMailProps = true;
+                    break;
+                }
+            }
+            
+            if (hasMailProps) {
+        %>
+            <ul>
+                <% for (String prop : mailProps) { 
+                    String value = sysProps.getProperty(prop);
+                    if (value != null) {
+                %>
+                <li><strong><%= prop %>:</strong> 
+                    <span class="info"><%= value %></span>
+                </li>
+                <% } } %>
+            </ul>
+        <%
+            } else {
+        %>
+            <p class="warning">No JavaMail system properties found</p>
+        <%
+            }
+        } catch (Exception e) {
+        %>
+            <p class="error">Error checking system properties: <%= e.getMessage() %></p>
+        <%
+        }
+        %>
+    </div>
+
+    <div class="config-section">
+        <h3>Configuration File Location Hints</h3>
+        <%
+        try {
+            String configPath = OpenCms.getSystemInfo().getConfigurationFileRfsPath();
+        %>
+            <ul>
+                <li><strong>Configuration Path:</strong> <span class="info"><%= configPath %></span></li>
+                <li><strong>System Config File:</strong> <span class="info"><%= configPath %>/opencms-system.xml</span></li>
+                <li><strong>Look for:</strong> <code>&lt;mail&gt;</code> section in opencms-system.xml</li>
+            </ul>
+        <%
+        } catch (Exception e) {
+        %>
+            <p class="error">Unable to determine configuration path: <%= e.getMessage() %></p>
+        <%
+        }
+        %>
+    </div>
+
+    <div class="config-section">
+        <h3>System Information</h3>
+        <ul>
+            <li><strong>OpenCms Version:</strong> <%= OpenCms.getSystemInfo().getVersionNumber() %></li>
+            <li><strong>Java Version:</strong> <%= System.getProperty("java.version") %></li>
+            <li><strong>Java Vendor:</strong> <%= System.getProperty("java.vendor") %></li>
+            <li><strong>Servlet Container:</strong> <%= application.getServerInfo() %></li>
+            <li><strong>OS:</strong> <%= System.getProperty("os.name") %> <%= System.getProperty("os.version") %></li>
+        </ul>
+    </div>
+
+    <div class="config-section">
+        <h3>JavaMail API Check</h3>
+        <%
+        try {
+            // Try to load JavaMail classes to verify availability
+            Class.forName("javax.mail.Session");
+            Class.forName("javax.mail.Transport");
+        %>
+            <p class="success">✓ JavaMail API is available</p>
+        <%
+        } catch (ClassNotFoundException e) {
+        %>
+            <p class="error">✗ JavaMail API not found: <%= e.getMessage() %></p>
+            <p class="warning">You may need to add mail.jar to your classpath for Java 6 environments</p>
+        <%
+        }
+        %>
+    </div>
+
+    <div class="config-section">
+        <h3>Troubleshooting Steps</h3>
+        <ol>
+            <li>Check if <code>&lt;mail&gt;</code> section exists in <code>opencms-system.xml</code></li>
+            <li>Verify SMTP server settings: host, port, authentication</li>
+            <li>For Java 6: Ensure JavaMail API (mail.jar) is in WEB-INF/lib</li>
+            <li>Test network connectivity to SMTP server</li>
+            <li>Check OpenCms logs for mail-related errors</li>
+        </ol>
+    </div>
+
+    <div class="config-section">
+        <h3>Sample opencms-system.xml Configuration</h3>
+        <pre style="background-color: #f5f5f5; padding: 10px; border: 1px solid #ddd;">
+&lt;mail&gt;
+    &lt;mailfrom&gt;noreply@yourcompany.com&lt;/mailfrom&gt;
+    &lt;mailhost&gt;smtp.yourcompany.com&lt;/mailhost&gt;
+    &lt;mailport&gt;587&lt;/mailport&gt;
+    &lt;mailsecurity&gt;starttls&lt;/mailsecurity&gt;
+    &lt;mailauth&gt;true&lt;/mailauth&gt;
+    &lt;mailusername&gt;your-smtp-username&lt;/mailusername&gt;
+    &lt;mailpassword&gt;your-smtp-password&lt;/mailpassword&gt;
+&lt;/mail&gt;
+        </pre>
+    </div>
+
 </cms:contentload>
 </body>
 </html>
