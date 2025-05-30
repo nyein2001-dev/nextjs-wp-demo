@@ -1,13 +1,32 @@
-Change to:
-You are receiving this because a request was submitted through Pru Life UK website.
+<%@ page session="false" contentType="text/html;charset=UTF-8" %>
+<%@ page import="org.opencms.main.CmsSystemInfo" %>
+<%@ page import="java.util.Properties" %>
+<%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-Change to +63 (2) 8887 5433
+<html>
+<head>
+    <title>SMTP Settings Checker</title>
+</head>
+<body>
+<cms:contentload collector="singleFile" param="index.html" editable="true">
+    <h2>SMTP Configuration - OpenCms 9.5.1</h2>
+    <%
+        Properties smtpProps = CmsSystemInfo.getMailProperties();
+        String smtpHost = smtpProps.getProperty("mail.smtp.host", "Not Set");
+        String smtpPort = smtpProps.getProperty("mail.smtp.port", "Not Set");
+        String smtpAuth = smtpProps.getProperty("mail.smtp.auth", "Not Set");
+        String starttls = smtpProps.getProperty("mail.smtp.starttls.enable", "Not Set");
+        String fromDefault = smtpProps.getProperty("mail.from.default", "Not Set");
+    %>
 
-Change text to:
-
-If you would like to visit a Pru Life UK branch, you can find your nearest branch here.
-
-Change all highlighted texts to:
-
-by the Policyowner
-
+    <ul>
+        <li><strong>SMTP Host:</strong> <%= smtpHost %></li>
+        <li><strong>SMTP Port:</strong> <%= smtpPort %></li>
+        <li><strong>SMTP Auth:</strong> <%= smtpAuth %></li>
+        <li><strong>StartTLS Enabled:</strong> <%= starttls %></li>
+        <li><strong>Default From Address:</strong> <%= fromDefault %></li>
+    </ul>
+</cms:contentload>
+</body>
+</html>
