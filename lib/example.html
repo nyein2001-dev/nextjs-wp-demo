@@ -26,3 +26,49 @@ Mobile No.
 National ID
 Referral code (AG code)
 Policy ID
+
+
+
+
+
+
+
+
+
+
+<style>
+.custom-dropdown-select_inner .dropdown-menu {
+  max-height: 300px !important;
+}
+</style>
+
+<c:if test="${content.value.CountryToggle.value.ActiveCountry.isSet}">
+  <c:if test="${fn:length(content.value.CountryToggle.valueList.LocationContainerWithinCountry) > 0}">
+    <div class="col-md-3" style="padding: 0 !important; margin: 0 !important;">
+      <div class="custom-dropdown-select" style="padding: 0 !important; margin: 0 !important;">
+        <div class="custom-dropdown-select_inner" style="padding: 0 !important; margin: 0 !important;">
+          <label class="sr-only" for="filter-gmap">${content.value.CountryToggle.value.ActiveCountry}</label>
+          <select
+            class="w-100"
+            id="filter-gmap"
+            data-select-dropdown
+            data-style
+            data-live-search="true"
+            aria-expanded="true"
+            data-parsley-trigger="change"
+            onchange="window.location.href=this.value"
+            style="height: 30px !important; padding: 0 !important; margin: 0 !important;"
+          >
+            <option disabled selected data-hidden="true">
+              ${content.value.CountryToggle.value.ActiveCountry}
+            </option>
+            <c:forEach var="item" items="${content.value.CountryToggle.valueList.LocationContainerWithinCountry}">
+              <option value="${item.value.CountryDirectedURL}">${item.value.CountryName}</option>
+            </c:forEach>
+          </select>
+        </div>
+      </div>
+    </div>
+  </c:if>
+</c:if>
+
