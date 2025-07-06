@@ -60,5 +60,13 @@ By clicking the Submit button,  I agree to the collection and use by Pru Life UK
 
 
 
+<c:choose>
+  <c:when test="${content.value.Section1.value['Section Title'].isSet}">
+    <div class="agreement-form_label" id="unavailable-text" style="display:none;"></div>
+  </c:when>
+  <c:otherwise>
+    <div class="agreement-form_label" id="unavailable-text"></div>
+  </c:otherwise>
+</c:choose>
 
 
