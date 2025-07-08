@@ -1,167 +1,127 @@
-<div style="border: 1px solid #ddd; padding: 20px; background-color: #f9f9f9;">
-        <p style="margin: 10px 0;">Thank you for reaching out to us!</p>
-        
-        <p style="margin: 10px 0;">We're excited to assist you. For the best support experience, please visit your nearest PRU Life UK branch<span style="text-decoration: underline; text-decoration-color: #c00; text-decoration-thickness: 2px;">.</span> Our friendly team is ready to help you with all your needs.</p>
-        
-        <p style="margin: 10px 0;">Find your nearest PRU Life UK branch <a href="https://www.prulifeuk.com.ph/en/contact-us/branch-general-agency-directory/" style="color: #c00; font-weight: bold; text-decoration: none;">here</a>.</p>
-        
-        <p style="margin: 10px 0;">You may also call our hotline numbers:</p>
-        
-        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-            <tr style="background-color: #e6e6e6;">
-                <td style="padding: 8px 15px; text-align: left; border: 1px solid #ccc;">PLDT Metro Manila</td>
-                <td style="padding: 8px 15px; text-align: left; border: 1px solid #ccc;">+63 (2) 887 5433</td>
-            </tr>
-            <tr style="background-color: #f2f2f2;">
-                <td style="padding: 8px 15px; text-align: left; border: 1px solid #ccc;">Domestic Toll-free</td>
-                <td style="padding: 8px 15px; text-align: left; border: 1px solid #ccc;">1 800 10 PRULINK (1800 10 7785465)</td>
-            </tr>
-            <tr style="background-color: #e6e6e6;">
-                <td style="padding: 8px 15px; text-align: left; border: 1px solid #ccc;">Globe Metro Manila</td>
-                <td style="padding: 8px 15px; text-align: left; border: 1px solid #ccc;">+63 (2) 7793-5433</td>
-            </tr>
-            <tr style="background-color: #f2f2f2;">
-                <td style="padding: 8px 15px; text-align: left; border: 1px solid #ccc;">Globe Domestic Toll-free</td>
-                <td style="padding: 8px 15px; text-align: left; border: 1px solid #ccc;">1-800-82-785465</td>
-            </tr>
-        </table>
-    </div>
+// Wait for DOM to be fully loaded
+document.addEventListener("DOMContentLoaded", () => {
+  // Get references to the dropdowns
+  const serviceSelect = document.getElementById("selectTopic")
+  const solutionDropdownContainer = document.getElementById("selectTopic2").closest(".input-text-field")
 
-PRUServices : https://pruservices.prulifeuk.com.ph/welcome
+  // Initially hide the solution dropdown
+  if (solutionDropdownContainer) {
+    solutionDropdownContainer.style.display = "none"
+  }
 
------------------------------------
-Pay premium / Credit card enrollment
+  // Add event listener to service dropdown
+  if (serviceSelect) {
+    serviceSelect.addEventListener("change", function () {
+      const selectedValue = this.value
 
-“PRUServices” will redirect user to  https://pruservices.prulifeuk.com.ph/welcome
-
-“Payment link page” will redirect user to https://www.prulifeuk.com.ph/en/payments/
-
------------------------------------
-Increase sum assured, Increase in premium
-
-Policy Amendment Request Form for Individual Policyowner  :   https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2022_Policy-Amendment-Request-Form-for-Individual-PO-FILLABLE-v2.pdf
-
-Policy Amendment Request Form for Corporate/Entity Policyowner  :  https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2022_Policy-Amendment-Request-Form-for-Corporate_Entity-PO-FILLABLE-v2.pdf
-
-----------------------------------  
-Reinstatement
-
-Reinstatement form for Individual Policyowner :  https:/www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2022_Reinstatement-form-for-individual-PO-FILLABLE-v2.pdf
-
-Reinstatement form for Corporate/ Entity Policyowner :  https:/www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2022_Reinstatement-form-for-Corporate-Entity-PO-FILLABLE-V2.pdf
-
-Payment facilities : https://www.prulifeuk.com.ph/en/policy-services-information/premium-payment-facilities/
-
-Payment link:   https://www.prulifeuk.com.ph/en/payments/
-
------------------------------------------
-Increase sum assured, Increase in premium
-
-Policy Amendment Request Form for Individual Policyowner  :  https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2022_Policy-Amendment-Request-Form-for-Individual-PO-FILLABLE-v2.pdf
-
-Policy Amendment Request Form for Corporate/Entity Policyowner  :  https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2022_Policy-Amendment-Request-Form-for-Corporate_Entity-PO-FILLABLE-v2.pdf
-
------------------------------------------
-Inclusion of Rider / Deletion of rider
-
-Policy Amendment Request Form for Individual Policyowner :  https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2022_Policy-Amendment-Request-Form-for-Individual-PO-FILLABLE-v2.pdf
-
-Policy Amendment Request Form for Corporate/Entity Policyowner :  https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2022_Policy-Amendment-Request-Form-for-Corporate_Entity-PO-FILLABLE-v2.pdf
-
----------------------------------------------
-Top-up
-
-Top-up form  :  https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/prulink-application-for-top-up-form.pdf
-
-Mode of Release form  :  https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/Mode-of-Release-Form.pdf
-
-payment facilities  :   https://www.prulifeuk.com.ph/en/policy-services-information/premium-payment-facilities/ 
-
--------------------------------------------
-Dividend withdrawal
-
-Partial Benefits Payout Form : https://pruo365.sharepoint.com/:b:/s/SPEEDBOATPROJECTTEAM/EXO4RNA49dlLo30lPGPDc7wB2omSayhUzTeDH94UkSmxvg?e=XRWCJs
-
-------------------------------------------
-Change method of payment (ADA, Direct debit)
-
-BDO: https:/www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/BDO-ADA-Enrollment-form.pdf
-HSBC: https:/www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/HSBC-ADA-Enrollment-form.pdf
-
-Privacy Notice and Consent form : https://pruo365.sharepoint.com/sites/SPEEDBOATPROJECTTEAM/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FSPEEDBOATPROJECTTEAM%2FShared%20Documents%2FPROJECT%20SPEEDBOAT%2FCONTACT%20CENTER%2FContact%2EUs%20in%20Website%2FContact%20Us%20Page%20%2D%20Phase%201%20%28No%20STP%29%2FForms%2FPrivacy%20Notice%20and%20Consent%20Form%201%2Epdf&parent=%2Fsites%2FSPEEDBOATPROJECTTEAM%2FShared%20Documents%2FPROJECT%20SPEEDBOAT%2FCONTACT%20CENTER%2FContact%2EUs%20in%20Website%2FContact%20Us%20Page%20%2D%20Phase%201%20%28No%20STP%29%2FForms&p=true&ga=1
-
----------------------------------------------
-Fund switch / Premium redirection
-
-PRULink Application for  Premium Redirection and Fund Switch Form : https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/Mode-of-Release-Form.pdf
-
-Mode of Release form : https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/Mode-of-Release-Form.pdf
-
--------------------------------------------
-User Email Template
-
-Subject line Format: 
-Web Request: <Type of Requested Link> - PN: <12345678>
-
-We have received your request.
-
-Thank you for contacting us. Our customer service team will be in touch with you. Here are the details of your request:
-
-------------------------------------
-Admin Email Template
-	
-Web Request:<Transaction> - PN: <12345678>
-
-You have a new request.
-
-You have received a new request. Please view details of the enquiry below.
-
-DETAILS OF TRANSACTION
----------------------------------------------
-
-<script>
-const form = document.querySelector('.dynamic-form-submission');
-
-if (form) {
-  form.addEventListener('submit', function (event) {
-    event.preventDefault();
-
-    const formData = new FormData(form);
-    const redirectURL = this.getAttribute('data-url-redirect');
-
-    $.ajax({
-      url: this.getAttribute('data-url-submit'),
-      type: 'POST',
-      data: formData,
-      processData: false, // Do not process FormData
-      contentType: false, // Let browser set multipart/form-data with boundary
-      success: function (data) {
-        try {
-          const response = JSON.parse(data.trim());
-          if (response.statusCode === 200) {
-            window.location.href = redirectURL;
-          } else {
-            console.error('Submission failed:', response);
-          }
-        } catch (e) {
-          console.error('Error parsing response:', e);
+      // Check if "Service 2" is selected (value contains "Service 2")
+      if (selectedValue.includes("Service 2")) {
+        // Show the solution dropdown
+        if (solutionDropdownContainer) {
+          solutionDropdownContainer.style.display = "block"
         }
-      },
-      error: function (error) {
-        console.error('AJAX error:', error);
+      } else {
+        // Hide the solution dropdown for any other selection
+        if (solutionDropdownContainer) {
+          solutionDropdownContainer.style.display = "none"
+
+          // Reset the solution dropdown selection
+          const solutionSelect = document.getElementById("selectTopic2")
+          if (solutionSelect) {
+            solutionSelect.selectedIndex = 0 // Reset to first option (placeholder)
+
+            // Update Bootstrap Select display if it exists
+            const bootstrapButton = solutionSelect.parentElement.querySelector(".dropdown-toggle")
+            if (bootstrapButton) {
+              const filterOption = bootstrapButton.querySelector(".filter-option-inner-inner")
+              if (filterOption) {
+                filterOption.textContent = "Please select solution"
+              }
+              bootstrapButton.classList.add("bs-placeholder")
+              bootstrapButton.title = "Please select solution"
+            }
+          }
+        }
       }
-    });
-  });
+    })
+  }
+
+  // Handle Bootstrap Select change events (if using Bootstrap Select)
+  const serviceBootstrapSelect = serviceSelect?.parentElement
+  if (serviceBootstrapSelect && serviceBootstrapSelect.classList.contains("bootstrap-select")) {
+    // Listen for Bootstrap Select change events
+    const dropdownItems = serviceBootstrapSelect.querySelectorAll(".dropdown-item")
+    dropdownItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        // Small delay to ensure the select value is updated
+        setTimeout(() => {
+          const event = new Event("change")
+          serviceSelect.dispatchEvent(event)
+        }, 10)
+      })
+    })
+  }
+})
+
+// Alternative approach using MutationObserver for dynamic content
+function initDropdownController() {
+  const serviceSelect = document.getElementById("selectTopic")
+  const solutionDropdownContainer = document.getElementById("selectTopic2")?.closest(".input-text-field")
+
+  if (!serviceSelect || !solutionDropdownContainer) {
+    // If elements are not ready, try again after a short delay
+    setTimeout(initDropdownController, 100)
+    return
+  }
+
+  // Initially hide the solution dropdown
+  solutionDropdownContainer.style.display = "none"
+
+  // Function to handle visibility logic
+  function handleServiceChange() {
+    const selectedValue = serviceSelect.value
+
+    if (selectedValue.includes("Service 2")) {
+      solutionDropdownContainer.style.display = "block"
+    } else {
+      solutionDropdownContainer.style.display = "none"
+
+      // Reset solution dropdown
+      const solutionSelect = document.getElementById("selectTopic2")
+      if (solutionSelect) {
+        solutionSelect.selectedIndex = 0
+
+        // Update Bootstrap Select UI
+        const bootstrapButton = solutionSelect.parentElement?.querySelector(".dropdown-toggle")
+        if (bootstrapButton) {
+          const filterOption = bootstrapButton.querySelector(".filter-option-inner-inner")
+          if (filterOption) {
+            filterOption.textContent = "Please select solution"
+          }
+          bootstrapButton.classList.add("bs-placeholder")
+          bootstrapButton.title = "Please select solution"
+        }
+      }
+    }
+  }
+
+  // Add event listeners
+  serviceSelect.addEventListener("change", handleServiceChange)
+
+  // Handle Bootstrap Select clicks
+  const serviceDropdownItems = serviceSelect.parentElement?.querySelectorAll(".dropdown-item")
+  if (serviceDropdownItems) {
+    serviceDropdownItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        setTimeout(handleServiceChange, 50)
+      })
+    })
+  }
 }
-</script>
 
-
-
-
-
-
-
-
-
-
-
+// Initialize when DOM is ready
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initDropdownController)
+} else {
+  initDropdownController()
+}
