@@ -1,127 +1,82 @@
 // Wait for DOM to be fully loaded
-document.addEventListener("DOMContentLoaded", () => {
-  // Get references to the dropdowns
-  const serviceSelect = document.getElementById("selectTopic")
-  const solutionDropdownContainer = document.getElementById("selectTopic2").closest(".input-text-field")
-
-  // Initially hide the solution dropdown
-  if (solutionDropdownContainer) {
-    solutionDropdownContainer.style.display = "none"
-  }
-
-  // Add event listener to service dropdown
-  if (serviceSelect) {
-    serviceSelect.addEventListener("change", function () {
-      const selectedValue = this.value
-
-      // Check if "Service 2" is selected (value contains "Service 2")
-      if (selectedValue.includes("Service 2")) {
-        // Show the solution dropdown
-        if (solutionDropdownContainer) {
-          solutionDropdownContainer.style.display = "block"
-        }
-      } else {
-        // Hide the solution dropdown for any other selection
-        if (solutionDropdownContainer) {
-          solutionDropdownContainer.style.display = "none"
-
-          // Reset the solution dropdown selection
-          const solutionSelect = document.getElementById("selectTopic2")
-          if (solutionSelect) {
-            solutionSelect.selectedIndex = 0 // Reset to first option (placeholder)
-
-            // Update Bootstrap Select display if it exists
-            const bootstrapButton = solutionSelect.parentElement.querySelector(".dropdown-toggle")
-            if (bootstrapButton) {
-              const filterOption = bootstrapButton.querySelector(".filter-option-inner-inner")
-              if (filterOption) {
-                filterOption.textContent = "Please select solution"
-              }
-              bootstrapButton.classList.add("bs-placeholder")
-              bootstrapButton.title = "Please select solution"
-            }
-          }
-        }
-      }
-    })
-  }
-
-  // Handle Bootstrap Select change events (if using Bootstrap Select)
-  const serviceBootstrapSelect = serviceSelect?.parentElement
-  if (serviceBootstrapSelect && serviceBootstrapSelect.classList.contains("bootstrap-select")) {
-    // Listen for Bootstrap Select change events
-    const dropdownItems = serviceBootstrapSelect.querySelectorAll(".dropdown-item")
-    dropdownItems.forEach((item) => {
-      item.addEventListener("click", () => {
-        // Small delay to ensure the select value is updated
-        setTimeout(() => {
-          const event = new Event("change")
-          serviceSelect.dispatchEvent(event)
-        }, 10)
-      })
-    })
-  }
-})
-
-// Alternative approach using MutationObserver for dynamic content
-function initDropdownController() {
-  const serviceSelect = document.getElementById("selectTopic")
-  const solutionDropdownContainer = document.getElementById("selectTopic2")?.closest(".input-text-field")
-
-  if (!serviceSelect || !solutionDropdownContainer) {
-    // If elements are not ready, try again after a short delay
-    setTimeout(initDropdownController, 100)
-    return
-  }
-
-  // Initially hide the solution dropdown
-  solutionDropdownContainer.style.display = "none"
-
-  // Function to handle visibility logic
-  function handleServiceChange() {
-    const selectedValue = serviceSelect.value
-
-    if (selectedValue.includes("Service 2")) {
-      solutionDropdownContainer.style.display = "block"
-    } else {
-      solutionDropdownContainer.style.display = "none"
-
-      // Reset solution dropdown
-      const solutionSelect = document.getElementById("selectTopic2")
-      if (solutionSelect) {
-        solutionSelect.selectedIndex = 0
-
-        // Update Bootstrap Select UI
-        const bootstrapButton = solutionSelect.parentElement?.querySelector(".dropdown-toggle")
-        if (bootstrapButton) {
-          const filterOption = bootstrapButton.querySelector(".filter-option-inner-inner")
-          if (filterOption) {
-            filterOption.textContent = "Please select solution"
-          }
-          bootstrapButton.classList.add("bs-placeholder")
-          bootstrapButton.title = "Please select solution"
-        }
-      }
+document.addEventListener('DOMContentLoaded', function() {
+    // Get references to the dropdowns
+    const concernDropdown = document.getElementById('selectTopic');
+    const discussDropdown = document.getElementById('selectTopic2');
+    
+    // Get the parent container of the discuss dropdown for hiding/showing
+    const discussContainer = discussDropdown.closest('.input-text-field');
+    
+    // Initially hide the discuss dropdown
+    if (discussContainer) {
+        discussContainer.style.display = 'none';
     }
-  }
+    
+    // Add event listener to the concern dropdown
+    concernDropdown.addEventListener('change', function() {
+        const selectedValue = this.value;
+        
+        // Check if the selected value contains "Servicing"
+        if (selectedValue === '1&amp;&amp;Servicing' || selectedValue.includes('Servicing')) {
+            // Show the discuss dropdown
+            if (discussContainer) {
+                discussContainer.style.display = 'block';
+            }
+        } else {
+            // Hide the discuss dropdown for any other selection
+            if (discussContainer) {
+                discussContainer.style.display = 'none';
+            }
+            
+            // Reset the discuss dropdown to its default state
+            discussDropdown.value = '';
+        }
+    });
+    
+    // Alternative implementation if you want to target the select element directly
+    // instead of its container:
+    /*
+    // Initially hide the discuss dropdown
+    discussDropdown.style.display = 'none';
+    
+    concernDropdown.addEventListener('change', function() {
+        const selectedValue = this.value;
+        
+        if (selectedValue === '1&amp;&amp;Servicing' || selectedValue.includes('Servicing')) {
+            discussDropdown.style.display = 'block';
+        } else {
+            discussDropdown.style.display = 'none';
+            discussDropdown.value = '';
+        }
+    });
+    */
+});
 
-  // Add event listeners
-  serviceSelect.addEventListener("change", handleServiceChange)
-
-  // Handle Bootstrap Select clicks
-  const serviceDropdownItems = serviceSelect.parentElement?.querySelectorAll(".dropdown-item")
-  if (serviceDropdownItems) {
-    serviceDropdownItems.forEach((item) => {
-      item.addEventListener("click", () => {
-        setTimeout(handleServiceChange, 50)
-      })
-    })
-  }
+// Alternative approach if you prefer to use onchange attribute in HTML:
+function handleConcernChange(selectElement) {
+    const selectedValue = selectElement.value;
+    const discussDropdown = document.getElementById('selectTopic2');
+    const discussContainer = discussDropdown.closest('.input-text-field');
+    
+    if (selectedValue === '1&amp;&amp;Servicing' || selectedValue.includes('Servicing')) {
+        if (discussContainer) {
+            discussContainer.style.display = 'block';
+        }
+    } else {
+        if (discussContainer) {
+            discussContainer.style.display = 'none';
+        }
+        discussDropdown.value = '';
+    }
 }
 
-// Initialize when DOM is ready
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initDropdownController)
-} else {
-  initDropdownController()
+// Function to initialize the dropdown visibility on page load
+function initializeDropdownVisibility() {
+    const discussDropdown = document.getElementById('selectTopic2');
+    const discussContainer = discussDropdown.closest('.input-text-field');
+    
+    // Initially hide the discuss dropdown
+    if (discussContainer) {
+        discussContainer.style.display = 'none';
+    }
 }
