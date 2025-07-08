@@ -1,82 +1,28 @@
-// Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Get references to the dropdowns
     const concernDropdown = document.getElementById('selectTopic');
     const discussDropdown = document.getElementById('selectTopic2');
-    
-    // Get the parent container of the discuss dropdown for hiding/showing
     const discussContainer = discussDropdown.closest('.input-text-field');
-    
-    // Initially hide the discuss dropdown
+
     if (discussContainer) {
         discussContainer.style.display = 'none';
     }
-    
-    // Add event listener to the concern dropdown
+
     concernDropdown.addEventListener('change', function() {
         const selectedValue = this.value;
-        
-        // Check if the selected value contains "Servicing"
-        if (selectedValue === '1&amp;&amp;Servicing' || selectedValue.includes('Servicing')) {
-            // Show the discuss dropdown
+
+        if (selectedValue === '1&&Servicing' || selectedValue.includes('Servicing')) {
             if (discussContainer) {
                 discussContainer.style.display = 'block';
             }
         } else {
-            // Hide the discuss dropdown for any other selection
             if (discussContainer) {
                 discussContainer.style.display = 'none';
             }
-            
-            // Reset the discuss dropdown to its default state
             discussDropdown.value = '';
         }
     });
-    
-    // Alternative implementation if you want to target the select element directly
-    // instead of its container:
-    /*
-    // Initially hide the discuss dropdown
-    discussDropdown.style.display = 'none';
-    
-    concernDropdown.addEventListener('change', function() {
-        const selectedValue = this.value;
-        
-        if (selectedValue === '1&amp;&amp;Servicing' || selectedValue.includes('Servicing')) {
-            discussDropdown.style.display = 'block';
-        } else {
-            discussDropdown.style.display = 'none';
-            discussDropdown.value = '';
-        }
-    });
-    */
 });
 
-// Alternative approach if you prefer to use onchange attribute in HTML:
-function handleConcernChange(selectElement) {
-    const selectedValue = selectElement.value;
-    const discussDropdown = document.getElementById('selectTopic2');
-    const discussContainer = discussDropdown.closest('.input-text-field');
-    
-    if (selectedValue === '1&amp;&amp;Servicing' || selectedValue.includes('Servicing')) {
-        if (discussContainer) {
-            discussContainer.style.display = 'block';
-        }
-    } else {
-        if (discussContainer) {
-            discussContainer.style.display = 'none';
-        }
-        discussDropdown.value = '';
-    }
-}
 
-// Function to initialize the dropdown visibility on page load
-function initializeDropdownVisibility() {
-    const discussDropdown = document.getElementById('selectTopic2');
-    const discussContainer = discussDropdown.closest('.input-text-field');
-    
-    // Initially hide the discuss dropdown
-    if (discussContainer) {
-        discussContainer.style.display = 'none';
-    }
-}
+One of our customer support team will reach out to you to help resolve your issue.
+
