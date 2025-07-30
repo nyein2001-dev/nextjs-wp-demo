@@ -1,7 +1,7 @@
 <%@ page session="false" contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.io.*, java.net.*, org.json.JSONObject,
+<%@ page import="java.io.*, java.net.*, javax.net.*, org.json.JSONObject,
 org.opencms.main.OpenCms, org.apache.commons.logging.Log, org.opencms.main.CmsLog, 
-org.apache.commons.lang.StringUtils, java.util.*, java.text.*" %>
+org.apache.commons.lang.StringUtils, java.util.*, java.text.*, java.nio.charset.*" %>
 <%@ page import="java.util.Locale" %>
 <%@ page import="org.opencms.jsp.CmsJspActionElement"%>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
@@ -9,6 +9,7 @@ org.apache.commons.lang.StringUtils, java.util.*, java.text.*" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ page import="javax.xml.bind.DatatypeConverter"%>
 <%@ page import="org.opencms.jsp.*, org.opencms.file.*, org.opencms.flex.*,org.opencms.util.*" %>
+<%@ page import="javax.net.ssl.*, java.security.cert.*" %>
 
 <c:set var="locale" value="${cms.locale}" />
 <fmt:setLocale value="${param.language}" />
@@ -32,24 +33,46 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
 
 <%!
     // Utility methods
-    public String escapeHtml(String input) {
+    public String A1filter(String input) {
         if (input == null) return "";
-        String result = input;
-        result = result.replaceAll("&", "&amp;");
-        result = result.replaceAll("<", "&lt;");
-        result = result.replaceAll(">", "&gt;");
-        result = result.replaceAll("\"", "&quot;");
-        result = result.replaceAll("'", "&#39;");
-        return result;
+        String tem = input;
+        tem = tem.replaceAll("<", "&lt;");
+        tem = tem.replaceAll(">", "&gt;");
+        tem = tem.replaceAll("&", "&amp;");
+        tem = tem.replaceAll("\"", "&quot;");
+        tem = tem.replaceAll(" ", "&nbsp;");
+        tem = tem.replaceAll("'", "&#39;");
+        return tem;
     }
     
-    public String createJsonResponse(int statusCode, String message) {
+    public String responeObject(int statusCode, String message) {
         StringBuffer sb = new StringBuffer();
         sb.append("{");
         sb.append("\"statusCode\":").append(statusCode).append(",");
         sb.append("\"message\":\"").append(message != null ? message.replaceAll("\"", "\\\\\"") : "").append("\"");
         sb.append("}");
         return sb.toString();
+    }
+    
+    // SSL Trust Manager to bypass certificate validation (for UAT environment)
+    public static class TrustAllManager implements X509TrustManager {
+        public X509Certificate[] getAcceptedIssuers() { return null; }
+        public void checkClientTrusted(X509Certificate[] certs, String authType) { }
+        public void checkServerTrusted(X509Certificate[] certs, String authType) { }
+    }
+    
+    // Hostname verifier to accept all hostnames
+    public static class TrustAllHostnameVerifier implements HostnameVerifier {
+        public boolean verify(String hostname, SSLSession session) { return true; }
+    }
+    
+    // Method to disable SSL verification
+    public void disableSSLVerification() throws Exception {
+        TrustManager[] trustAllCerts = new TrustManager[] { new TrustAllManager() };
+        SSLContext sc = SSLContext.getInstance("SSL");
+        sc.init(null, trustAllCerts, new java.security.SecureRandom());
+        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+        HttpsURLConnection.setDefaultHostnameVerifier(new TrustAllHostnameVerifier());
     }
 %>
 
@@ -63,7 +86,7 @@ try {
     String pathFile = request.getParameter("file-path");
     if (StringUtils.isEmpty(pathFile)) {
         LOG.error("Missing file-path parameter");
-        out.print(createJsonResponse(400, "Missing configuration file path"));
+        out.print(responeObject(400, "Missing configuration file path"));
         return;
     }
     
@@ -73,229 +96,186 @@ try {
     CmsResource contentRs = cmsObject.readResource(pathFileXml);
     CmsJspContentAccessBean componentPros = new CmsJspContentAccessBean(cmsObject, locale, contentRs);
     
-    // Get API configuration
-    String sendToApiStr = "true"; // Always send to API now
-    boolean isSendToApi = Boolean.valueOf(sendToApiStr).booleanValue();
+    // Get email configuration - following original code structure
+    String SendEmail = componentPros.getValue().get("EmailAndDB").getValue().get("SendEmail").getStringValue();
+    Boolean isSendEmail = Boolean.valueOf(SendEmail);
     
-    // Get topic information
-    String topic = paramSelectTopics.length > 1 ? paramSelectTopics[1] : "";
-    String topicKey = paramSelectTopics.length > 0 ? paramSelectTopics[0] : "";
+    // Get topic information - following original code structure
+    String topic = StringUtils.isEmpty(paramSelectTopic) ? "" : paramSelectTopics[1];
+    String topickey = StringUtils.isEmpty(paramSelectTopic) ? "" : paramSelectTopics[0];
     
-    if (!isSendToApi) {
-        out.print(createJsonResponse(200, "API call disabled"));
+    if (!isSendEmail) {
+        out.print(responeObject(200, "send mail success"));
         return;
     }
     
-    // Process form parameters
-    Enumeration parameterNames = request.getParameterNames();
+    // Process form parameters - following original code structure
+    Enumeration enumeration = request.getParameterNames();
     String fullName = "";
-    String phoneNo = "";
+    String phone_no = "";
     String nationalId = "";
     String referralAgent = "";
     String policyID = "";
-    
-    while (parameterNames.hasMoreElements()) {
-        String parameterName = (String) parameterNames.nextElement();
-        String value = "";
-        
-        if ("selectTopic".equals(parameterName)) {
-            value = topic;
-        } else {
-            String rawValue = request.getParameter(parameterName);
-            value = rawValue != null ? escapeHtml(rawValue) : "";
-        }
-        
-        // Extract specific fields for API call
-        if ("full-name".equals(parameterName)) {
-            fullName = value;
-        } else if ("phone-no".equals(parameterName)) {
-            phoneNo = value;
-        } else if ("nationalID".equals(parameterName)) {
-            nationalId = value;
-        } else if ("referralCode".equals(parameterName)) {
-            referralAgent = value;
-        } else if ("policyID".equals(parameterName)) {
-            policyID = value;
-        }
-    }
-    
-    // Validate required fields
-    if (StringUtils.isEmpty(fullName) || StringUtils.isEmpty(phoneNo)) {
-        LOG.warn("Missing required fields: fullName=" + fullName + ", phoneNo=" + phoneNo);
-        out.print(createJsonResponse(400, "Missing required fields"));
-        return;
-    }
-    
-    // API Integration
-    boolean isApiCallSuccess = true;
-    String responseMessage = "";
     String accessToken = "";
-    String authRequestBody = "";
-    String authResponseBody = "";
-    String leadRequestBody = "";
-    String leadResponseBody = "";
+    boolean isApiCallSuccess = true;
+    String apiResponse = "";
+    String apiResponse2 = "";
     String debugInfo = "";
     
     try {
-        LOG.info("Starting API authentication");
-        
-        // Get access token
-        URL url = new URL("https://vn-lead-corporate-uat.aks-lb1-vnlife-uat-az2-orch2h.pru.intranet.asia/auth/login");
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestProperty("Content-Type", "application/json");
-        con.setRequestProperty("Accept", "application/json");
-        con.setRequestMethod("POST");
-        con.setDoOutput(true);
-        con.setConnectTimeout(15000);
-        con.setReadTimeout(15000);
-        
-        // Create login request JSON
-        JSONObject loginRequest = new JSONObject();
-        loginRequest.put("password", "Prudential01@");
-        loginRequest.put("username", "pulseleaduat");
-        authRequestBody = loginRequest.toString();
-        
-        debugInfo += "AUTH API URL: " + url.toString() + "\\n";
-        debugInfo += "AUTH REQUEST BODY: " + authRequestBody + "\\n";
-        
-        // Write request - Java 6 compatible
-        OutputStream os = con.getOutputStream();
-        OutputStreamWriter writer = new OutputStreamWriter(os, "UTF-8");
-        writer.write(authRequestBody);
-        writer.flush();
-        writer.close();
-        os.close();
-        
-        // Read authentication response
-        int responseCode = con.getResponseCode();
-        debugInfo += "AUTH RESPONSE CODE: " + responseCode + "\\n";
-        LOG.info("Authentication response code: " + responseCode);
-        
-        if (responseCode != 200) {
-            // Try to read error response
-            InputStream errorStream = con.getErrorStream();
-            if (errorStream != null) {
-                BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream, "UTF-8"));
-                StringBuffer errorContent = new StringBuffer();
-                String errorLine;
-                while ((errorLine = errorReader.readLine()) != null) {
-                    errorContent.append(errorLine);
-                }
-                errorReader.close();
-                authResponseBody = errorContent.toString();
-                debugInfo += "AUTH ERROR RESPONSE: " + authResponseBody + "\\n";
-                LOG.error("Authentication error response: " + authResponseBody);
-            }
-            throw new Exception("Authentication failed. Response code: " + responseCode);
-        }
-        
-        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
-        StringBuffer content = new StringBuffer();
-        String inputLine;
-        while ((inputLine = in.readLine()) != null) {
-            content.append(inputLine);
-        }
-        in.close();
-        con.disconnect();
-        
-        authResponseBody = content.toString();
-        debugInfo += "AUTH SUCCESS RESPONSE: " + authResponseBody + "\\n";
-        
-        JSONObject responseObj = new JSONObject(authResponseBody);
-        accessToken = responseObj.getString("accessToken");
-        LOG.info("Authentication successful, token obtained");
-        
-        // Send lead data
-        LOG.info("Sending lead data to API");
-        url = new URL("https://intranet.asia/lead/saveReferraInfo");
-        con = (HttpURLConnection) url.openConnection();
-        con.setRequestProperty("Authorization", "Bearer " + accessToken);
-        con.setRequestProperty("Content-Type", "application/json");
-        con.setRequestProperty("Accept", "application/json");
-        con.setRequestMethod("POST");
-        con.setDoOutput(true);
-        con.setConnectTimeout(15000);
-        con.setReadTimeout(15000);
-        
-        // Create lead data JSON
-        JSONObject leadData = new JSONObject();
-        leadData.put("fullName", fullName);
-        leadData.put("mobile", phoneNo);
-        leadData.put("nationalId", nationalId);
-        leadData.put("referralAgent", referralAgent);
-        leadData.put("policyNumber", policyID);
-        leadRequestBody = leadData.toString();
-        
-        debugInfo += "LEAD API URL: " + url.toString() + "\\n";
-        debugInfo += "LEAD REQUEST BODY: " + leadRequestBody + "\\n";
-        debugInfo += "AUTHORIZATION HEADER: Bearer " + accessToken.substring(0, Math.min(20, accessToken.length())) + "...\\n";
-        
-        LOG.info("Lead data JSON: " + leadRequestBody);
-        
-        // Write lead data - Java 6 compatible  
-        os = con.getOutputStream();
-        writer = new OutputStreamWriter(os, "UTF-8");
-        writer.write(leadRequestBody);
-        writer.flush();
-        writer.close();
-        os.close();
-        
-        // Read lead submission response
-        responseCode = con.getResponseCode();
-        debugInfo += "LEAD RESPONSE CODE: " + responseCode + "\\n";
-        LOG.info("Lead submission response code: " + responseCode);
-        
-        if (responseCode != 200) {
-            // Try to read error response
-            InputStream errorStream = con.getErrorStream();
-            if (errorStream != null) {
-                BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream, "UTF-8"));
-                StringBuffer errorContent = new StringBuffer();
-                String errorLine;
-                while ((errorLine = errorReader.readLine()) != null) {
-                    errorContent.append(errorLine);
-                }
-                errorReader.close();
-                leadResponseBody = errorContent.toString();
-                debugInfo += "LEAD ERROR RESPONSE: " + leadResponseBody + "\\n";
-                LOG.error("Lead submission error response: " + leadResponseBody);
-                throw new Exception("Lead submission failed: " + leadResponseBody + " (Code: " + responseCode + ")");
+        while (enumeration.hasMoreElements()) {
+            String parameterName = enumeration.nextElement().toString();
+            String value = "";
+            if (parameterName.equals("selectTopic")) {
+                value = topic;
             } else {
-                debugInfo += "LEAD ERROR: No error response body available\\n";
-                throw new Exception("Lead submission failed with response code: " + responseCode);
+                value = A1filter(request.getParameter(parameterName));
+            }
+            
+            // Extract specific fields for API call - following original code
+            if ("full-name".equals(parameterName)) {
+                fullName = value;
+            }
+            if ("phone-no".equals(parameterName)) {
+                phone_no = value;
+            }
+            if ("nationalID".equals(parameterName)) {
+                nationalId = value;
+            }
+            if ("referralCode".equals(parameterName)) {
+                referralAgent = value;
+            }
+            if ("policyID".equals(parameterName)) {
+                policyID = value;
             }
         }
         
-        in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
-        content = new StringBuffer();
-        while ((inputLine = in.readLine()) != null) {
-            content.append(inputLine);
+        String responseMessage = "";
+        
+        try {
+            // Disable SSL verification for UAT environment
+            disableSSLVerification();
+            
+            debugInfo += "SSL verification disabled for UAT environment\\n";
+            
+            // Get access token - following original code structure
+            URL url = new URL("https://vn-lead-corporate-uat.aks-lb1-vnlife-uat-az2-orch2h.pru.intranet.asia/auth/login");
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestProperty("Content-Type", "application/json");
+            con.setRequestProperty("accept", "application/json");
+            con.setRequestMethod("POST");
+            con.setDoOutput(true);
+            // Following original - no timeout set initially
+            
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("password", "Prudential01@");
+            jsonObject.put("username", "pulseleaduat");
+            
+            debugInfo += "AUTH API URL: " + url.toString() + "\\n";
+            debugInfo += "AUTH REQUEST BODY: " + jsonObject.toString() + "\\n";
+            
+            // Following original code pattern
+            byte[] bout = jsonObject.toString().getBytes("UTF-8");
+            int length = bout.length;
+            
+            con.setFixedLengthStreamingMode(length);
+            con.connect();
+            
+            OutputStream os = con.getOutputStream();
+            os.write(bout);
+            
+            StringBuffer content = new StringBuffer();
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                content.append(inputLine);
+            }
+            in.close();
+            
+            debugInfo += "AUTH RESPONSE CODE: " + con.getResponseCode() + "\\n";
+            debugInfo += "AUTH RESPONSE BODY: " + content.toString() + "\\n";
+            
+            if (con.getResponseCode() != 200) {
+                throw new Exception("Error getting access token.");
+            }
+            
+            JSONObject responseObj = new JSONObject(content.toString());
+            accessToken = responseObj.getString("accessToken");
+            con.disconnect();
+            
+            // Send payload - following original code structure
+            url = new URL("https://intranet.asia/lead/saveReferraInfo");
+            con = (HttpURLConnection) url.openConnection();
+            con.setRequestProperty("Authorization", "Bearer " + accessToken);
+            con.setRequestProperty("Content-Type", "application/json");
+            con.setRequestMethod("POST");
+            con.setDoOutput(true);
+            
+            Date dNow = new Date();
+            SimpleDateFormat ft = new SimpleDateFormat("dd-MMM-yyyy HH:mm");
+            
+            jsonObject = new JSONObject();
+            jsonObject.put("fullName", fullName);
+            jsonObject.put("mobile", phone_no);
+            jsonObject.put("nationalId", nationalId);
+            jsonObject.put("referralAgent", referralAgent);
+            jsonObject.put("policyNumber", policyID);
+            
+            debugInfo += "LEAD API URL: " + url.toString() + "\\n";
+            debugInfo += "LEAD REQUEST BODY: " + jsonObject.toString() + "\\n";
+            debugInfo += "AUTHORIZATION HEADER: Bearer " + accessToken.substring(0, Math.min(20, accessToken.length())) + "...\\n";
+            
+            bout = jsonObject.toString().getBytes("UTF-8");
+            length = bout.length;
+            
+            con.setFixedLengthStreamingMode(length);
+            con.connect();
+            os = con.getOutputStream();
+            os.write(bout);
+            
+            content = new StringBuffer();
+            
+            in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            inputLine = "";
+            
+            while ((inputLine = in.readLine()) != null) {
+                content.append(inputLine);
+            }
+            in.close();
+            apiResponse = content.toString();
+            apiResponse2 = con.getResponseMessage();
+            con.disconnect();
+            
+            debugInfo += "LEAD RESPONSE CODE: " + con.getResponseCode() + "\\n";
+            debugInfo += "LEAD RESPONSE BODY: " + apiResponse + "\\n";
+            debugInfo += "LEAD RESPONSE MESSAGE: " + apiResponse2 + "\\n";
+            
+            if (con.getResponseCode() != 200) {
+                throw new Exception("Error calling API: " + apiResponse);
+            } else {
+                isApiCallSuccess = true;
+            }
+            
+        } catch (Exception ex) {
+            debugInfo += "EXCEPTION: " + ex.toString() + "\\n";
+            responseMessage = ex.toString();
+            isApiCallSuccess = false;
         }
-        in.close();
-        con.disconnect();
         
-        leadResponseBody = content.toString();
-        debugInfo += "LEAD SUCCESS RESPONSE: " + leadResponseBody + "\\n";
-        LOG.info("Lead submission successful: " + leadResponseBody);
+        // Following original code response pattern
+        if (isApiCallSuccess) {
+            out.print(responeObject(200, "send email and api call success. DEBUG INFO: " + debugInfo));
+        } else {
+            out.print(responeObject(200, "send email success, error=" + responseMessage + ". DEBUG INFO: " + debugInfo));
+        }
         
-    } catch (Exception ex) {
-        LOG.error("API call failed: " + ex.getMessage(), ex);
-        responseMessage = ex.getMessage();
-        debugInfo += "EXCEPTION: " + ex.getMessage() + "\\n";
-        isApiCallSuccess = false;
-    }
-    
-    // Return response with detailed debug information
-    if (isApiCallSuccess) {
-        String successMessage = "API call successful. DEBUG INFO: " + debugInfo;
-        out.print(createJsonResponse(200, successMessage));
-    } else {
-        String errorMessage = "API call failed: " + responseMessage + ". DEBUG INFO: " + debugInfo;
-        out.print(createJsonResponse(500, errorMessage));
+    } catch (Exception mainEx) {
+        LOG.error("Error in main processing", mainEx);
+        out.print(responeObject(400, "Main processing error: " + mainEx.toString()));
     }
     
 } catch (Exception e) {
     LOG.error("Fatal error in contact form processing", e);
-    out.print(createJsonResponse(500, "Internal server error: " + e.getMessage()));
+    out.print(responeObject(500, "Internal server error: " + e.getMessage()));
 }
 %>
