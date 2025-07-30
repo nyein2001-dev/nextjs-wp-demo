@@ -1,28 +1,273 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const concernDropdown = document.getElementById('selectTopic');
-    const discussDropdown = document.getElementById('selectTopic2');
-    const discussContainer = discussDropdown.closest('.input-text-field');
+<%@ page session="false" contentType="text/html;charset=UTF-8" %>
+<%@ page import="java.io.*, java.net.*, org.json.JSONObject,
+org.opencms.main.OpenCms, org.apache.commons.logging.Log, org.opencms.main.CmsLog, 
+org.apache.commons.lang.StringUtils, java.util.*, java.text.*" %>
+<%@ page import="java.util.Locale" %>
+<%@ page import="org.opencms.jsp.CmsJspActionElement"%>
+<%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ page import="javax.xml.bind.DatatypeConverter"%>
+<%@ page import="org.opencms.jsp.*, org.opencms.file.*, org.opencms.flex.*,org.opencms.util.*" %>
 
-    if (discussContainer) {
-        discussContainer.style.display = 'none';
+<c:set var="locale" value="${cms.locale}" />
+<fmt:setLocale value="${param.language}" />
+
+<%
+// Initialize logging for debugging
+Log LOG = CmsLog.getLog(this.getClass());
+
+// Parse topic parameter
+String paramSelectTopic = StringUtils.isEmpty(request.getParameter("selectTopic")) ? "" : request.getParameter("selectTopic");
+String[] paramSelectTopics = paramSelectTopic.split("&&");
+%>
+
+<cms:bundle basename="com.prudential.v2.ph.default">
+  <c:set var="paramSelectTopics"><%=paramSelectTopics.length > 0 ? paramSelectTopics[0] : ""%></c:set>
+  <c:set var="emailEnquiry" value=""/>
+  <c:if test="${not empty paramSelectTopics}">
+    <c:set var="emailEnquiry"><fmt:message key="key.mail.selected.enquiry.${paramSelectTopics}" /></c:set>
+  </c:if>
+</cms:bundle>
+
+<%!
+    // Utility methods
+    public String escapeHtml(String input) {
+        if (input == null) return "";
+        String result = input;
+        result = result.replaceAll("&", "&amp;");
+        result = result.replaceAll("<", "&lt;");
+        result = result.replaceAll(">", "&gt;");
+        result = result.replaceAll("\"", "&quot;");
+        result = result.replaceAll("'", "&#39;");
+        return result;
     }
+    
+    public String createJsonResponse(int statusCode, String message) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("{");
+        sb.append("\"statusCode\":").append(statusCode).append(",");
+        sb.append("\"message\":\"").append(message != null ? message.replaceAll("\"", "\\\\\"") : "").append("\"");
+        sb.append("}");
+        return sb.toString();
+    }
+%>
 
-    concernDropdown.addEventListener('change', function() {
-        const selectedValue = this.value;
-
-        if (selectedValue === '1&&Servicing' || selectedValue.includes('Servicing')) {
-            if (discussContainer) {
-                discussContainer.style.display = 'block';
-            }
+<%
+try {
+    CmsJspActionElement cms = new CmsJspActionElement(pageContext, request, response);
+    CmsObject cmsObject = cms.getCmsObject();
+    Locale locale = cms.getRequestContext().getLocale(); 
+    
+    // Decode and read XML configuration file
+    String pathFile = request.getParameter("file-path");
+    if (StringUtils.isEmpty(pathFile)) {
+        LOG.error("Missing file-path parameter");
+        out.print(createJsonResponse(400, "Missing configuration file path"));
+        return;
+    }
+    
+    byte[] valueDecoded = DatatypeConverter.parseBase64Binary(pathFile);
+    String pathFileXml = new String(valueDecoded, "UTF-8");
+    
+    CmsResource contentRs = cmsObject.readResource(pathFileXml);
+    CmsJspContentAccessBean componentPros = new CmsJspContentAccessBean(cmsObject, locale, contentRs);
+    
+    // Get API configuration
+    String sendToApiStr = "true"; // Always send to API now
+    boolean isSendToApi = Boolean.valueOf(sendToApiStr).booleanValue();
+    
+    // Get topic information
+    String topic = paramSelectTopics.length > 1 ? paramSelectTopics[1] : "";
+    String topicKey = paramSelectTopics.length > 0 ? paramSelectTopics[0] : "";
+    
+    if (!isSendToApi) {
+        out.print(createJsonResponse(200, "API call disabled"));
+        return;
+    }
+    
+    // Process form parameters
+    Enumeration parameterNames = request.getParameterNames();
+    String fullName = "";
+    String phoneNo = "";
+    String nationalId = "";
+    String referralAgent = "";
+    String policyID = "";
+    
+    while (parameterNames.hasMoreElements()) {
+        String parameterName = (String) parameterNames.nextElement();
+        String value = "";
+        
+        if ("selectTopic".equals(parameterName)) {
+            value = topic;
         } else {
-            if (discussContainer) {
-                discussContainer.style.display = 'none';
-            }
-            discussDropdown.value = '';
+            String rawValue = request.getParameter(parameterName);
+            value = rawValue != null ? escapeHtml(rawValue) : "";
         }
-    });
-});
-
-
-One of our customer support team will reach out to you to help resolve your issue.
-
+        
+        // Extract specific fields for API call
+        if ("full-name".equals(parameterName)) {
+            fullName = value;
+        } else if ("phone-no".equals(parameterName)) {
+            phoneNo = value;
+        } else if ("nationalID".equals(parameterName)) {
+            nationalId = value;
+        } else if ("referralCode".equals(parameterName)) {
+            referralAgent = value;
+        } else if ("policyID".equals(parameterName)) {
+            policyID = value;
+        }
+    }
+    
+    // Validate required fields
+    if (StringUtils.isEmpty(fullName) || StringUtils.isEmpty(phoneNo)) {
+        LOG.warn("Missing required fields: fullName=" + fullName + ", phoneNo=" + phoneNo);
+        out.print(createJsonResponse(400, "Missing required fields"));
+        return;
+    }
+    
+    // API Integration
+    boolean isApiCallSuccess = true;
+    String responseMessage = "";
+    String accessToken = "";
+    
+    try {
+        LOG.info("Starting API authentication");
+        
+        // Get access token
+        URL url = new URL("https://vn-lead-corporate-uat.aks-lb1-vnlife-uat-az2-orch2h.pru.intranet.asia/auth/login");
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        con.setRequestProperty("Content-Type", "application/json");
+        con.setRequestProperty("Accept", "application/json");
+        con.setRequestMethod("POST");
+        con.setDoOutput(true);
+        con.setConnectTimeout(15000);
+        con.setReadTimeout(15000);
+        
+        // Create login request JSON
+        JSONObject loginRequest = new JSONObject();
+        loginRequest.put("password", "Prudential01@");
+        loginRequest.put("username", "pulseleaduat");
+        
+        // Write request - Java 6 compatible
+        OutputStream os = con.getOutputStream();
+        OutputStreamWriter writer = new OutputStreamWriter(os, "UTF-8");
+        writer.write(loginRequest.toString());
+        writer.flush();
+        writer.close();
+        os.close();
+        
+        // Read authentication response
+        int responseCode = con.getResponseCode();
+        LOG.info("Authentication response code: " + responseCode);
+        
+        if (responseCode != 200) {
+            // Try to read error response
+            InputStream errorStream = con.getErrorStream();
+            if (errorStream != null) {
+                BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream, "UTF-8"));
+                StringBuffer errorContent = new StringBuffer();
+                String errorLine;
+                while ((errorLine = errorReader.readLine()) != null) {
+                    errorContent.append(errorLine);
+                }
+                errorReader.close();
+                LOG.error("Authentication error response: " + errorContent.toString());
+            }
+            throw new Exception("Authentication failed. Response code: " + responseCode);
+        }
+        
+        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+        StringBuffer content = new StringBuffer();
+        String inputLine;
+        while ((inputLine = in.readLine()) != null) {
+            content.append(inputLine);
+        }
+        in.close();
+        con.disconnect();
+        
+        JSONObject responseObj = new JSONObject(content.toString());
+        accessToken = responseObj.getString("accessToken");
+        LOG.info("Authentication successful, token obtained");
+        
+        // Send lead data
+        LOG.info("Sending lead data to API");
+        url = new URL("https://intranet.asia/lead/saveReferraInfo");
+        con = (HttpURLConnection) url.openConnection();
+        con.setRequestProperty("Authorization", "Bearer " + accessToken);
+        con.setRequestProperty("Content-Type", "application/json");
+        con.setRequestProperty("Accept", "application/json");
+        con.setRequestMethod("POST");
+        con.setDoOutput(true);
+        con.setConnectTimeout(15000);
+        con.setReadTimeout(15000);
+        
+        // Create lead data JSON
+        JSONObject leadData = new JSONObject();
+        leadData.put("fullName", fullName);
+        leadData.put("mobile", phoneNo);
+        leadData.put("nationalId", nationalId);
+        leadData.put("referralAgent", referralAgent);
+        leadData.put("policyNumber", policyID);
+        
+        LOG.info("Lead data JSON: " + leadData.toString());
+        
+        // Write lead data - Java 6 compatible  
+        os = con.getOutputStream();
+        writer = new OutputStreamWriter(os, "UTF-8");
+        writer.write(leadData.toString());
+        writer.flush();
+        writer.close();
+        os.close();
+        
+        // Read lead submission response
+        responseCode = con.getResponseCode();
+        LOG.info("Lead submission response code: " + responseCode);
+        
+        if (responseCode != 200) {
+            // Try to read error response
+            InputStream errorStream = con.getErrorStream();
+            if (errorStream != null) {
+                BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream, "UTF-8"));
+                StringBuffer errorContent = new StringBuffer();
+                String errorLine;
+                while ((errorLine = errorReader.readLine()) != null) {
+                    errorContent.append(errorLine);
+                }
+                errorReader.close();
+                LOG.error("Lead submission error response: " + errorContent.toString());
+                throw new Exception("Lead submission failed: " + errorContent.toString() + " (Code: " + responseCode + ")");
+            } else {
+                throw new Exception("Lead submission failed with response code: " + responseCode);
+            }
+        }
+        
+        in = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
+        content = new StringBuffer();
+        while ((inputLine = in.readLine()) != null) {
+            content.append(inputLine);
+        }
+        in.close();
+        con.disconnect();
+        
+        String apiResponse = content.toString();
+        LOG.info("Lead submission successful: " + apiResponse);
+        
+    } catch (Exception ex) {
+        LOG.error("API call failed: " + ex.getMessage(), ex);
+        responseMessage = ex.getMessage();
+        isApiCallSuccess = false;
+    }
+    
+    // Return response
+    if (isApiCallSuccess) {
+        out.print(createJsonResponse(200, "API call successful"));
+    } else {
+        out.print(createJsonResponse(500, "API call failed: " + responseMessage));
+    }
+    
+} catch (Exception e) {
+    LOG.error("Fatal error in contact form processing", e);
+    out.print(createJsonResponse(500, "Internal server error: " + e.getMessage()));
+}
+%>
