@@ -130,6 +130,11 @@ try {
     boolean isApiCallSuccess = true;
     String responseMessage = "";
     String accessToken = "";
+    String authRequestBody = "";
+    String authResponseBody = "";
+    String leadRequestBody = "";
+    String leadResponseBody = "";
+    String debugInfo = "";
     
     try {
         LOG.info("Starting API authentication");
@@ -148,17 +153,22 @@ try {
         JSONObject loginRequest = new JSONObject();
         loginRequest.put("password", "Prudential01@");
         loginRequest.put("username", "pulseleaduat");
+        authRequestBody = loginRequest.toString();
+        
+        debugInfo += "AUTH API URL: " + url.toString() + "\\n";
+        debugInfo += "AUTH REQUEST BODY: " + authRequestBody + "\\n";
         
         // Write request - Java 6 compatible
         OutputStream os = con.getOutputStream();
         OutputStreamWriter writer = new OutputStreamWriter(os, "UTF-8");
-        writer.write(loginRequest.toString());
+        writer.write(authRequestBody);
         writer.flush();
         writer.close();
         os.close();
         
         // Read authentication response
         int responseCode = con.getResponseCode();
+        debugInfo += "AUTH RESPONSE CODE: " + responseCode + "\\n";
         LOG.info("Authentication response code: " + responseCode);
         
         if (responseCode != 200) {
@@ -172,7 +182,9 @@ try {
                     errorContent.append(errorLine);
                 }
                 errorReader.close();
-                LOG.error("Authentication error response: " + errorContent.toString());
+                authResponseBody = errorContent.toString();
+                debugInfo += "AUTH ERROR RESPONSE: " + authResponseBody + "\\n";
+                LOG.error("Authentication error response: " + authResponseBody);
             }
             throw new Exception("Authentication failed. Response code: " + responseCode);
         }
@@ -186,7 +198,10 @@ try {
         in.close();
         con.disconnect();
         
-        JSONObject responseObj = new JSONObject(content.toString());
+        authResponseBody = content.toString();
+        debugInfo += "AUTH SUCCESS RESPONSE: " + authResponseBody + "\\n";
+        
+        JSONObject responseObj = new JSONObject(authResponseBody);
         accessToken = responseObj.getString("accessToken");
         LOG.info("Authentication successful, token obtained");
         
@@ -209,19 +224,25 @@ try {
         leadData.put("nationalId", nationalId);
         leadData.put("referralAgent", referralAgent);
         leadData.put("policyNumber", policyID);
+        leadRequestBody = leadData.toString();
         
-        LOG.info("Lead data JSON: " + leadData.toString());
+        debugInfo += "LEAD API URL: " + url.toString() + "\\n";
+        debugInfo += "LEAD REQUEST BODY: " + leadRequestBody + "\\n";
+        debugInfo += "AUTHORIZATION HEADER: Bearer " + accessToken.substring(0, Math.min(20, accessToken.length())) + "...\\n";
+        
+        LOG.info("Lead data JSON: " + leadRequestBody);
         
         // Write lead data - Java 6 compatible  
         os = con.getOutputStream();
         writer = new OutputStreamWriter(os, "UTF-8");
-        writer.write(leadData.toString());
+        writer.write(leadRequestBody);
         writer.flush();
         writer.close();
         os.close();
         
         // Read lead submission response
         responseCode = con.getResponseCode();
+        debugInfo += "LEAD RESPONSE CODE: " + responseCode + "\\n";
         LOG.info("Lead submission response code: " + responseCode);
         
         if (responseCode != 200) {
@@ -235,9 +256,12 @@ try {
                     errorContent.append(errorLine);
                 }
                 errorReader.close();
-                LOG.error("Lead submission error response: " + errorContent.toString());
-                throw new Exception("Lead submission failed: " + errorContent.toString() + " (Code: " + responseCode + ")");
+                leadResponseBody = errorContent.toString();
+                debugInfo += "LEAD ERROR RESPONSE: " + leadResponseBody + "\\n";
+                LOG.error("Lead submission error response: " + leadResponseBody);
+                throw new Exception("Lead submission failed: " + leadResponseBody + " (Code: " + responseCode + ")");
             } else {
+                debugInfo += "LEAD ERROR: No error response body available\\n";
                 throw new Exception("Lead submission failed with response code: " + responseCode);
             }
         }
@@ -250,20 +274,24 @@ try {
         in.close();
         con.disconnect();
         
-        String apiResponse = content.toString();
-        LOG.info("Lead submission successful: " + apiResponse);
+        leadResponseBody = content.toString();
+        debugInfo += "LEAD SUCCESS RESPONSE: " + leadResponseBody + "\\n";
+        LOG.info("Lead submission successful: " + leadResponseBody);
         
     } catch (Exception ex) {
         LOG.error("API call failed: " + ex.getMessage(), ex);
         responseMessage = ex.getMessage();
+        debugInfo += "EXCEPTION: " + ex.getMessage() + "\\n";
         isApiCallSuccess = false;
     }
     
-    // Return response
+    // Return response with detailed debug information
     if (isApiCallSuccess) {
-        out.print(createJsonResponse(200, "API call successful"));
+        String successMessage = "API call successful. DEBUG INFO: " + debugInfo;
+        out.print(createJsonResponse(200, successMessage));
     } else {
-        out.print(createJsonResponse(500, "API call failed: " + responseMessage));
+        String errorMessage = "API call failed: " + responseMessage + ". DEBUG INFO: " + debugInfo;
+        out.print(createJsonResponse(500, errorMessage));
     }
     
 } catch (Exception e) {
