@@ -74,3 +74,48 @@ Check Identify Number
 
 https://sgrasstvn4yt5w9.pru.intranet.asia:8443/opencms/vi/referee-form/index.html?uniqueId=ABC123&agentCode=001
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Referee Form</title>
+</head>
+<body>
+  <h2>Referee Form</h2>
+
+  <form>
+    <label for="uniqueId">Unique ID:</label>
+    <input type="text" id="uniqueId" name="uniqueId"><br><br>
+
+    <label for="agentCode">Agent Code:</label>
+    <input type="text" id="agentCode" name="agentCode"><br><br>
+
+    <button type="submit" id="submitBtn">Submit</button>
+  </form>
+
+  <script>
+    // Parse URL parameters
+    const params = new URLSearchParams(window.location.search);
+
+    // Get values from URL
+    const uniqueId = params.get('uniqueId');
+    const agentCode = params.get('agentCode');
+
+    // Get references to the input fields and button
+    const uniqueIdInput = document.getElementById('uniqueId');
+    const agentCodeInput = document.getElementById('agentCode');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Set values if present
+    if (uniqueId) uniqueIdInput.value = uniqueId;
+    if (agentCode) agentCodeInput.value = agentCode;
+
+    // Disable the button if agentCode is missing or empty
+    if (!agentCode || agentCode.trim() === '') {
+      submitBtn.disabled = true;
+    }
+  </script>
+</body>
+</html>
+
+
