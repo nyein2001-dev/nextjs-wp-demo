@@ -6,4 +6,64 @@
  /lead/saveReferraInfo 
 
 https://pru-api-nprd.prudential.com.vn/pruforce/lead-corporate/uat1
- 
+
+
+Environment URL
+uat https://pru-api-nprd.prudential.com.vn/pruforce/lead-corporate/uat1
+
+https://vn-lead-corporate-uat.aks-lb1-vnlife-uat-az2-
+orch2h.pru.intranet.asia
+
+prod https://pru-api-prod.prudential.com.vn/pruforce/lead-corporate/v1
+
+Auth login
+❖ API Description
+- Purpose: This API is used to get token
+- Method: POST
+- URL: /auth/login
+
+
+4. Save Referral Information
+❖ API Description
+- Purpose: This API is used to save information of referral agent
+- Method: POST
+- URL: /lead/saveReferraInfo
+
+{
+"fullName": "test",
+"mobile": "0356879768",
+"nationalId": "HCM",
+"referralAgent": "600000012",
+"policyNumber": "76062238",
+}
+
+Save Lead Referral
+❖ API Description
+- Purpose: This API is used to save lead which had referred by agent
+- Method: POST
+- URL: /lead/saveCorpWebReferral
+
+{
+"fullName": "viet Test",
+"mobile": "0346786789",
+"email": "test@gmail.com",
+"referralId": "b5c53bff-5614-4f15-
+9956-9a26ca715de7",
+"referralAgent": "60000012",
+"location": "HCM",
+“messageDetails”: “remark string”,
+“leadSource”:”test”
+}
+
+Check Identify Number
+❖ API Description
+- Purpose: This API is used to check identify of client was exist
+- Method: POST
+- URL: /lead/check-identify
+
+{
+“identifyNo:” 012005431233”
+}
+
+
+
