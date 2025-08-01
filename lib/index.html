@@ -1,28 +1,215 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.net.*" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.io.*" %>
+<%@ page import="java.net.*" %>
 <%@ page import="java.util.*" %>
-<%@ page import="org.json.simple.*" %>
-<%@ page import="org.json.simple.parser.*" %>
+<%@ page import="javax.servlet.http.*" %>
+
+<%!
+    // Helper method to read response from InputStream
+    private String readResponse(InputStream inputStream) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+        StringBuilder response = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            response.append(line);
+        }
+        reader.close();
+        return response.toString();
+    }
+    
+    // Simple JSON parser for extracting values (compatible with pre-Java 7)
+    private String extractJsonValue(String json, String key) {
+        try {
+            String searchKey = "\"" + key + "\"";
+            int keyIndex = json.indexOf(searchKey);
+            if (keyIndex == -1) return null;
+            
+            int colonIndex = json.indexOf(":", keyIndex);
+            if (colonIndex == -1) return null;
+            
+            int valueStart = colonIndex + 1;
+            while (valueStart < json.length() && 
+                   (json.charAt(valueStart) == ' ' || json.charAt(valueStart) == '\t')) {
+                valueStart++;
+            }
+            
+            if (valueStart >= json.length()) return null;
+            
+            char firstChar = json.charAt(valueStart);
+            int valueEnd;
+            
+            if (firstChar == '"') {
+                // String value
+                valueStart++; // Skip opening quote
+                valueEnd = json.indexOf('"', valueStart);
+                if (valueEnd == -1) return null;
+                return json.substring(valueStart, valueEnd);
+            } else {
+                // Number value
+                valueEnd = valueStart;
+                while (valueEnd < json.length() && 
+                       Character.isDigit(json.charAt(valueEnd))) {
+                    valueEnd++;
+                }
+                if (valueEnd == valueStart) return null;
+                return json.substring(valueStart, valueEnd);
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    // Method to perform authentication API call
+    private Map<String, String> authenticateUser(String username, String password, String apiBaseUrl) {
+        Map<String, String> result = new HashMap<String, String>();
+        HttpURLConnection connection = null;
+        
+        try {
+            // Construct the full API URL
+            String apiUrl = apiBaseUrl + "/auth/login";
+            URL url = new URL(apiUrl);
+            
+            // Create HTTP connection
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Accept", "application/json");
+            connection.setDoOutput(true);
+            connection.setDoInput(true);
+            
+            // Set timeout values (in milliseconds)
+            connection.setConnectTimeout(10000); // 10 seconds
+            connection.setReadTimeout(15000);    // 15 seconds
+            
+            // Prepare JSON request body
+            String jsonPayload = "{\"username\":\"" + username + "\",\"password\":\"" + password + "\"}";
+            
+            // Send request
+            OutputStream outputStream = connection.getOutputStream();
+            OutputStreamWriter writer = new OutputStreamWriter(outputStream, "UTF-8");
+            writer.write(jsonPayload);
+            writer.flush();
+            writer.close();
+            outputStream.close();
+            
+            // Get response code
+            int responseCode = connection.getResponseCode();
+            result.put("responseCode", String.valueOf(responseCode));
+            
+            if (responseCode == 200) {
+                // Success - read response
+                InputStream inputStream = connection.getInputStream();
+                String response = readResponse(inputStream);
+                inputStream.close();
+                
+                result.put("success", "true");
+                result.put("response", response);
+                
+                // Extract accessToken and expiresIn from JSON response
+                String accessToken = extractJsonValue(response, "accessToken");
+                String expiresIn = extractJsonValue(response, "expiresIn");
+                
+                if (accessToken != null) {
+                    result.put("accessToken", accessToken);
+                }
+                if (expiresIn != null) {
+                    result.put("expiresIn", expiresIn);
+                }
+                
+            } else {
+                // Error response
+                result.put("success", "false");
+                try {
+                    InputStream errorStream = connection.getErrorStream();
+                    if (errorStream != null) {
+                        String errorResponse = readResponse(errorStream);
+                        errorStream.close();
+                        result.put("errorResponse", errorResponse);
+                    }
+                } catch (Exception e) {
+                    result.put("errorResponse", "Unable to read error response");
+                }
+            }
+            
+        } catch (SocketTimeoutException e) {
+            result.put("success", "false");
+            result.put("error", "Connection timeout occurred");
+            result.put("errorDetails", e.getMessage());
+        } catch (ConnectException e) {
+            result.put("success", "false");
+            result.put("error", "Unable to connect to the authentication server");
+            result.put("errorDetails", e.getMessage());
+        } catch (UnknownHostException e) {
+            result.put("success", "false");
+            result.put("error", "Authentication server not found");
+            result.put("errorDetails", e.getMessage());
+        } catch (IOException e) {
+            result.put("success", "false");
+            result.put("error", "IO error occurred during authentication");
+            result.put("errorDetails", e.getMessage());
+        } catch (Exception e) {
+            result.put("success", "false");
+            result.put("error", "Unexpected error occurred");
+            result.put("errorDetails", e.getMessage());
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+        
+        return result;
+    }
+%>
+
+<%
+    // Initialize variables
+    String username = "";
+    String password = "";
+    String apiBaseUrl = "";
+    Map<String, String> authResult = null;
+    boolean showResult = false;
+    
+    // Check if form was submitted
+    if ("POST".equalsIgnoreCase(request.getMethod())) {
+        username = request.getParameter("username");
+        password = request.getParameter("password");
+        apiBaseUrl = request.getParameter("apiBaseUrl");
+        
+        // Validate input
+        if (username != null && !username.trim().isEmpty() && 
+            password != null && !password.trim().isEmpty() &&
+            apiBaseUrl != null && !apiBaseUrl.trim().isEmpty()) {
+            
+            // Perform authentication
+            authResult = authenticateUser(username.trim(), password.trim(), apiBaseUrl.trim());
+            showResult = true;
+        }
+    }
+%>
 
 <!DOCTYPE html>
 <html>
 <head>
+    <title>OpenCms Authentication API Integration</title>
     <meta charset="UTF-8">
-    <title>OpenCms Authentication Integration</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
+            max-width: 800px;
+            margin: 0 auto;
             padding: 20px;
             background-color: #f5f5f5;
         }
         .container {
-            background: white;
+            background-color: white;
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
         }
         .form-group {
             margin-bottom: 20px;
@@ -31,319 +218,163 @@
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
-            color: #333;
+            color: #555;
         }
-        input[type="text"], input[type="password"] {
+        input[type="text"], input[type="password"], input[type="url"] {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            font-size: 14px;
             box-sizing: border-box;
+            font-size: 14px;
         }
-        .btn {
+        .submit-btn {
             background-color: #007cba;
             color: white;
-            padding: 12px 24px;
+            padding: 12px 30px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
+            margin-top: 10px;
         }
-        .btn:hover {
-            background-color: #005a87;
+        .submit-btn:hover {
+            background-color: #005a8b;
+        }
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 4px;
         }
         .success {
             background-color: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: 4px;
-            margin: 20px 0;
             border: 1px solid #c3e6cb;
+            color: #155724;
         }
         .error {
             background-color: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 4px;
-            margin: 20px 0;
             border: 1px solid #f5c6cb;
+            color: #721c24;
         }
         .token-info {
             background-color: #e7f3ff;
+            border: 1px solid #b8daff;
+            color: #004085;
             padding: 15px;
             border-radius: 4px;
-            margin: 10px 0;
-            border-left: 4px solid #007cba;
-        }
-        .token-label {
-            font-weight: bold;
-            color: #333;
+            margin-top: 15px;
         }
         .token-value {
             font-family: monospace;
             background-color: #f8f9fa;
             padding: 5px;
             border-radius: 3px;
-            margin-top: 5px;
             word-break: break-all;
         }
-        .loading {
-            display: none;
-            color: #007cba;
-            font-style: italic;
+        .note {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
         }
     </style>
-    <script>
-        function showLoading() {
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('submitBtn').disabled = true;
-        }
-    </script>
 </head>
 <body>
     <div class="container">
-        <h1>OpenCms API Authentication</h1>
-        <p>Compatible with OpenCms 9.5.1 and Java &lt; 7</p>
+        <h1>OpenCms Authentication API Integration</h1>
         
-        <%
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
-        String message = "";
-        String messageType = "";
-        String accessToken = "";
-        String expiresIn = "";
+        <div class="note">
+            <strong>Note:</strong> This integration is designed for OpenCms 9.5.1 and Java versions prior to Java 7. 
+            Enter your API credentials below to test the authentication endpoint.
+        </div>
         
-        // Helper method to check if string is valid
-        boolean isValidString(String str) {
-            return str != null && !str.trim().isEmpty();
-        }
-        
-        if (isValidString(username) && isValidString(password)) {
-            HttpURLConnection connection = null;
-            BufferedReader reader = null;
-            OutputStreamWriter writer = null;
+        <form method="post" action="">
+            <div class="form-group">
+                <label for="apiBaseUrl">API Base URL:</label>
+                <input type="url" 
+                       id="apiBaseUrl" 
+                       name="apiBaseUrl" 
+                       value="<%= apiBaseUrl %>" 
+                       placeholder="https://your-api-server.com"
+                       required>
+            </div>
             
-            try {
-                // Create the API endpoint URL
-                String baseUrl = request.getScheme() + "://" + request.getServerName();
-                if (request.getServerPort() != 80 && request.getServerPort() != 443) {
-                    baseUrl += ":" + request.getServerPort();
-                }
-                URL url = new URL(baseUrl + "/auth/login");
-                
-                // Open connection
-                connection = (HttpURLConnection) url.openConnection();
-                
-                // Set connection properties for Java < 7 compatibility
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                connection.setRequestProperty("Accept", "application/json");
-                connection.setRequestProperty("User-Agent", "OpenCms-Auth-Client/1.0");
-                connection.setDoOutput(true);
-                connection.setDoInput(true);
-                connection.setUseCaches(false);
-                
-                // Set timeout values (in milliseconds)
-                connection.setConnectTimeout(10000); // 10 seconds connection timeout
-                connection.setReadTimeout(15000);    // 15 seconds read timeout
-                
-                // Create JSON request body using json-simple
-                JSONObject jsonRequest = new JSONObject();
-                jsonRequest.put("username", username.trim());
-                jsonRequest.put("password", password);
-                String jsonInputString = jsonRequest.toJSONString();
-                
-                // Send POST request
-                writer = new OutputStreamWriter(connection.getOutputStream(), "UTF-8");
-                writer.write(jsonInputString);
-                writer.flush();
-                
-                // Get response code
-                int responseCode = connection.getResponseCode();
-                
-                if (responseCode == 200) {
-                    // Read successful response
-                    reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
-                    StringBuffer response = new StringBuffer();
-                    String line;
-                    
-                    while ((line = reader.readLine()) != null) {
-                        response.append(line);
-                    }
-                    
-                    // Parse JSON response using json-simple
-                    JSONParser parser = new JSONParser();
-                    JSONObject jsonResponse = (JSONObject) parser.parse(response.toString());
-                    
-                    // Extract token information
-                    Object accessTokenObj = jsonResponse.get("accessToken");
-                    Object expiresInObj = jsonResponse.get("expiresIn");
-                    
-                    accessToken = accessTokenObj != null ? accessTokenObj.toString() : "";
-                    expiresIn = expiresInObj != null ? expiresInObj.toString() : "N/A";
-                    
-                    if (isValidString(accessToken)) {
-                        message = "Authentication successful!";
-                        messageType = "success";
-                        
-                        // Store in session for later use
-                        session.setAttribute("accessToken", accessToken);
-                        session.setAttribute("expiresIn", expiresIn);
-                        session.setAttribute("username", username);
-                        session.setAttribute("loginTime", new java.util.Date().toString());
-                    } else {
-                        message = "Authentication failed: No access token received from server.";
-                        messageType = "error";
-                    }
-                    
-                } else {
-                    // Handle error responses
-                    BufferedReader errorReader = null;
-                    String errorMessage = "HTTP " + responseCode;
-                    
-                    try {
-                        if (connection.getErrorStream() != null) {
-                            errorReader = new BufferedReader(new InputStreamReader(connection.getErrorStream(), "UTF-8"));
-                            StringBuffer errorResponse = new StringBuffer();
-                            String errorLine;
-                            
-                            while ((errorLine = errorReader.readLine()) != null) {
-                                errorResponse.append(errorLine);
-                            }
-                            
-                            if (errorResponse.length() > 0) {
-                                // Try to parse error response as JSON
-                                try {
-                                    JSONParser errorParser = new JSONParser();
-                                    JSONObject errorJson = (JSONObject) errorParser.parse(errorResponse.toString());
-                                    Object errorMsg = errorJson.get("message");
-                                    if (errorMsg != null) {
-                                        errorMessage += ": " + errorMsg.toString();
-                                    } else {
-                                        errorMessage += ": " + errorResponse.toString();
-                                    }
-                                } catch (Exception parseEx) {
-                                    errorMessage += ": " + errorResponse.toString();
-                                }
-                            } else {
-                                errorMessage += ": " + connection.getResponseMessage();
-                            }
-                        } else {
-                            errorMessage += ": " + connection.getResponseMessage();
-                        }
-                        
-                    } catch (Exception e) {
-                        errorMessage += ": " + connection.getResponseMessage();
-                    } finally {
-                        if (errorReader != null) {
-                            try { errorReader.close(); } catch (IOException e) { /* ignore */ }
-                        }
-                    }
-                    
-                    message = "Authentication failed. " + errorMessage;
-                    messageType = "error";
-                }
-                
-            } catch (SocketTimeoutException e) {
-                message = "Connection timeout: The server took too long to respond. Please try again.";
-                messageType = "error";
-            } catch (ConnectException e) {
-                message = "Connection failed: Unable to connect to the authentication server. Please check if the server is running and accessible.";
-                messageType = "error";
-            } catch (UnknownHostException e) {
-                message = "Connection failed: Unable to resolve server hostname. Please check your network connection.";
-                messageType = "error";
-            } catch (MalformedURLException e) {
-                message = "Configuration error: Invalid API endpoint URL.";
-                messageType = "error";
-            } catch (org.json.simple.parser.ParseException e) {
-                message = "Response parsing error: Invalid JSON response from server. The server may be experiencing issues.";
-                messageType = "error";
-            } catch (IOException e) {
-                message = "Network error: " + e.getMessage() + ". Please check your connection and try again.";
-                messageType = "error";
-            } catch (Exception e) {
-                message = "Unexpected error: " + e.getMessage() + ". Please contact system administrator if the problem persists.";
-                messageType = "error";
-            } finally {
-                // Clean up resources - important for Java < 7
-                if (writer != null) {
-                    try { writer.close(); } catch (Exception e) { /* ignore */ }
-                }
-                if (reader != null) {
-                    try { reader.close(); } catch (IOException e) { /* ignore */ }
-                }
-                if (connection != null) {
-                    try { connection.disconnect(); } catch (Exception e) { /* ignore */ }
-                }
-            }
-        }
-        %>
-        
-        <!-- Display messages -->
-        <% if (!message.isEmpty()) { %>
-            <div class="<%= messageType %>">
-                <%= message %>
-            </div>
-        <% } %>
-        
-        <!-- Display token information on success -->
-        <% if ("success".equals(messageType) && !accessToken.isEmpty()) { %>
-            <div class="token-info">
-                <div class="token-label">Access Token:</div>
-                <div class="token-value"><%= accessToken %></div>
-            </div>
-            <div class="token-info">
-                <div class="token-label">Expires In:</div>
-                <div class="token-value"><%= expiresIn %> seconds</div>
-            </div>
-            <div class="token-info">
-                <div class="token-label">Login Time:</div>
-                <div class="token-value"><%= session.getAttribute("loginTime") %></div>
-            </div>
-        <% } %>
-        
-        <!-- Login Form -->
-        <form method="post" action="auth-login.jsp" onsubmit="showLoading()">
             <div class="form-group">
                 <label for="username">Username:</label>
-                <input type="text" id="username" name="username" 
-                       value="<%= username != null ? username : "" %>" 
-                       required maxlength="100">
+                <input type="text" 
+                       id="username" 
+                       name="username" 
+                       value="<%= username %>" 
+                       placeholder="Enter your username"
+                       required>
             </div>
             
             <div class="form-group">
                 <label for="password">Password:</label>
-                <input type="password" id="password" name="password" 
-                       required maxlength="100">
+                <input type="password" 
+                       id="password" 
+                       name="password" 
+                       placeholder="Enter your password"
+                       required>
             </div>
             
-            <button type="submit" id="submitBtn" class="btn">Authenticate</button>
-            <div id="loading" class="loading">Processing authentication...</div>
+            <button type="submit" class="submit-btn">Authenticate</button>
         </form>
         
-        <!-- Session Information -->
-        <% if (session.getAttribute("accessToken") != null) { %>
-            <div style="margin-top: 30px; padding: 15px; background-color: #f8f9fa; border-radius: 4px;">
-                <h4>Current Session:</h4>
-                <p><strong>User:</strong> <%= session.getAttribute("username") %></p>
-                <p><strong>Login Time:</strong> <%= session.getAttribute("loginTime") %></p>
-                <p><strong>Token Status:</strong> Active</p>
-                <a href="auth-logout.jsp" style="color: #dc3545; text-decoration: none;">Logout</a>
+        <% if (showResult && authResult != null) { %>
+            <div class="result-container <%= "true".equals(authResult.get("success")) ? "success" : "error" %>">
+                <% if ("true".equals(authResult.get("success"))) { %>
+                    <h3>✓ Authentication Successful!</h3>
+                    <p><strong>Response Code:</strong> <%= authResult.get("responseCode") %></p>
+                    
+                    <% if (authResult.get("accessToken") != null || authResult.get("expiresIn") != null) { %>
+                        <div class="token-info">
+                            <h4>Authentication Details:</h4>
+                            
+                            <% if (authResult.get("accessToken") != null) { %>
+                                <p><strong>Access Token:</strong></p>
+                                <div class="token-value"><%= authResult.get("accessToken") %></div>
+                            <% } %>
+                            
+                            <% if (authResult.get("expiresIn") != null) { %>
+                                <p><strong>Expires In:</strong> <%= authResult.get("expiresIn") %> seconds</p>
+                            <% } %>
+                        </div>
+                    <% } %>
+                    
+                    <% if (authResult.get("response") != null) { %>
+                        <details style="margin-top: 15px;">
+                            <summary style="cursor: pointer; font-weight: bold;">Raw Response</summary>
+                            <pre style="background-color: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto;"><%= authResult.get("response") %></pre>
+                        </details>
+                    <% } %>
+                    
+                <% } else { %>
+                    <h3>✗ Authentication Failed</h3>
+                    
+                    <% if (authResult.get("responseCode") != null) { %>
+                        <p><strong>Response Code:</strong> <%= authResult.get("responseCode") %></p>
+                    <% } %>
+                    
+                    <% if (authResult.get("error") != null) { %>
+                        <p><strong>Error:</strong> <%= authResult.get("error") %></p>
+                    <% } %>
+                    
+                    <% if (authResult.get("errorDetails") != null) { %>
+                        <p><strong>Details:</strong> <%= authResult.get("errorDetails") %></p>
+                    <% } %>
+                    
+                    <% if (authResult.get("errorResponse") != null) { %>
+                        <details style="margin-top: 15px;">
+                            <summary style="cursor: pointer; font-weight: bold;">Server Error Response</summary>
+                            <pre style="background-color: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto;"><%= authResult.get("errorResponse") %></pre>
+                        </details>
+                    <% } %>
+                <% } %>
             </div>
         <% } %>
-        
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
-            <strong>Technical Details:</strong><br>
-            • API Endpoint: /auth/login<br>
-            • Method: POST<br>
-            • Content-Type: application/json<br>
-            • Connection Timeout: 10 seconds<br>
-            • Read Timeout: 15 seconds<br>
-            • Compatible with: OpenCms 9.5.1, Java &lt; 7<br>
-            • JSON Library: json-simple 1.1.1
-        </div>
     </div>
 </body>
 </html>
