@@ -77,27 +77,57 @@
         return sysInfo;
     }
     
-    // Trust all certificates (for debugging only - not for production)
+    // Enhanced SSL setup for older Java versions
     private void setupTrustAllCertificates() {
         try {
             TrustManager[] trustAllCerts = new TrustManager[] {
                 new X509TrustManager() {
-                    public X509Certificate[] getAcceptedIssuers() { return null; }
+                    public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
                     public void checkClientTrusted(X509Certificate[] certs, String authType) { }
                     public void checkServerTrusted(X509Certificate[] certs, String authType) { }
                 }
             };
             
-            SSLContext sc = SSLContext.getInstance("SSL");
-            sc.init(null, trustAllCerts, new java.security.SecureRandom());
-            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+            // Try multiple SSL contexts for compatibility
+            String[] protocols = {"TLS", "SSLv3", "SSL"};
+            SSLContext sc = null;
+            
+            for (String protocol : protocols) {
+                try {
+                    sc = SSLContext.getInstance(protocol);
+                    sc.init(null, trustAllCerts, new java.security.SecureRandom());
+                    break;
+                } catch (Exception e) {
+                    // Try next protocol
+                }
+            }
+            
+            if (sc != null) {
+                HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+            }
             
             HostnameVerifier allHostsValid = new HostnameVerifier() {
                 public boolean verify(String hostname, SSLSession session) { return true; }
             };
             HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+            
         } catch (Exception e) {
             // Ignore setup errors
+        }
+    }
+    
+    // Setup SSL properties for older Java versions
+    private void setupSSLProperties() {
+        try {
+            // Enable older SSL protocols if needed
+            System.setProperty("https.protocols", "TLSv1,SSLv3,SSLv2Hello");
+            System.setProperty("javax.net.ssl.trustStore", "");
+            System.setProperty("javax.net.ssl.trustStorePassword", "");
+            System.setProperty("com.sun.net.ssl.checkRevocation", "false");
+            System.setProperty("sun.security.ssl.allowUnsafeRenegotiation", "true");
+            System.setProperty("sun.security.ssl.allowLegacyHelloMessages", "true");
+        } catch (Exception e) {
+            // Ignore property setup errors
         }
     }
     
@@ -108,6 +138,10 @@
         long startTime = System.currentTimeMillis();
         
         try {
+            // Setup SSL properties for older Java versions
+            setupSSLProperties();
+            result.put("ssl_properties_set", "SSL properties configured for older Java");
+            
             // Setup SSL trust if requested
             if (trustAllCerts) {
                 setupTrustAllCertificates();
@@ -247,10 +281,36 @@
             result.put("errorType", "SSLHandshakeException");
             result.put("ssl_debug", "This might be due to SSL/TLS version mismatch, certificate issues, or cipher suite problems");
             
-            // Additional SSL debugging
+            // Enhanced SSL debugging
             try {
                 SSLContext context = SSLContext.getDefault();
                 result.put("default_ssl_context", context.getProtocol());
+                
+                // Get supported protocols
+                SSLSocketFactory factory = context.getSocketFactory();
+                if (factory instanceof SSLSocketFactory) {
+                    try {
+                        SSLSocket socket = (SSLSocket) factory.createSocket();
+                        String[] supportedProtocols = socket.getSupportedProtocols();
+                        String[] enabledProtocols = socket.getEnabledProtocols();
+                        
+                        StringBuilder supported = new StringBuilder();
+                        for (String protocol : supportedProtocols) {
+                            supported.append(protocol).append(", ");
+                        }
+                        result.put("supported_protocols", supported.toString());
+                        
+                        StringBuilder enabled = new StringBuilder();
+                        for (String protocol : enabledProtocols) {
+                            enabled.append(protocol).append(", ");
+                        }
+                        result.put("enabled_protocols", enabled.toString());
+                        
+                        socket.close();
+                    } catch (Exception e) {
+                        result.put("protocol_check_error", e.getMessage());
+                    }
+                }
             } catch (Exception ex) {
                 result.put("ssl_context_error", ex.getMessage());
             }
