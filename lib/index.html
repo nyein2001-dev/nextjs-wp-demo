@@ -1,702 +1,349 @@
-<%@ page session="false" contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.io.*, java.net.*, javax.net.*,  org.json.JSONObject,
-org.opencms.main.OpenCms, org.apache.commons.logging.Log, org.opencms.main.CmsLog, org.apache.commons.lang.StringUtils,
-java.util.*, org.opencms.jsp.util.*, java.io.IOException, java.text.*, java.nio.charset.* "%>
-<%@ page import="org.opencms.mail.CmsHtmlMail"%>
-<%@page import="java.util.Locale" %>
-<%@page import="org.opencms.jsp.CmsJspActionElement"%>
-<%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
-<%@page import="javax.xml.bind.DatatypeConverter"%>
-<%@page import="org.opencms.jsp.*, org.opencms.file.*, org.opencms.flex.*,org.opencms.util.*, java.util.*" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.net.*" %>
+<%@ page import="java.io.*" %>
+<%@ page import="java.util.*" %>
+<%@ page import="org.json.simple.*" %>
+<%@ page import="org.json.simple.parser.*" %>
 
-<%
-// Initialize logging
-Log LOG = CmsLog.getLog("ContactFormProcessor");
-String errorDetails = "";
-int responseCode = 200;
-String responseMessage = "success";
-
-try {
-    LOG.info("Contact form processing started");
-    
-    // Parameter validation
-    String paramSelectTopic = StringUtils.isEmpty(request.getParameter("selectTopic")) ? "" : request.getParameter("selectTopic");
-    String[] paramSelectTopics = null;
-    
-    if (!StringUtils.isEmpty(paramSelectTopic)) {
-        paramSelectTopics = paramSelectTopic.split("&&");
-        LOG.info("Select topic parsed: " + paramSelectTopics.length + " parts");
-    } else {
-        paramSelectTopics = new String[]{""};
-        LOG.warn("No selectTopic parameter provided");
-    }
-%>
-
-<c:set var="locale" value="${cms.locale}" />
-<fmt:setLocale value="${param.language}" />
-<c:set var="paramSelectTopics"><%=paramSelectTopics.length > 0 ? paramSelectTopics[0] : ""%></c:set>
-
-<cms:bundle basename="com.prudential.v2.ph.default">
-  <c:set var="productTitle"><fmt:message key="key.default.have.productTitle" /></c:set>
-  <c:set var="noProductTitle"><fmt:message key="key.default.none.productTitle" /></c:set>
-  <c:set var="adminMailSubject"><fmt:message key="key.default.admin.mail.subject" /></c:set>
-  <c:set var="emailEnquiry" value=""/>
-  <c:if test="${not empty paramSelectTopics}">
-  	<c:set var="emailEnquiry"><fmt:message key="key.mail.selected.enquiry.${paramSelectTopics}" /></c:set>
-  </c:if>
-</cms:bundle>
-
-<%!
-	public String A1filter(String input){
-	    if (input == null) return "";
-	    String tem = input;
-	    tem = tem.replaceAll("<", "&lt;");
-	    tem = tem.replaceAll(">", "&gt;");
-	    tem = tem.replaceAll("&", "&amp;");
-	    tem = tem.replaceAll("\"", "&quot;");
-	    tem = tem.replaceAll(" ", "&nbsp;");
-	    tem = tem.replaceAll("'", "&#39;");
-	    return tem;
-	}
-	
-    public String A1filterHidden(String input, String temp){
-        if (input == null || temp == null) return temp != null ? temp : "";
-	    String tem = temp;
-	    String tmpinput = "content:'" + input + "'; mso-hide:all;display:none;";
-	    tem = tem.replaceAll(tmpinput, "");
-	    return tem;
-    }
-    
-    public String A1filter(String input, String value, String temp){
-        if (input == null || temp == null) return temp != null ? temp : "";
-        if (value == null) value = "";
-        String tem = temp;
-        tem = tem.replaceAll(input, value);
-        return tem;
-    }
-    
-    public String A1filterNoProductTitle(String productTitleName, String temp, String noProductTitle){
-        if (productTitleName == null || temp == null) return temp != null ? temp : "";
-        if (noProductTitle == null) noProductTitle = "";
-        String tem = temp;
-        tem = tem.replaceAll(productTitleName, noProductTitle);
-        return tem;
-    }
-    
-    public String responeObject(int statusCode, String message) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{");
-        sb.append("\"statusCode\":").append(statusCode).append(",");
-        sb.append("\"message\":\"").append(message != null ? message.replaceAll("\"", "\\\\\"") : "").append("\"");
-        sb.append("}");
-        return sb.toString();
-    }
-%>
-
-<%
-    // Initialize CMS objects with error handling
-    CmsJspActionElement cms = null;
-    CmsObject cmsObject = null;
-    Locale locale = null;
-    
-    try {
-        cms = new CmsJspActionElement(pageContext, request, response);
-        cmsObject = cms.getCmsObject();
-        locale = cms.getRequestContext().getLocale();
-        LOG.info("CMS objects initialized successfully");
-    } catch (Exception e) {
-        LOG.error("Error initializing CMS objects: " + e.getMessage(), e);
-        errorDetails = "CMS initialization failed: " + e.getMessage();
-        throw new Exception("CMS initialization failed", e);
-    }
-    
-    // Get page attributes with validation
-    String productTitleParam = "";
-    String noProductTitleParam = "";
-    
-    try {
-        Object productTitleObj = pageContext.getAttribute("productTitle");
-        Object noProductTitleObj = pageContext.getAttribute("noProductTitle");
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>OpenCms Authentication Integration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .btn {
+            background-color: #007cba;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background-color: #005a87;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+        .token-info {
+            background-color: #e7f3ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #007cba;
+        }
+        .token-label {
+            font-weight: bold;
+            color: #333;
+        }
+        .token-value {
+            font-family: monospace;
+            background-color: #f8f9fa;
+            padding: 5px;
+            border-radius: 3px;
+            margin-top: 5px;
+            word-break: break-all;
+        }
+        .loading {
+            display: none;
+            color: #007cba;
+            font-style: italic;
+        }
+    </style>
+    <script>
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('submitBtn').disabled = true;
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>OpenCms API Authentication</h1>
+        <p>Compatible with OpenCms 9.5.1 and Java &lt; 7</p>
         
-        productTitleParam = productTitleObj != null ? productTitleObj.toString() : "";
-        noProductTitleParam = noProductTitleObj != null ? noProductTitleObj.toString() : "";
+        <%
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        String message = "";
+        String messageType = "";
+        String accessToken = "";
+        String expiresIn = "";
         
-        LOG.info("Page attributes retrieved successfully");
-    } catch (Exception e) {
-        LOG.error("Error getting page attributes: " + e.getMessage(), e);
-        errorDetails = "Page attributes error: " + e.getMessage();
-    }
-    
-    // Get and validate file path
-    String pathFile = request.getParameter("file-path");
-    if (StringUtils.isEmpty(pathFile)) {
-        LOG.error("file-path parameter is missing or empty");
-        errorDetails = "file-path parameter is required";
-        throw new Exception("file-path parameter is missing");
-    }
-    
-    LOG.info("Processing file path: " + pathFile);
-    
-    // Decode file path with error handling
-    String pathFileXml = "";
-    try {
-        byte[] valueDecoded = DatatypeConverter.parseBase64Binary(pathFile);
-        pathFileXml = new String(valueDecoded, "UTF-8");
-        LOG.info("File path decoded successfully: " + pathFileXml);
-    } catch (Exception e) {
-        LOG.error("Error decoding file path: " + e.getMessage(), e);
-        errorDetails = "File path decoding failed: " + e.getMessage();
-        throw new Exception("Invalid file path encoding", e);
-    }
-    
-    // Read XML content with error handling
-    CmsResource contentRs = null;
-    CmsJspContentAccessBean componentPros = null;
-    
-    try {
-        contentRs = cmsObject.readResource(pathFileXml);
-        componentPros = new CmsJspContentAccessBean(cmsObject, locale, contentRs);
-        LOG.info("XML content loaded successfully");
-    } catch (Exception e) {
-        LOG.error("Error reading XML content from path: " + pathFileXml + " - " + e.getMessage(), e);
-        errorDetails = "XML content loading failed: " + e.getMessage();
-        throw new Exception("Cannot read XML configuration file", e);
-    }
-    
-    // Get configuration values with error handling
-    Boolean isSendEmail = false;
-    Boolean isSendEmailBasedonTopic = false;
-    String templateContentAdmin = "";
-    String templateContentUser = "";
-    String emailAddressAdmin = "";
-    String errMesageSendMailFails = "";
-    
-    try {
-        // Email settings
-        String SendEmail = componentPros.getValue().get("EmailAndDB").getValue().get("SendEmail").getStringValue();
-        isSendEmail = Boolean.valueOf(SendEmail);
-        LOG.info("Send email setting: " + isSendEmail);
-        
-        String SendEmailBasedonTopic = componentPros.getValue().get("EmailAndDB").getValue().get("SendEmailBasedonTopic").getStringValue();
-        isSendEmailBasedonTopic = Boolean.valueOf(SendEmailBasedonTopic);
-        LOG.info("Send email based on topic setting: " + isSendEmailBasedonTopic);
-        
-        // Template paths
-        templateContentAdmin = componentPros.getValue().get("EmailAndDB").getValue().get("EmailContentAdmins").getStringValue();
-        templateContentUser = componentPros.getValue().get("EmailAndDB").getValue().get("EmailContentEndUser").getStringValue();
-        
-        // Email addresses
-        emailAddressAdmin = componentPros.getValue().get("EmailAndDB").getValue().get("EmailAddress").getStringValue();
-        
-        // Error messages
-        errMesageSendMailFails = componentPros.getValue().get("GeneralForm").getValue().get("GenericErrorMessage").getStringValue();
-        
-        LOG.info("Configuration values loaded successfully");
-        
-    } catch (Exception e) {
-        LOG.error("Error reading configuration values: " + e.getMessage(), e);
-        errorDetails = "Configuration reading failed: " + e.getMessage();
-        throw new Exception("Invalid XML configuration structure", e);
-    }
-    
-    // Load email templates with error handling
-    String mailContent = "";
-    String mailContentUser = "";
-    
-    try {
-        // Admin template
-        if (!StringUtils.isEmpty(templateContentAdmin)) {
-            CmsResource resource = cmsObject.readResource(templateContentAdmin);
-            CmsFile file = cmsObject.readFile(resource);
-            byte[] contentAdmin = file.getContents();
-            mailContent = new String(contentAdmin, "UTF-8");
-            LOG.info("Admin email template loaded: " + templateContentAdmin);
-        } else {
-            LOG.warn("Admin email template path is empty");
+        // Helper method to check if string is valid
+        boolean isValidString(String str) {
+            return str != null && !str.trim().isEmpty();
         }
         
-        // User template  
-        if (!StringUtils.isEmpty(templateContentUser)) {
-            CmsResource resourceUser = cmsObject.readResource(templateContentUser);
-            CmsFile fileUser = cmsObject.readFile(resourceUser);
-            byte[] contentUser = fileUser.getContents();
-            mailContentUser = new String(contentUser, "UTF-8");
-            LOG.info("User email template loaded: " + templateContentUser);
-        } else {
-            LOG.warn("User email template path is empty");
-        }
-        
-    } catch (Exception e) {
-        LOG.error("Error loading email templates: " + e.getMessage(), e);
-        errorDetails = "Email template loading failed: " + e.getMessage();
-        throw new Exception("Cannot load email templates", e);
-    }
-    
-    // Process email subjects
-    String topic = paramSelectTopics.length > 1 ? paramSelectTopics[1] : "";
-    String topickey = paramSelectTopics.length > 0 ? paramSelectTopics[0] : "";
-    
-    String adminMailSubject = "";
-    String mailSubject = "";
-    
-    try {
-        Object adminMailSubjectObj = pageContext.getAttribute("adminMailSubject");
-        adminMailSubject = adminMailSubjectObj != null ? adminMailSubjectObj.toString() : "";
-        adminMailSubject = adminMailSubject.replace("#Topic#", topic);
-        
-        mailSubject = componentPros.getValue().get("EmailAndDB").getValue().get("EmailSubject").getStringValue();
-        mailSubject = mailSubject.replace("#Topic#", topic);
-        
-        String adminMailSubject2 = componentPros.getValue().get("EmailAndDB").getValue().get("AdminEmailSubject").getStringValue();
-        if (!StringUtils.isEmpty(adminMailSubject2)) {
-            adminMailSubject2 = adminMailSubject2.replace("#Topic#", topic);
-            adminMailSubject = adminMailSubject2;
-        }
-        
-        LOG.info("Email subjects processed successfully");
-        
-    } catch (Exception e) {
-        LOG.error("Error processing email subjects: " + e.getMessage(), e);
-        errorDetails = "Email subject processing failed: " + e.getMessage();
-    }
-    
-    // Process sections with error handling
-    try {
-        String[] sections = {"Section1", "Section2", "Section3", "Section5"};
-        for (String sectionName : sections) {
-            try {
-                String sectionValue = "";
-                if ("Section1".equals(sectionName)) {
-                    sectionValue = componentPros.getValue().get("Section1").getValue().get("SectionTitle").getStringValue();
-                } else {
-                    sectionValue = componentPros.getValue().get(sectionName).getValue().get("SectionLabel").getStringValue();
-                }
-                
-                if (!StringUtils.isEmpty(sectionValue)) {
-                    String temp = "%class" + sectionName + "%";
-                    mailContent = A1filterHidden(temp, mailContent);
-                    mailContentUser = A1filterHidden(temp, mailContentUser);
-                }
-            } catch (Exception e) {
-                LOG.warn("Error processing section " + sectionName + ": " + e.getMessage());
-            }
-        }
-        LOG.info("Sections processed successfully");
-    } catch (Exception e) {
-        LOG.error("Error processing sections: " + e.getMessage(), e);
-    }
-    
-    // Early return if email is disabled
-    if (!isSendEmail) {
-        LOG.info("Email sending is disabled, returning success");
-        out.print(responeObject(200, "send mail success"));
-        return;
-    }
-    
-    // Process form parameters
-    Enumeration<?> enumeration = request.getParameterNames();
-    String firstName = "";
-    String lastName = "";
-    String maritalStatus = "";
-    String componentCode = "";
-    String policy_number = "";
-    String provide_area = "";
-    String country_code = "";
-    String phone_no = "";
-    String utmCampaign = "";
-    String utmMedium = "";
-    String utmSource = "";
-    String nationalId = "";
-    String emailAddressUser = "";
-    String accessToken = "";
-    boolean isEmailSuccess = false;
-    boolean isApiCallSuccess = true;
-    String apiResponse = "";
-    
-    try {
-        LOG.info("Processing form parameters");
-        
-        while (enumeration.hasMoreElements()) {
-            String parameterName = enumeration.nextElement().toString();
-            String value = "";
+        if (isValidString(username) && isValidString(password)) {
+            HttpURLConnection connection = null;
+            BufferedReader reader = null;
+            OutputStreamWriter writer = null;
             
             try {
-                if ("selectTopic".equals(parameterName)) {
-                    value = topic;
-                } else {
-                    String rawValue = request.getParameter(parameterName);
-                    value = rawValue != null ? A1filter(rawValue) : "";
+                // Create the API endpoint URL
+                String baseUrl = request.getScheme() + "://" + request.getServerName();
+                if (request.getServerPort() != 80 && request.getServerPort() != 443) {
+                    baseUrl += ":" + request.getServerPort();
                 }
+                URL url = new URL(baseUrl + "/auth/login");
                 
-                if (!StringUtils.isEmpty(value)) {
-                    String temp = "%class" + parameterName + "%";
-                    mailContent = A1filterHidden(temp, mailContent);
-                    mailContentUser = A1filterHidden(temp, mailContentUser);
-                    mailContent = A1filter("%" + parameterName + "%", value, mailContent);
-                    mailContentUser = A1filter("%" + parameterName + "%", value, mailContentUser);
-                }
+                // Open connection
+                connection = (HttpURLConnection) url.openConnection();
                 
-                // Extract specific parameters
-                if ("first-name".equals(parameterName)) {
-                    firstName = value;
-                } else if ("last-name".equals(parameterName)) {
-                    lastName = value;
-                } else if ("email-address".equals(parameterName)) {
-                    emailAddressUser = value;
-                } else if ("policy-number".equals(parameterName)) {
-                    policy_number = value;
-                } else if ("provide-area".equals(parameterName)) {
-                    provide_area = value;
-                } else if ("country-code".equals(parameterName)) {
-                    country_code = value;
-                } else if ("phone-no".equals(parameterName)) {
-                    phone_no = value;
-                } else if ("id-passport-number".equals(parameterName)) {
-                    nationalId = value;
-                } else if ("maritalStatus".equals(parameterName)) {
-                    maritalStatus = value;
-                } else if ("current-url".equals(parameterName)) {
-                    componentCode = value;
-                } else if ("utmCampaign".equals(parameterName)) {
-                    utmCampaign = value;
-                } else if ("utmMedium".equals(parameterName)) {
-                    utmMedium = value;
-                } else if ("utmSource".equals(parameterName)) {
-                    utmSource = value;
-                } else if ("product-title".equals(parameterName)) {
-                    String nameTitle = "%key-" + parameterName + "%";
-                    if (StringUtils.isEmpty(value)) {
-                        mailContent = A1filterNoProductTitle(nameTitle, mailContent, noProductTitleParam);
-                        mailContentUser = A1filterNoProductTitle(nameTitle, mailContentUser, noProductTitleParam);
-                    } else {
-                        String productTitle = productTitleParam + " " + value;
-                        mailContent = A1filter(nameTitle, productTitle, mailContent);
-                        mailContentUser = A1filter(nameTitle, productTitle, mailContentUser);
+                // Set connection properties for Java < 7 compatibility
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                connection.setRequestProperty("Accept", "application/json");
+                connection.setRequestProperty("User-Agent", "OpenCms-Auth-Client/1.0");
+                connection.setDoOutput(true);
+                connection.setDoInput(true);
+                connection.setUseCaches(false);
+                
+                // Set timeout values (in milliseconds)
+                connection.setConnectTimeout(10000); // 10 seconds connection timeout
+                connection.setReadTimeout(15000);    // 15 seconds read timeout
+                
+                // Create JSON request body using json-simple
+                JSONObject jsonRequest = new JSONObject();
+                jsonRequest.put("username", username.trim());
+                jsonRequest.put("password", password);
+                String jsonInputString = jsonRequest.toJSONString();
+                
+                // Send POST request
+                writer = new OutputStreamWriter(connection.getOutputStream(), "UTF-8");
+                writer.write(jsonInputString);
+                writer.flush();
+                
+                // Get response code
+                int responseCode = connection.getResponseCode();
+                
+                if (responseCode == 200) {
+                    // Read successful response
+                    reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+                    StringBuffer response = new StringBuffer();
+                    String line;
+                    
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
                     }
+                    
+                    // Parse JSON response using json-simple
+                    JSONParser parser = new JSONParser();
+                    JSONObject jsonResponse = (JSONObject) parser.parse(response.toString());
+                    
+                    // Extract token information
+                    Object accessTokenObj = jsonResponse.get("accessToken");
+                    Object expiresInObj = jsonResponse.get("expiresIn");
+                    
+                    accessToken = accessTokenObj != null ? accessTokenObj.toString() : "";
+                    expiresIn = expiresInObj != null ? expiresInObj.toString() : "N/A";
+                    
+                    if (isValidString(accessToken)) {
+                        message = "Authentication successful!";
+                        messageType = "success";
+                        
+                        // Store in session for later use
+                        session.setAttribute("accessToken", accessToken);
+                        session.setAttribute("expiresIn", expiresIn);
+                        session.setAttribute("username", username);
+                        session.setAttribute("loginTime", new java.util.Date().toString());
+                    } else {
+                        message = "Authentication failed: No access token received from server.";
+                        messageType = "error";
+                    }
+                    
+                } else {
+                    // Handle error responses
+                    BufferedReader errorReader = null;
+                    String errorMessage = "HTTP " + responseCode;
+                    
+                    try {
+                        if (connection.getErrorStream() != null) {
+                            errorReader = new BufferedReader(new InputStreamReader(connection.getErrorStream(), "UTF-8"));
+                            StringBuffer errorResponse = new StringBuffer();
+                            String errorLine;
+                            
+                            while ((errorLine = errorReader.readLine()) != null) {
+                                errorResponse.append(errorLine);
+                            }
+                            
+                            if (errorResponse.length() > 0) {
+                                // Try to parse error response as JSON
+                                try {
+                                    JSONParser errorParser = new JSONParser();
+                                    JSONObject errorJson = (JSONObject) errorParser.parse(errorResponse.toString());
+                                    Object errorMsg = errorJson.get("message");
+                                    if (errorMsg != null) {
+                                        errorMessage += ": " + errorMsg.toString();
+                                    } else {
+                                        errorMessage += ": " + errorResponse.toString();
+                                    }
+                                } catch (Exception parseEx) {
+                                    errorMessage += ": " + errorResponse.toString();
+                                }
+                            } else {
+                                errorMessage += ": " + connection.getResponseMessage();
+                            }
+                        } else {
+                            errorMessage += ": " + connection.getResponseMessage();
+                        }
+                        
+                    } catch (Exception e) {
+                        errorMessage += ": " + connection.getResponseMessage();
+                    } finally {
+                        if (errorReader != null) {
+                            try { errorReader.close(); } catch (IOException e) { /* ignore */ }
+                        }
+                    }
+                    
+                    message = "Authentication failed. " + errorMessage;
+                    messageType = "error";
                 }
                 
+            } catch (SocketTimeoutException e) {
+                message = "Connection timeout: The server took too long to respond. Please try again.";
+                messageType = "error";
+            } catch (ConnectException e) {
+                message = "Connection failed: Unable to connect to the authentication server. Please check if the server is running and accessible.";
+                messageType = "error";
+            } catch (UnknownHostException e) {
+                message = "Connection failed: Unable to resolve server hostname. Please check your network connection.";
+                messageType = "error";
+            } catch (MalformedURLException e) {
+                message = "Configuration error: Invalid API endpoint URL.";
+                messageType = "error";
+            } catch (org.json.simple.parser.ParseException e) {
+                message = "Response parsing error: Invalid JSON response from server. The server may be experiencing issues.";
+                messageType = "error";
+            } catch (IOException e) {
+                message = "Network error: " + e.getMessage() + ". Please check your connection and try again.";
+                messageType = "error";
             } catch (Exception e) {
-                LOG.error("Error processing parameter " + parameterName + ": " + e.getMessage(), e);
+                message = "Unexpected error: " + e.getMessage() + ". Please contact system administrator if the problem persists.";
+                messageType = "error";
+            } finally {
+                // Clean up resources - important for Java < 7
+                if (writer != null) {
+                    try { writer.close(); } catch (Exception e) { /* ignore */ }
+                }
+                if (reader != null) {
+                    try { reader.close(); } catch (IOException e) { /* ignore */ }
+                }
+                if (connection != null) {
+                    try { connection.disconnect(); } catch (Exception e) { /* ignore */ }
+                }
             }
         }
+        %>
         
-        // Handle empty policy number
-        if (StringUtils.isEmpty(policy_number)) {
-            mailContent = mailContent.replace("%policy-number%", "-");
-            mailContentUser = mailContentUser.replace("%policy-number%", "-");
-        }
+        <!-- Display messages -->
+        <% if (!message.isEmpty()) { %>
+            <div class="<%= messageType %>">
+                <%= message %>
+            </div>
+        <% } %>
         
-        // Process full name
-        String fullName = firstName + " " + lastName;
-        if (!StringUtils.isEmpty(fullName.trim())) {
-            String temp = "%class" + "fullName" + "%";
-            mailContent = A1filterHidden(temp, mailContent);
-            mailContentUser = A1filterHidden(temp, mailContentUser);
-            mailContent = A1filter("%" + "fullName" + "%", fullName, mailContent);
-            mailContentUser = A1filter("%" + "fullName" + "%", fullName, mailContentUser);
-        }
+        <!-- Display token information on success -->
+        <% if ("success".equals(messageType) && !accessToken.isEmpty()) { %>
+            <div class="token-info">
+                <div class="token-label">Access Token:</div>
+                <div class="token-value"><%= accessToken %></div>
+            </div>
+            <div class="token-info">
+                <div class="token-label">Expires In:</div>
+                <div class="token-value"><%= expiresIn %> seconds</div>
+            </div>
+            <div class="token-info">
+                <div class="token-label">Login Time:</div>
+                <div class="token-value"><%= session.getAttribute("loginTime") %></div>
+            </div>
+        <% } %>
         
-        LOG.info("Form parameters processed successfully");
-        LOG.info("User email: " + emailAddressUser);
-        LOG.info("Full name: " + fullName);
+        <!-- Login Form -->
+        <form method="post" action="auth-login.jsp" onsubmit="showLoading()">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" 
+                       value="<%= username != null ? username : "" %>" 
+                       required maxlength="100">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" 
+                       required maxlength="100">
+            </div>
+            
+            <button type="submit" id="submitBtn" class="btn">Authenticate</button>
+            <div id="loading" class="loading">Processing authentication...</div>
+        </form>
         
-    } catch (Exception e) {
-        LOG.error("Error processing form parameters: " + e.getMessage(), e);
-        errorDetails = "Form parameter processing failed: " + e.getMessage();
-        throw new Exception("Form processing failed", e);
-    }
-    
-    // Determine admin email addresses
-    List<String> emailAddressAdmins = new ArrayList<String>();
-    
-    try {
-        if (isSendEmailBasedonTopic) {
-            String emailEnquiry = componentPros.getValue().get("EmailAndDB").getValue().get("EmailAddress" + topickey).getStringValue();
-            
-            if (!StringUtils.isEmpty(emailEnquiry) && !StringUtils.isEmpty(paramSelectTopic)) {
-                emailAddressAdmins = Arrays.asList(emailEnquiry.split(","));
-                LOG.info("Using topic-based admin emails: " + emailEnquiry);
-            } else {
-                emailAddressAdmins = Arrays.asList(emailAddressAdmin.split(","));
-                LOG.info("Using default admin emails: " + emailAddressAdmin);
-            }
-        } else {
-            Object emailEnquiryObj = pageContext.getAttribute("emailEnquiry");
-            String emailEnquiry = emailEnquiryObj != null ? emailEnquiryObj.toString() : "";
-            
-            if (!StringUtils.isEmpty(emailEnquiry) && !StringUtils.isEmpty(paramSelectTopic)) {
-                emailAddressAdmins = Arrays.asList(emailEnquiry.split(","));
-                LOG.info("Using page context admin emails: " + emailEnquiry);
-            } else {
-                emailAddressAdmins = Arrays.asList(emailAddressAdmin.split(","));
-                LOG.info("Using fallback admin emails: " + emailAddressAdmin);
-            }
-        }
+        <!-- Session Information -->
+        <% if (session.getAttribute("accessToken") != null) { %>
+            <div style="margin-top: 30px; padding: 15px; background-color: #f8f9fa; border-radius: 4px;">
+                <h4>Current Session:</h4>
+                <p><strong>User:</strong> <%= session.getAttribute("username") %></p>
+                <p><strong>Login Time:</strong> <%= session.getAttribute("loginTime") %></p>
+                <p><strong>Token Status:</strong> Active</p>
+                <a href="auth-logout.jsp" style="color: #dc3545; text-decoration: none;">Logout</a>
+            </div>
+        <% } %>
         
-        if (emailAddressAdmins.isEmpty()) {
-            throw new Exception("No admin email addresses configured");
-        }
-        
-    } catch (Exception e) {
-        LOG.error("Error determining admin email addresses: " + e.getMessage(), e);
-        errorDetails = "Admin email configuration error: " + e.getMessage();
-        throw new Exception("Email configuration error", e);
-    }
-    
-    // Send emails with detailed error handling
-    try {
-        LOG.info("Starting email sending process");
-        
-        // Send mail to user
-        if (!StringUtils.isEmpty(emailAddressUser) && !StringUtils.isEmpty(mailSubject)) {
-            try {
-                LOG.info("Sending email to user: " + emailAddressUser);
-                CmsHtmlMail smToCs = new CmsHtmlMail();
-                smToCs.setMsg(mailContentUser);
-                smToCs.setSubject(mailSubject);
-                smToCs.setCharset("UTF-8");
-                smToCs.setFrom(emailAddressAdmins.get(0));
-                smToCs.addTo(emailAddressUser);
-                smToCs.send();
-                LOG.info("User email sent successfully");
-            } catch (Exception e) {
-                LOG.error("Error sending email to user " + emailAddressUser + ": " + e.getMessage(), e);
-                throw new Exception("User email sending failed: " + e.getMessage(), e);
-            }
-        } else {
-            LOG.warn("Skipping user email - missing user email or subject");
-        }
-        
-        // Send mails to admins
-        for (String emailAdmin : emailAddressAdmins) {
-            try {
-                LOG.info("Sending email to admin: " + emailAdmin);
-                CmsHtmlMail smToCsAdmin = new CmsHtmlMail();
-                smToCsAdmin.setMsg(mailContent);
-                smToCsAdmin.setSubject(adminMailSubject);
-                smToCsAdmin.setCharset("UTF-8");
-                smToCsAdmin.setFrom(emailAddressUser);
-                smToCsAdmin.addTo(emailAdmin);
-                smToCsAdmin.send();
-                LOG.info("Admin email sent successfully to: " + emailAdmin);
-            } catch (Exception e) {
-                LOG.error("Error sending email to admin " + emailAdmin + ": " + e.getMessage(), e);
-                throw new Exception("Admin email sending failed to " + emailAdmin + ": " + e.getMessage(), e);
-            }
-        }
-        
-        isEmailSuccess = true;
-        LOG.info("All emails sent successfully");
-        
-    } catch (Exception e) {
-        LOG.error("Email sending failed: " + e.getMessage(), e);
-        errorDetails = "Email sending failed: " + e.getMessage();
-        out.print(responeObject(500, errMesageSendMailFails + " - " + e.getMessage()));
-        return;
-    }
-    
-    // API call with detailed error handling
-    try {
-        LOG.info("Starting API call process");
-        
-        // Get access token
-        URL url = new URL("https://apigateway/auth/login");
-        HttpURLConnection con = null;
-        
-        try {
-            con = (HttpURLConnection) url.openConnection();
-            con.setRequestProperty("Content-Type", "application/json");
-            con.setRequestProperty("accept", "application/json");
-            con.setRequestMethod("POST");
-            con.setDoOutput(true);
-            con.setConnectTimeout(30000); // 30 seconds
-            con.setReadTimeout(30000);    // 30 seconds
-            
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("password", "prytyel");
-            jsonObject.put("username", "momoapi");
-            
-            byte[] bout = jsonObject.toString().getBytes("UTF-8");
-            int length = bout.length;
-            
-            con.setFixedLengthStreamingMode(length);
-            con.connect();
-            
-            OutputStream os = con.getOutputStream();
-            os.write(bout);
-            os.flush();
-            os.close();
-            
-            int responseCodeAuth = con.getResponseCode();
-            LOG.info("Auth API response code: " + responseCodeAuth);
-            
-            StringBuffer content = new StringBuffer();
-            BufferedReader in = null;
-            
-            if (responseCodeAuth == 200) {
-                in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            } else {
-                in = new BufferedReader(new InputStreamReader(con.getErrorStream()));
-            }
-            
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                content.append(inputLine);
-            }
-            in.close();
-            
-            if (responseCodeAuth != 200) {
-                String errorMsg = "Auth API failed with code " + responseCodeAuth + ": " + content.toString();
-                LOG.error(errorMsg);
-                throw new Exception(errorMsg);
-            }
-            
-            JSONObject responseObj = new JSONObject(content.toString());
-            accessToken = responseObj.getString("accessToken");
-            LOG.info("Access token obtained successfully");
-            
-        } catch (Exception e) {
-            LOG.error("Error getting access token: " + e.getMessage(), e);
-            throw new Exception("Authentication failed: " + e.getMessage(), e);
-        } finally {
-            if (con != null) {
-                con.disconnect();
-            }
-        }
-        
-        // Send payload with detailed logging
-        try {
-            url = new URL("https://apigateway/saveCorpWebInfo");
-            con = (HttpURLConnection) url.openConnection();
-            con.setRequestProperty("Authorization", "Bearer " + accessToken);
-            con.setRequestProperty("Content-Type", "application/json");
-            con.setRequestMethod("POST");
-            con.setDoOutput(true);
-            con.setConnectTimeout(30000);
-            con.setReadTimeout(30000);
-            
-            String policy_number_status = StringUtils.isEmpty(policy_number) ? "false" : "true";
-            
-            Date dNow = new Date();
-            SimpleDateFormat ft = new SimpleDateFormat("dd-MMM-yyyy HH:mm");
-            
-            // Clean data
-            firstName = firstName.replaceAll("&nbsp;", " ");
-            lastName = lastName.replaceAll("&nbsp;", " ");
-            country_code = country_code.replace("+", "");
-            
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("category", "PULSELEADS_MB");
-            jsonObject.put("firstName", firstName);
-            jsonObject.put("name", lastName);
-            jsonObject.put("gender", "gender");
-            jsonObject.put("mobile", country_code + phone_no);
-            jsonObject.put("email", emailAddressUser);
-            jsonObject.put("isCustomer", policy_number_status);
-            jsonObject.put("componentCode", componentCode);
-            jsonObject.put("messageCategory", maritalStatus);
-            jsonObject.put("nationalId", nationalId);
-            jsonObject.put("timeContact", ft.format(dNow));
-            jsonObject.put("messageDetails", provide_area);
-            jsonObject.put("check", true);
-            jsonObject.put("j_captcha", "");
-            jsonObject.put("utmCampaign", utmCampaign);
-            jsonObject.put("utmMedium", utmMedium);
-            jsonObject.put("utmSource", utmSource);
-            jsonObject.put("provinceCode", paramSelectTopics.length > 1 ? paramSelectTopics[1] : "");
-            
-            LOG.info("API payload prepared: " + jsonObject.toString());
-            
-            byte[] bout = jsonObject.toString().getBytes("UTF-8");
-            int length = bout.length;
-            
-            con.setFixedLengthStreamingMode(length);
-            con.connect();
-            
-            OutputStream os = con.getOutputStream();
-            os.write(bout);
-            os.flush();
-            os.close();
-            
-            int responseCodeData = con.getResponseCode();
-            LOG.info("Data API response code: " + responseCodeData);
-            
-            StringBuffer content = new StringBuffer();
-            BufferedReader in = null;
-            
-            if (responseCodeData == 200) {
-                in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            } else {
-                in = new BufferedReader(new InputStreamReader(con.getErrorStream()));
-            }
-            
-            String inputLine;
-            while ((inputLine = in.readLine()) != null) {
-                content.append(inputLine);
-            }
-            in.close();
-            
-            apiResponse = content.toString();
-            LOG.info("API response: " + apiResponse);
-            
-            if (responseCodeData != 200) {
-                String errorMsg = "Data API failed with code " + responseCodeData + ": " + apiResponse;
-                LOG.error(errorMsg);
-                throw new Exception(errorMsg);
-            } else {
-                isApiCallSuccess = true;
-                LOG.info("API call completed successfully");
-            }
-            
-        } catch (Exception e) {
-            LOG.error("Error calling data API: " + e.getMessage(), e);
-            throw new Exception("Data API call failed: " + e.getMessage(), e);
-        } finally {
-            if (con != null) {
-                con.disconnect();
-            }
-        }
-        
-    } catch (Exception ex) {
-        LOG.error("API process failed: " + ex.getMessage(), ex);
-        isApiCallSuccess = false;
-        out.print(responeObject(400, "API Error: " + ex.getMessage()));
-        return;
-    }
-    
-    // Final response
-    if (isSendEmail && isApiCallSuccess) {
-        LOG.info("Process completed successfully - email sent and API called");
-        out.print(responeObject(200, "send email and api call success."));
-    } else {
-        LOG.info("Process completed - email sent only");
-        out.print(responeObject(200, "send email success."));
-    }
-    
-} catch (Exception mainEx) {
-    LOG.error("Critical error in contact form processing: " + mainEx.getMessage(), mainEx);
-    
-    // Build detailed error message
-    StringBuilder errorMsg = new StringBuilder();
-    errorMsg.append("Contact form processing failed");
-    
-    if (!StringUtils.isEmpty(errorDetails)) {
-        errorMsg.append(" - ").append(errorDetails);
-    }
-    
-    errorMsg.append(" - ").append(mainEx.getMessage());
-    
-    // Include stack trace for debugging
-    StringWriter sw = new StringWriter();
-    PrintWriter pw = new PrintWriter(sw);
-    mainEx.printStackTrace(pw);
-    String stackTrace = sw.toString();
-    
-    LOG.error("Stack trace: " + stackTrace);
-    
-    out.print(responeObject(500, errorMsg.toString()));
-}
-%>
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
+            <strong>Technical Details:</strong><br>
+            • API Endpoint: /auth/login<br>
+            • Method: POST<br>
+            • Content-Type: application/json<br>
+            • Connection Timeout: 10 seconds<br>
+            • Read Timeout: 15 seconds<br>
+            • Compatible with: OpenCms 9.5.1, Java &lt; 7<br>
+            • JSON Library: json-simple 1.1.1
+        </div>
+    </div>
+</body>
+</html>
