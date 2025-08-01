@@ -82,3 +82,99 @@ https://pru-api-nprd.prudential.com.vn/pruforce/lead-corporate/uat1/auth/login
 This form must be accessed through a valid referral link.
 
 
+import java.net.URL;
+import java.net.HttpURLConnection;
+import java.io.OutputStreamWriter;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+// ... your existing imports ...
+
+HttpURLConnection con = null;
+OutputStreamWriter os = null;
+BufferedReader in = null;
+
+try {
+    // Create URL and connection
+    URL url = new URL("https://pru-api-nprd.prudentialthailand.co.th/pru-service/uat1/auth/login");
+    con = (HttpURLConnection) url.openConnection();
+    
+    // Set connection properties
+    con.setRequestProperty("Content-Type", "application/json");
+    con.setRequestProperty("accept", "application/json");
+    con.setRequestMethod("POST");
+    con.setDoOutput(true);
+    
+    // CRITICAL: Set timeouts to prevent hanging
+    con.setConnectTimeout(30000); // 30 seconds connection timeout
+    con.setReadTimeout(60000);    // 60 seconds read timeout
+    
+    // Create JSON object with complete values
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put("password", "your_complete_password_here");
+    jsonObject.put("username", "your_complete_username_here");
+    
+    // Convert to bytes and set content length
+    byte[] bout = jsonObject.toString().getBytes(StandardCharsets.UTF_8);
+    int length = bout.length;
+    
+    con.setFixedLengthStreamingMode(length);
+    
+    // Establish connection
+    con.connect();
+    
+    // Send data
+    os = new OutputStreamWriter(con.getOutputStream(), StandardCharsets.UTF_8);
+    os.write(jsonObject.toString());
+    os.flush();
+    
+    // Check response code first
+    int responseCode = con.getResponseCode();
+    System.out.println("Response Code: " + responseCode);
+    
+    // Read response
+    StringBuffer content = new StringBuffer();
+    
+    if (responseCode >= 200 && responseCode < 300) {
+        // Success response
+        in = new BufferedReader(new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
+    } else {
+        // Error response
+        in = new BufferedReader(new InputStreamReader(con.getErrorStream(), StandardCharsets.UTF_8));
+    }
+    
+    String inputLine;
+    while ((inputLine = in.readLine()) != null) {
+        content.append(inputLine);
+    }
+    
+    System.out.println("Response: " + content.toString());
+    
+} catch (java.net.SocketTimeoutException e) {
+    System.err.println("Connection timeout: " + e.getMessage());
+    // Handle timeout specifically
+} catch (java.net.ConnectException e) {
+    System.err.println("Connection refused: " + e.getMessage());
+    // Handle connection refused
+} catch (IOException e) {
+    System.err.println("IO Exception: " + e.getMessage());
+    // Handle other IO exceptions
+} catch (Exception e) {
+    System.err.println("General Exception: " + e.getMessage());
+    e.printStackTrace();
+} finally {
+    // Clean up resources - CRITICAL for older Java versions
+    if (os != null) {
+        try { os.close(); } catch (IOException e) { /* ignore */ }
+    }
+    if (in != null) {
+        try { in.close(); } catch (IOException e) { /* ignore */ }
+    }
+    if (con != null) {
+        con.disconnect();
+    }
+}
+
+
