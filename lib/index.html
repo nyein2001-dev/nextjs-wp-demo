@@ -3,6 +3,8 @@
 <%@ page import="java.net.*" %>
 <%@ page import="java.util.*" %>
 <%@ page import="javax.servlet.http.*" %>
+<%@ page import="javax.net.ssl.*" %>
+<%@ page import="java.security.cert.*" %>
 
 <%!
     // Helper method to read response from InputStream
@@ -59,30 +61,105 @@
         }
     }
     
-    // Method to perform authentication API call
-    private Map<String, String> authenticateUser(String username, String password, String apiBaseUrl) {
+    // Method to get system properties for debugging
+    private Map<String, String> getSystemInfo() {
+        Map<String, String> sysInfo = new HashMap<String, String>();
+        try {
+            sysInfo.put("java.version", System.getProperty("java.version"));
+            sysInfo.put("java.vendor", System.getProperty("java.vendor"));
+            sysInfo.put("os.name", System.getProperty("os.name"));
+            sysInfo.put("os.version", System.getProperty("os.version"));
+            sysInfo.put("https.protocols", System.getProperty("https.protocols"));
+            sysInfo.put("java.protocol.handler.pkgs", System.getProperty("java.protocol.handler.pkgs"));
+        } catch (Exception e) {
+            sysInfo.put("system_info_error", e.getMessage());
+        }
+        return sysInfo;
+    }
+    
+    // Trust all certificates (for debugging only - not for production)
+    private void setupTrustAllCertificates() {
+        try {
+            TrustManager[] trustAllCerts = new TrustManager[] {
+                new X509TrustManager() {
+                    public X509Certificate[] getAcceptedIssuers() { return null; }
+                    public void checkClientTrusted(X509Certificate[] certs, String authType) { }
+                    public void checkServerTrusted(X509Certificate[] certs, String authType) { }
+                }
+            };
+            
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+            
+            HostnameVerifier allHostsValid = new HostnameVerifier() {
+                public boolean verify(String hostname, SSLSession session) { return true; }
+            };
+            HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+        } catch (Exception e) {
+            // Ignore setup errors
+        }
+    }
+    
+    // Method to perform authentication API call with detailed debugging
+    private Map<String, String> authenticateUser(String username, String password, String apiBaseUrl, boolean trustAllCerts) {
         Map<String, String> result = new HashMap<String, String>();
         HttpURLConnection connection = null;
+        long startTime = System.currentTimeMillis();
         
         try {
+            // Setup SSL trust if requested
+            if (trustAllCerts) {
+                setupTrustAllCertificates();
+                result.put("ssl_trust", "All certificates trusted (DEBUG MODE)");
+            }
+            
             // Construct the full API URL
-            String apiUrl = apiBaseUrl + "/auth/login";
+            String apiUrl = apiBaseUrl.endsWith("/") ? apiBaseUrl + "auth/login" : apiBaseUrl + "/auth/login";
+            result.put("request_url", apiUrl);
+            
             URL url = new URL(apiUrl);
+            result.put("url_protocol", url.getProtocol());
+            result.put("url_host", url.getHost());
+            result.put("url_port", String.valueOf(url.getPort()));
+            result.put("url_path", url.getPath());
             
             // Create HTTP connection
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             connection.setRequestProperty("Accept", "application/json");
+            connection.setRequestProperty("User-Agent", "OpenCms-Auth-Client/1.0");
+            connection.setRequestProperty("Connection", "close");
             connection.setDoOutput(true);
             connection.setDoInput(true);
+            connection.setUseCaches(false);
             
             // Set timeout values (in milliseconds)
-            connection.setConnectTimeout(10000); // 10 seconds
-            connection.setReadTimeout(15000);    // 15 seconds
+            connection.setConnectTimeout(15000); // 15 seconds
+            connection.setReadTimeout(20000);    // 20 seconds
+            
+            result.put("connect_timeout", "15000ms");
+            result.put("read_timeout", "20000ms");
             
             // Prepare JSON request body
             String jsonPayload = "{\"username\":\"" + username + "\",\"password\":\"" + password + "\"}";
+            result.put("request_body", jsonPayload);
+            result.put("request_body_length", String.valueOf(jsonPayload.getBytes("UTF-8").length));
+            
+            // Log request headers
+            StringBuilder requestHeaders = new StringBuilder();
+            Map<String, List<String>> reqProps = connection.getRequestProperties();
+            for (Map.Entry<String, List<String>> entry : reqProps.entrySet()) {
+                requestHeaders.append(entry.getKey()).append(": ");
+                for (String value : entry.getValue()) {
+                    requestHeaders.append(value).append("; ");
+                }
+                requestHeaders.append("\n");
+            }
+            result.put("request_headers", requestHeaders.toString());
+            
+            result.put("connection_start", String.valueOf(System.currentTimeMillis() - startTime) + "ms");
             
             // Send request
             OutputStream outputStream = connection.getOutputStream();
@@ -92,9 +169,37 @@
             writer.close();
             outputStream.close();
             
-            // Get response code
+            result.put("request_sent", String.valueOf(System.currentTimeMillis() - startTime) + "ms");
+            
+            // Get response code and headers
             int responseCode = connection.getResponseCode();
+            String responseMessage = connection.getResponseMessage();
+            
             result.put("responseCode", String.valueOf(responseCode));
+            result.put("responseMessage", responseMessage != null ? responseMessage : "No message");
+            result.put("response_received", String.valueOf(System.currentTimeMillis() - startTime) + "ms");
+            
+            // Log response headers
+            StringBuilder responseHeaders = new StringBuilder();
+            Map<String, List<String>> headerFields = connection.getHeaderFields();
+            if (headerFields != null) {
+                for (Map.Entry<String, List<String>> entry : headerFields.entrySet()) {
+                    String key = entry.getKey();
+                    if (key == null) key = "Status";
+                    responseHeaders.append(key).append(": ");
+                    for (String value : entry.getValue()) {
+                        responseHeaders.append(value).append("; ");
+                    }
+                    responseHeaders.append("\n");
+                }
+            }
+            result.put("response_headers", responseHeaders.toString());
+            
+            // Get content type and length
+            String contentType = connection.getContentType();
+            int contentLength = connection.getContentLength();
+            result.put("response_content_type", contentType != null ? contentType : "Not specified");
+            result.put("response_content_length", String.valueOf(contentLength));
             
             if (responseCode == 200) {
                 // Success - read response
@@ -104,6 +209,7 @@
                 
                 result.put("success", "true");
                 result.put("response", response);
+                result.put("response_length", String.valueOf(response.length()));
                 
                 // Extract accessToken and expiresIn from JSON response
                 String accessToken = extractJsonValue(response, "accessToken");
@@ -125,33 +231,83 @@
                         String errorResponse = readResponse(errorStream);
                         errorStream.close();
                         result.put("errorResponse", errorResponse);
+                        result.put("error_response_length", String.valueOf(errorResponse.length()));
+                    } else {
+                        result.put("errorResponse", "No error stream available");
                     }
                 } catch (Exception e) {
-                    result.put("errorResponse", "Unable to read error response");
+                    result.put("errorResponse", "Unable to read error response: " + e.getMessage());
                 }
+            }
+            
+        } catch (SSLHandshakeException e) {
+            result.put("success", "false");
+            result.put("error", "SSL Handshake failed");
+            result.put("errorDetails", e.getMessage());
+            result.put("errorType", "SSLHandshakeException");
+            result.put("ssl_debug", "This might be due to SSL/TLS version mismatch, certificate issues, or cipher suite problems");
+            
+            // Additional SSL debugging
+            try {
+                SSLContext context = SSLContext.getDefault();
+                result.put("default_ssl_context", context.getProtocol());
+            } catch (Exception ex) {
+                result.put("ssl_context_error", ex.getMessage());
             }
             
         } catch (SocketTimeoutException e) {
             result.put("success", "false");
             result.put("error", "Connection timeout occurred");
             result.put("errorDetails", e.getMessage());
+            result.put("errorType", "SocketTimeoutException");
+            result.put("timeout_debug", "The server took too long to respond. Check network connectivity and server availability.");
+            
         } catch (ConnectException e) {
             result.put("success", "false");
             result.put("error", "Unable to connect to the authentication server");
             result.put("errorDetails", e.getMessage());
+            result.put("errorType", "ConnectException");
+            result.put("connection_debug", "Check if the server is running and the URL is correct");
+            
         } catch (UnknownHostException e) {
             result.put("success", "false");
             result.put("error", "Authentication server not found");
             result.put("errorDetails", e.getMessage());
+            result.put("errorType", "UnknownHostException");
+            result.put("dns_debug", "DNS resolution failed. Check the hostname in the URL");
+            
+        } catch (MalformedURLException e) {
+            result.put("success", "false");
+            result.put("error", "Invalid URL format");
+            result.put("errorDetails", e.getMessage());
+            result.put("errorType", "MalformedURLException");
+            
         } catch (IOException e) {
             result.put("success", "false");
             result.put("error", "IO error occurred during authentication");
             result.put("errorDetails", e.getMessage());
+            result.put("errorType", "IOException");
+            
+            // Check for specific SSL-related messages
+            String errorMsg = e.getMessage().toLowerCase();
+            if (errorMsg.contains("handshake")) {
+                result.put("ssl_handshake_debug", "SSL handshake failed. Try enabling 'Trust All Certificates' option for debugging.");
+            }
+            if (errorMsg.contains("protocol")) {
+                result.put("protocol_debug", "Protocol version mismatch. The server might require a specific TLS version.");
+            }
+            if (errorMsg.contains("certificate")) {
+                result.put("certificate_debug", "Certificate validation failed. Check if the server certificate is valid.");
+            }
+            
         } catch (Exception e) {
             result.put("success", "false");
             result.put("error", "Unexpected error occurred");
             result.put("errorDetails", e.getMessage());
+            result.put("errorType", e.getClass().getSimpleName());
+            
         } finally {
+            result.put("total_time", String.valueOf(System.currentTimeMillis() - startTime) + "ms");
             if (connection != null) {
                 connection.disconnect();
             }
@@ -167,13 +323,19 @@
     String password = "";
     String apiBaseUrl = "";
     Map<String, String> authResult = null;
+    Map<String, String> systemInfo = null;
     boolean showResult = false;
+    boolean trustAllCerts = false;
+    
+    // Get system information
+    systemInfo = getSystemInfo();
     
     // Check if form was submitted
     if ("POST".equalsIgnoreCase(request.getMethod())) {
         username = request.getParameter("username");
         password = request.getParameter("password");
         apiBaseUrl = request.getParameter("apiBaseUrl");
+        trustAllCerts = "true".equals(request.getParameter("trustAllCerts"));
         
         // Validate input
         if (username != null && !username.trim().isEmpty() && 
@@ -181,7 +343,7 @@
             apiBaseUrl != null && !apiBaseUrl.trim().isEmpty()) {
             
             // Perform authentication
-            authResult = authenticateUser(username.trim(), password.trim(), apiBaseUrl.trim());
+            authResult = authenticateUser(username.trim(), password.trim(), apiBaseUrl.trim(), trustAllCerts);
             showResult = true;
         }
     }
@@ -190,12 +352,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>OpenCms Authentication API Integration</title>
+    <title>OpenCms Authentication API Integration - Debug Mode</title>
     <meta charset="UTF-8">
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
             background-color: #f5f5f5;
@@ -228,6 +390,14 @@
             box-sizing: border-box;
             font-size: 14px;
         }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 10px;
+        }
         .submit-btn {
             background-color: #007cba;
             color: white;
@@ -256,6 +426,24 @@
             border: 1px solid #f5c6cb;
             color: #721c24;
         }
+        .debug-section {
+            background-color: #e9ecef;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+        .debug-title {
+            font-weight: bold;
+            color: #343a40;
+            margin-bottom: 10px;
+        }
+        .debug-item {
+            margin-bottom: 8px;
+            font-family: monospace;
+            font-size: 12px;
+        }
         .token-info {
             background-color: #e7f3ff;
             border: 1px solid #b8daff;
@@ -279,15 +467,51 @@
             border-radius: 4px;
             margin-bottom: 20px;
         }
+        .warning {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .two-column {
+            display: flex;
+            gap: 20px;
+        }
+        .column {
+            flex: 1;
+        }
+        @media (max-width: 768px) {
+            .two-column {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>OpenCms Authentication API Integration</h1>
+        <h1>OpenCms Authentication API Integration - Debug Mode</h1>
         
         <div class="note">
-            <strong>Note:</strong> This integration is designed for OpenCms 9.5.1 and Java versions prior to Java 7. 
-            Enter your API credentials below to test the authentication endpoint.
+            <strong>Debug Mode:</strong> This version provides comprehensive debugging information 
+            including request/response details, timing information, and detailed error analysis.
+        </div>
+        
+        <!-- System Information -->
+        <div class="debug-section">
+            <div class="debug-title">System Information</div>
+            <% for (Map.Entry<String, String> entry : systemInfo.entrySet()) { %>
+                <div class="debug-item"><strong><%= entry.getKey() %>:</strong> <%= entry.getValue() %></div>
+            <% } %>
         </div>
         
         <form method="post" action="">
@@ -320,15 +544,90 @@
                        required>
             </div>
             
-            <button type="submit" class="submit-btn">Authenticate</button>
+            <div class="checkbox-group">
+                <input type="checkbox" 
+                       id="trustAllCerts" 
+                       name="trustAllCerts" 
+                       value="true"
+                       <%= trustAllCerts ? "checked" : "" %>>
+                <label for="trustAllCerts">Trust All Certificates (Debug Only - NOT for production)</label>
+            </div>
+            
+            <% if (trustAllCerts) { %>
+                <div class="warning">
+                    <strong>Warning:</strong> "Trust All Certificates" is enabled. This bypasses SSL certificate validation 
+                    and should ONLY be used for debugging purposes, never in production!
+                </div>
+            <% } %>
+            
+            <button type="submit" class="submit-btn">Authenticate & Debug</button>
         </form>
         
         <% if (showResult && authResult != null) { %>
             <div class="result-container <%= "true".equals(authResult.get("success")) ? "success" : "error" %>">
                 <% if ("true".equals(authResult.get("success"))) { %>
                     <h3>✓ Authentication Successful!</h3>
-                    <p><strong>Response Code:</strong> <%= authResult.get("responseCode") %></p>
+                <% } else { %>
+                    <h3>✗ Authentication Failed</h3>
+                <% } %>
+                
+                <!-- Request Details -->
+                <div class="debug-section">
+                    <div class="debug-title">Request Details</div>
+                    <div class="debug-item"><strong>URL:</strong> <%= authResult.get("request_url") %></div>
+                    <div class="debug-item"><strong>Protocol:</strong> <%= authResult.get("url_protocol") %></div>
+                    <div class="debug-item"><strong>Host:</strong> <%= authResult.get("url_host") %></div>
+                    <div class="debug-item"><strong>Port:</strong> <%= authResult.get("url_port") %></div>
+                    <div class="debug-item"><strong>Path:</strong> <%= authResult.get("url_path") %></div>
+                    <div class="debug-item"><strong>Request Body:</strong> <%= authResult.get("request_body") %></div>
+                    <div class="debug-item"><strong>Body Length:</strong> <%= authResult.get("request_body_length") %> bytes</div>
+                    <div class="debug-item"><strong>Connect Timeout:</strong> <%= authResult.get("connect_timeout") %></div>
+                    <div class="debug-item"><strong>Read Timeout:</strong> <%= authResult.get("read_timeout") %></div>
                     
+                    <% if (authResult.get("ssl_trust") != null) { %>
+                        <div class="debug-item"><strong>SSL Trust:</strong> <%= authResult.get("ssl_trust") %></div>
+                    <% } %>
+                    
+                    <details style="margin-top: 10px;">
+                        <summary style="cursor: pointer; font-weight: bold;">Request Headers</summary>
+                        <pre><%= authResult.get("request_headers") %></pre>
+                    </details>
+                </div>
+                
+                <!-- Timing Information -->
+                <div class="debug-section">
+                    <div class="debug-title">Timing Information</div>
+                    <% if (authResult.get("connection_start") != null) { %>
+                        <div class="debug-item"><strong>Connection Start:</strong> <%= authResult.get("connection_start") %></div>
+                    <% } %>
+                    <% if (authResult.get("request_sent") != null) { %>
+                        <div class="debug-item"><strong>Request Sent:</strong> <%= authResult.get("request_sent") %></div>
+                    <% } %>
+                    <% if (authResult.get("response_received") != null) { %>
+                        <div class="debug-item"><strong>Response Received:</strong> <%= authResult.get("response_received") %></div>
+                    <% } %>
+                    <div class="debug-item"><strong>Total Time:</strong> <%= authResult.get("total_time") %></div>
+                </div>
+                
+                <!-- Response Details -->
+                <div class="debug-section">
+                    <div class="debug-title">Response Details</div>
+                    <div class="debug-item"><strong>Response Code:</strong> <%= authResult.get("responseCode") %></div>
+                    <div class="debug-item"><strong>Response Message:</strong> <%= authResult.get("responseMessage") %></div>
+                    <div class="debug-item"><strong>Content Type:</strong> <%= authResult.get("response_content_type") %></div>
+                    <div class="debug-item"><strong>Content Length:</strong> <%= authResult.get("response_content_length") %> bytes</div>
+                    <% if (authResult.get("response_length") != null) { %>
+                        <div class="debug-item"><strong>Actual Response Length:</strong> <%= authResult.get("response_length") %> characters</div>
+                    <% } %>
+                    
+                    <details style="margin-top: 10px;">
+                        <summary style="cursor: pointer; font-weight: bold;">Response Headers</summary>
+                        <pre><%= authResult.get("response_headers") %></pre>
+                    </details>
+                </div>
+                
+                <% if ("true".equals(authResult.get("success"))) { %>
+                    <!-- Success Information -->
                     <% if (authResult.get("accessToken") != null || authResult.get("expiresIn") != null) { %>
                         <div class="token-info">
                             <h4>Authentication Details:</h4>
@@ -346,30 +645,63 @@
                     
                     <% if (authResult.get("response") != null) { %>
                         <details style="margin-top: 15px;">
-                            <summary style="cursor: pointer; font-weight: bold;">Raw Response</summary>
-                            <pre style="background-color: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto;"><%= authResult.get("response") %></pre>
+                            <summary style="cursor: pointer; font-weight: bold;">Raw Response Body</summary>
+                            <pre><%= authResult.get("response") %></pre>
                         </details>
                     <% } %>
                     
                 <% } else { %>
-                    <h3>✗ Authentication Failed</h3>
-                    
-                    <% if (authResult.get("responseCode") != null) { %>
-                        <p><strong>Response Code:</strong> <%= authResult.get("responseCode") %></p>
-                    <% } %>
-                    
-                    <% if (authResult.get("error") != null) { %>
-                        <p><strong>Error:</strong> <%= authResult.get("error") %></p>
-                    <% } %>
-                    
-                    <% if (authResult.get("errorDetails") != null) { %>
-                        <p><strong>Details:</strong> <%= authResult.get("errorDetails") %></p>
-                    <% } %>
+                    <!-- Error Information -->
+                    <div class="debug-section">
+                        <div class="debug-title">Error Analysis</div>
+                        
+                        <% if (authResult.get("errorType") != null) { %>
+                            <div class="debug-item"><strong>Error Type:</strong> <%= authResult.get("errorType") %></div>
+                        <% } %>
+                        
+                        <% if (authResult.get("error") != null) { %>
+                            <div class="debug-item"><strong>Error:</strong> <%= authResult.get("error") %></div>
+                        <% } %>
+                        
+                        <% if (authResult.get("errorDetails") != null) { %>
+                            <div class="debug-item"><strong>Details:</strong> <%= authResult.get("errorDetails") %></div>
+                        <% } %>
+                        
+                        <!-- Specific debugging hints -->
+                        <% if (authResult.get("ssl_handshake_debug") != null) { %>
+                            <div class="debug-item"><strong>SSL Debug:</strong> <%= authResult.get("ssl_handshake_debug") %></div>
+                        <% } %>
+                        <% if (authResult.get("ssl_debug") != null) { %>
+                            <div class="debug-item"><strong>SSL Info:</strong> <%= authResult.get("ssl_debug") %></div>
+                        <% } %>
+                        <% if (authResult.get("protocol_debug") != null) { %>
+                            <div class="debug-item"><strong>Protocol Debug:</strong> <%= authResult.get("protocol_debug") %></div>
+                        <% } %>
+                        <% if (authResult.get("certificate_debug") != null) { %>
+                            <div class="debug-item"><strong>Certificate Debug:</strong> <%= authResult.get("certificate_debug") %></div>
+                        <% } %>
+                        <% if (authResult.get("timeout_debug") != null) { %>
+                            <div class="debug-item"><strong>Timeout Debug:</strong> <%= authResult.get("timeout_debug") %></div>
+                        <% } %>
+                        <% if (authResult.get("connection_debug") != null) { %>
+                            <div class="debug-item"><strong>Connection Debug:</strong> <%= authResult.get("connection_debug") %></div>
+                        <% } %>
+                        <% if (authResult.get("dns_debug") != null) { %>
+                            <div class="debug-item"><strong>DNS Debug:</strong> <%= authResult.get("dns_debug") %></div>
+                        <% } %>
+                        
+                        <% if (authResult.get("default_ssl_context") != null) { %>
+                            <div class="debug-item"><strong>Default SSL Context:</strong> <%= authResult.get("default_ssl_context") %></div>
+                        <% } %>
+                        <% if (authResult.get("ssl_context_error") != null) { %>
+                            <div class="debug-item"><strong>SSL Context Error:</strong> <%= authResult.get("ssl_context_error") %></div>
+                        <% } %>
+                    </div>
                     
                     <% if (authResult.get("errorResponse") != null) { %>
                         <details style="margin-top: 15px;">
                             <summary style="cursor: pointer; font-weight: bold;">Server Error Response</summary>
-                            <pre style="background-color: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto;"><%= authResult.get("errorResponse") %></pre>
+                            <pre><%= authResult.get("errorResponse") %></pre>
                         </details>
                     <% } %>
                 <% } %>
