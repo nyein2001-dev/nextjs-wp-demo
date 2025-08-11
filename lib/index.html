@@ -1,9 +1,10 @@
 <%@ page session="false" contentType="text/html;charset=UTF-8" %>
-<%@ page import="java.io.*, java.net.*, javax.net.ssl.*, org.json.JSONObject,
+<%@ page import="java.io.*, java.net.*, javax.net.*,  org.json.JSONObject,
 org.opencms.main.OpenCms, org.apache.commons.logging.Log, org.opencms.main.CmsLog, org.apache.commons.lang.StringUtils,
 java.util.*, org.opencms.jsp.util.*, java.io.IOException, java.text.*, java.nio.charset.* "%>
 <%@ page import="org.opencms.mail.CmsHtmlMail"%>
 <%@page import="java.util.Locale" %>
+<%@ page import="javax.servlet.http.Cookie" %>
 <%@page import="org.opencms.jsp.CmsJspActionElement"%>
 <%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
@@ -11,10 +12,8 @@ java.util.*, org.opencms.jsp.util.*, java.io.IOException, java.text.*, java.nio.
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@page import="javax.xml.bind.DatatypeConverter"%>
 <%@page import="org.opencms.jsp.*, org.opencms.file.*, org.opencms.flex.*,org.opencms.util.*, java.util.*" %>
-
 <c:set var="locale" value="${cms.locale}" />
 <fmt:setLocale value="${param.language}" />
-
 <%
 //paramSelectTopic
 String paramSelectTopic = StringUtils.isEmpty(request.getParameter("selectTopic")) ? "" : request.getParameter("selectTopic");
@@ -31,46 +30,7 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
   	<c:set var="emailEnquiry"><fmt:message key="key.mail.selected.enquiry.${paramSelectTopics}" /></c:set>
   </c:if>
 </cms:bundle>
-
 <%!
-    // SSL Configuration method for older Java versions
-    public void configureSSL() {
-        try {
-            // Set system properties for SSL/TLS
-            System.setProperty("https.protocols", "TLSv1.2,TLSv1.1,TLSv1");
-            System.setProperty("javax.net.ssl.trustStore", System.getProperty("java.home") + "/lib/security/cacerts");
-            System.setProperty("javax.net.ssl.trustStorePassword", "changeit");
-            
-            // Create a trust manager that accepts all certificates (use with caution)
-            TrustManager[] trustAllCerts = new TrustManager[] {
-                new X509TrustManager() {
-                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                        return null;
-                    }
-                    public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
-                    }
-                    public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
-                    }
-                }
-            };
-            
-            SSLContext sc = SSLContext.getInstance("TLS");
-            sc.init(null, trustAllCerts, new java.security.SecureRandom());
-            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-            
-            // Create hostname verifier that accepts all hostnames
-            HostnameVerifier allHostsValid = new HostnameVerifier() {
-                public boolean verify(String hostname, SSLSession session) {
-                    return true;
-                }
-            };
-            HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
-            
-        } catch (Exception e) {
-            // SSL configuration failed, will proceed with default settings
-        }
-    }
-
 	public String A1filter(String input){
 	    String tem = input;
 	    tem = tem.replaceAll("<", "&lt;");
@@ -81,26 +41,22 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
 	    tem = tem.replaceAll("'", "&#39;");
 	    return tem;
 	}
-    
     public String A1filterHidden(String input,String temp){
 	    String tem = temp;
 	    String tmpinput = "content:'" + input + "'; mso-hide:all;display:none;";
 	    tem = tem.replaceAll(tmpinput, "");
 	    return tem;
     }
-    
     public  String A1filter(String input,String value,String temp){
         String tem = temp;
         tem = tem.replaceAll(input, value);
         return tem;
     }
-    
     public String A1filterNoProductTitle(String productTitleName,String temp,String noProductTitle){
         String tem = temp;
         tem = tem.replaceAll(productTitleName, noProductTitle);
         return tem;
     }
-    
      public String responeObject(int statusCode,String message) {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
@@ -109,114 +65,45 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
         sb.append("}");
         return sb.toString();
     }
-    
-    // Enhanced HTTP connection method with SSL error handling
-    public HttpURLConnection createSecureConnection(String urlString, String method) throws Exception {
-        URL url = new URL(urlString);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        
-        // Configure connection timeouts
-        con.setConnectTimeout(10000); // 10 seconds
-        con.setReadTimeout(10000);    // 10 seconds
-        
-        // Set request method and headers
-        con.setRequestMethod(method);
-        con.setRequestProperty("Content-Type", "application/json");
-        con.setRequestProperty("Accept", "application/json");
-        con.setRequestProperty("User-Agent", "Mozilla/5.0 (Compatible OpenCms Client)");
-        
-        if ("POST".equals(method)) {
-            con.setDoOutput(true);
-        }
-        
-        return con;
-    }
-    
-    // Method to read response with proper error handling
-    public String readResponse(HttpURLConnection con) throws Exception {
-        InputStream inputStream = null;
-        try {
-            if (con.getResponseCode() >= 200 && con.getResponseCode() < 300) {
-                inputStream = con.getInputStream();
-            } else {
-                inputStream = con.getErrorStream();
-            }
-            
-            if (inputStream == null) {
-                throw new IOException("No response stream available");
-            }
-            
-            BufferedReader in = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-            StringBuilder content = new StringBuilder();
-            String inputLine;
-            
-            while ((inputLine = in.readLine()) != null) {
-                content.append(inputLine);
-            }
-            in.close();
-            
-            return content.toString();
-        } finally {
-            if (inputStream != null) {
-                try { inputStream.close(); } catch (Exception e) {}
-            }
-        }
-    }
 %>
-
 <%
-    // Configure SSL settings for older Java versions
-    configureSSL();
-    
-    // Response tracking to ensure single output
-    boolean hasResponded = false;
-    
-    try {
         CmsJspActionElement cms = new CmsJspActionElement(pageContext, request, response);
         CmsObject cmsObject = cms.getCmsObject();
         Locale locale = cms.getRequestContext().getLocale(); 
         String productTitleParam = pageContext.getAttribute("productTitle").toString();
         String noProductTitleParam = pageContext.getAttribute("noProductTitle").toString();
-        
         // get file xml content
         String pathFile = request.getParameter("file-path");
-        if (StringUtils.isEmpty(pathFile)) {
-            out.print(responeObject(400, "Missing file-path parameter"));
-            return;
-        }
-        
         byte[] valueDecoded = DatatypeConverter.parseBase64Binary(pathFile);
         String pathFileXml = new String(valueDecoded, "UTF-8");
         CmsResource contentRs = cmsObject.readResource(pathFileXml);
         CmsJspContentAccessBean componentPros = new CmsJspContentAccessBean(cmsObject, locale, contentRs);
-        
         // get option send mail 
         String SendEmail = componentPros.getValue().get("EmailAndDB").getValue().get("SendEmail").getStringValue();
         Boolean isSendEmail = Boolean.valueOf(SendEmail);
 		
         String SendEmailBasedonTopic = componentPros.getValue().get("EmailAndDB").getValue().get("SendEmailBasedonTopic").getStringValue();
         Boolean isSendEmailBasedonTopic = Boolean.valueOf(SendEmailBasedonTopic);
-        
-        // get content template mail admin
+		
+		
+        // get content tempalate mail admin
         String templateContentAdmin = componentPros.getValue().get("EmailAndDB").getValue().get("EmailContentAdmins").getStringValue();
         CmsResource resource = cmsObject.readResource(templateContentAdmin);
         CmsFile file = cmsObject.readFile(resource);
         byte[] contentAdmin = file.getContents();
+
         String mailContent = new String(contentAdmin);	
 		
-        // get content template mail user
+        // get content tempalate mail user
         String templateContentUser = componentPros.getValue().get("EmailAndDB").getValue().get("EmailContentEndUser").getStringValue();
         CmsResource resourceUser = cmsObject.readResource(templateContentUser);
         CmsFile fileUser = cmsObject.readFile(resourceUser);
         byte[] contentUser = fileUser.getContents();
         String mailContentUser = new String(contentUser);
-        
         // mail admin in dialog
         String emailAddressAdmin = componentPros.getValue().get("EmailAndDB").getValue().get("EmailAddress").getStringValue();
-        
-        // mail user in xml file
-        String emailAddressUser = "";
-        
+       // mail user in xml file
+        String emailAddressUser  =  "";
         // mail subject
         String topic = StringUtils.isEmpty(paramSelectTopic) ? "" : paramSelectTopics[1];
         String topickey = StringUtils.isEmpty(paramSelectTopic) ? "" : paramSelectTopics[0];
@@ -226,46 +113,47 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
         mailSubject = mailSubject.replace("#Topic#", topic);
 		
         String adminMailSubject2 = componentPros.getValue().get("EmailAndDB").getValue().get("AdminEmailSubject").getStringValue();
-        if(!StringUtils.isEmpty(adminMailSubject2)) {		
-            adminMailSubject2 = adminMailSubject2.replace("#Topic#", topic);
-            adminMailSubject = adminMailSubject2;
-        }
-        
-        // message send mail fails
+		if(!StringUtils.isEmpty(adminMailSubject2))
+		{		
+        	adminMailSubject2 = adminMailSubject2.replace("#Topic#", topic);
+			adminMailSubject = adminMailSubject2;
+		}
+		
+		
+        // messge send mail fails
         String errMesageSendMailFails = componentPros.getValue().get("GeneralForm").getValue().get("GenericErrorMessage").getStringValue();
-        
-        // Process sections
+        // Section Title 1
         String section1 = componentPros.getValue().get("Section1").getValue().get("SectionTitle").getStringValue();
         if(!StringUtils.isEmpty(section1)){
             String temp = "%class" + "Section1" + "%";
             mailContent = A1filterHidden(temp, mailContent);
             mailContentUser = A1filterHidden(temp, mailContentUser);
         }
-        
+       // Section Label 2
         String section2 = componentPros.getValue().get("Section2").getValue().get("SectionLabel").getStringValue();
         if(!StringUtils.isEmpty(section2)){
             String temp = "%class" + "Section2" + "%";
             mailContent = A1filterHidden(temp, mailContent);
             mailContentUser = A1filterHidden(temp, mailContentUser);
         }
-        
+        // Section Label 3
         String section3 = componentPros.getValue().get("Section3").getValue().get("SectionLabel").getStringValue();
         if(!StringUtils.isEmpty(section3)){
             String temp = "%class" + "Section3" + "%";
             mailContent = A1filterHidden(temp, mailContent);
             mailContentUser = A1filterHidden(temp, mailContentUser);
         }
-        
+        // Section Label 5
         String section5 = componentPros.getValue().get("Section5").getValue().get("SectionLabel").getStringValue();
         if(!StringUtils.isEmpty(section5)){
             String temp = "%class" + "Section5" + "%";
             mailContent = A1filterHidden(temp, mailContent);
             mailContentUser = A1filterHidden(temp, mailContentUser);
-        }
+        } 
 
         if(!isSendEmail){
-            out.print(responeObject(200,"send mail success"));
-            return;
+             out.print(responeObject(200,"send mail success"));
+             return;
         }
 
         Enumeration<?> enumeration = request.getParameterNames();
@@ -280,14 +168,14 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
         String utmCampaign = "";
         String utmMedium = "";
         String utmSource = "";
-        String nationalId = "";
+		String nationalId = "";
         String accessToken = "";
         boolean isEmailSuccess = false;
         boolean isApiCallSuccess = true;
         String apiResponse = "";
 
-        // Process form parameters
-        try {
+        try{
+
             while(enumeration.hasMoreElements()){
                 String parameterName = enumeration.nextElement().toString();
                 String value = "";
@@ -296,7 +184,6 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
                 }else{
                     value = A1filter(request.getParameter(parameterName));
                 }
-                
                 if(!StringUtils.isEmpty(value)) {
                     String temp = "%class" + parameterName + "%";
                     mailContent = A1filterHidden(temp, mailContent);
@@ -304,14 +191,15 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
                     mailContent = A1filter("%" + parameterName + "%", value, mailContent);
                     mailContentUser = A1filter("%" + parameterName + "%", value, mailContentUser);
                 }
-                
-                // Extract specific parameters
+                // get first name
                 if("first-name".equals(parameterName)){
                     firstName = value;
                 }
+                // get last name
                 if("last-name".equals(parameterName)){
                     lastName = value;
                 }
+                // mail user in form
                 if("email-address".equals(parameterName)) {
                     emailAddressUser = value;
                 }
@@ -327,31 +215,35 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
                 if("phone-no".equals(parameterName)){
                     phone_no = value;
                 }
-                if("id-passport-number".equals(parameterName)){
+                 if("id-passport-number".equals(parameterName)){
                     nationalId = value;
                 }
+				
                 if("maritalStatus".equals(parameterName)){
                     maritalStatus = value;
                 }
+				
                 if("current-url".equals(parameterName)){
                     componentCode = value;
                 }				
+				
                 if("utmCampaign".equals(parameterName)){
                     utmCampaign = value;
                 }
+                
                 if("utmMedium".equals(parameterName)){
                     utmMedium = value;
                 }
+                
                 if("utmSource".equals(parameterName)){
                     utmSource = value;
                 }
-                
                 // product title
                 if("product-title".equals(parameterName)) {
                     String nameTitle = "%key-" + parameterName + "%";
                     if(StringUtils.isEmpty(value)) {
-                        mailContent = A1filterNoProductTitle(nameTitle,mailContent,noProductTitleParam);
-                        mailContentUser = A1filterNoProductTitle(nameTitle,mailContentUser,noProductTitleParam);
+                        mailContent =  A1filterNoProductTitle(nameTitle,mailContent,noProductTitleParam);
+                        mailContentUser =  A1filterNoProductTitle(nameTitle,mailContentUser,noProductTitleParam);
                     } else {
                         String productTitle = productTitleParam + " " + value;
                         mailContent = A1filter(nameTitle,productTitle,mailContent);
@@ -359,6 +251,7 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
                     }
                 }
             }
+            
             
             if(StringUtils.isEmpty(policy_number)) {
                 mailContent = mailContent.replace("%policy-number%", "-");
@@ -377,14 +270,17 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
             
             List<String> emailAddressAdmins = new ArrayList<String>();
             if(isSendEmailBasedonTopic){
+                		
                 String emailEnquiry = componentPros.getValue().get("EmailAndDB").getValue().get("EmailAddress"+topickey).getStringValue();
+        
                 if(!StringUtils.isEmpty(emailEnquiry) && !StringUtils.isEmpty(paramSelectTopic)){
-                    emailAddressAdmins = Arrays.asList(emailEnquiry.split(","));
+                        emailAddressAdmins = Arrays.asList(emailEnquiry.split(","));
                 }else{
                     emailAddressAdmins = Arrays.asList(emailAddressAdmin.split(","));
                 }
             } else {
                 String emailEnquiry = pageContext.getAttribute("emailEnquiry").toString();
+                
                 if(!StringUtils.isEmpty(emailEnquiry) && !StringUtils.isEmpty(paramSelectTopic)){
                     emailAddressAdmins = Arrays.asList(emailEnquiry.split(","));
                 }else{
@@ -392,9 +288,9 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
                 }
             }
     
-            // Email sending code (commented out as in original)
-            /*
-            if(!StringUtils.isEmpty(emailAddressUser) && !StringUtils.isEmpty(mailSubject)){
+        
+            // send mail to user
+            /*if(!StringUtils.isEmpty(emailAddressUser) && !StringUtils.isEmpty(mailSubject)){
                 CmsHtmlMail smToCs = new CmsHtmlMail();
                 smToCs.setMsg(mailContentUser);
                 smToCs.setSubject(mailSubject);
@@ -403,7 +299,7 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
                 smToCs.addTo(emailAddressUser);
                 smToCs.send();
             }
-            
+            // send mails to admin
             for (String emailAdmin : emailAddressAdmins) {
                 CmsHtmlMail smToCsAdmin = new CmsHtmlMail();
                 smToCsAdmin.setMsg(mailContent);
@@ -412,145 +308,241 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
                 smToCsAdmin.setFrom(emailAddressUser);
                 smToCsAdmin.addTo(emailAdmin);
                 smToCsAdmin.send(); 
-            }
-            */
-            
+            }*/
             isEmailSuccess = true; 
-            
-        } catch(Exception e){
-            out.print(responeObject(500, errMesageSendMailFails + ": " + e.getMessage()));
-            return;
+        }catch(Exception e){
+            out.print(e.toString());
+            out.print(responeObject(500,errMesageSendMailFails));  
         }
+        
 
         if(!isEmailSuccess){
             return;
         } 
         
-        // API Call Section with Enhanced Error Handling
-        HttpURLConnection con = null;
-        OutputStream os = null;
-        
-        try {
-            // Step 1: Get access token with SSL error handling
-            try {
-                con = createSecureConnection("https://pru-api-nprd.prudential.com.vn/pruforce/lead-corporate/uat1/auth/login", "POST");
-                
-                JSONObject jsonObject = new JSONObject();
+        String responseMessage = "";
 
-                byte[] bout = jsonObject.toString().getBytes("UTF-8");
-                con.setFixedLengthStreamingMode(bout.length);
-                con.connect();
-                
-                os = con.getOutputStream();
-                os.write(bout);
-                os.flush();
+        try{
 
-                String content = readResponse(con);
-                
-                if(con.getResponseCode() != 200){
-                    throw new Exception("Authentication failed. Response code: " + con.getResponseCode() + ", Response: " + content);    
-                }
+            //get access token
+            URL url = new URL("https://pru-api-nprd.prudential.com.vn/pruforce/lead-corporate/uat1/auth/login"); 
+            HttpURLConnection con = (HttpURLConnection) url.openConnection(); 
+            con.setRequestProperty("Content-Type", "application/json");
+            con.setRequestProperty("accept", "application/json");
+            con.setRequestMethod("POST"); 
+            con.setDoOutput(true);
+            con.setConnectTimeout(5000);
+            con.setReadTimeout(5000);
+            
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("password", "Prudential01@");
+            jsonObject.put("username", "pulseleaduat");
 
-                JSONObject responseObj = new JSONObject(content);
-                accessToken = responseObj.getString("accessToken");
-                
-            } catch(SSLHandshakeException sslEx) {
-                throw new Exception("SSL Handshake failed - Server connection rejected. This may be due to TLS version incompatibility in older Java versions. Details: " + sslEx.getMessage());
-            } catch(ConnectException connEx) {
-                throw new Exception("Connection refused - Unable to connect to authentication server. Details: " + connEx.getMessage());
-            } catch(SocketTimeoutException timeEx) {
-                throw new Exception("Connection timeout - Authentication server did not respond in time. Details: " + timeEx.getMessage());
-            } finally {
-                if (os != null) { try { os.close(); } catch (Exception e) {} }
-                if (con != null) { con.disconnect(); }
+            byte[] bout = jsonObject.toString().getBytes(StandardCharsets.UTF_8);
+            int length = bout.length;
+
+            con.setFixedLengthStreamingMode(length);
+            con.connect();
+            
+            OutputStream os = con.getOutputStream();
+            os.write(bout);
+
+            
+            StringBuffer content = new StringBuffer();           
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                content.append(inputLine);
+            }
+            in.close();
+            
+            if(con.getResponseCode() != 200){
+                throw new Exception("Error getting access token.");    
             }
 
-            // Step 2: Send lead data with enhanced error handling
-            try {
-                con = createSecureConnection("https://pru-api-nprd.prudential.com.vn/pruforce/lead-corporate/uat1/lead/saveReferraInfo", "POST");
-                con.setRequestProperty("Authorization", "Bearer " + accessToken);
-                con.setRequestProperty("Cookie", "JSESSIONID=uMEqdM4bbxEPW3WxBnUsEB58FLtR7Ux0BD7eBS5W; visid_incap_2439160=HnGgAHe5RZGFXE7Zhb8VknNnAmEAAAAAQUIPAAAAAACGoKq1pBfgHaFiGxrNWX1K; visid_incap_2520419=Hlqz69LhTPWpwOn973fkR3BYB2EAAAAAQUIPAAAAAADK0LSSnRzumfMjGJF7f2jr");
-                
-                String policy_number_status = "true";
-                if(StringUtils.isEmpty(policy_number)) {
-                    policy_number_status = "false";
-                }
-                
-                Date dNow = new Date();
-                SimpleDateFormat ft = new SimpleDateFormat("dd-MMM-yyyy HH:mm");
-    			
-    			firstName = firstName.replaceAll("&nbsp;", " ");
-    			lastName = lastName.replaceAll("&nbsp;", " ");
-    			country_code = country_code.replace("+", "");
-    			nationalId = "HCM";
-    			lastName = "600000012";
-    			provide_area = "76062238";
-                
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("fullName", firstName);
-                jsonObject.put("mobile", country_code+phone_no);
-                jsonObject.put("nationalId", nationalId);
-                jsonObject.put("referralAgent", lastName);
-                jsonObject.put("policyNumber", provide_area);
+            JSONObject responseObj = new JSONObject(content.toString());
+            accessToken = responseObj.getString("accessToken");
+            con.disconnect();
 
-                byte[] bout = jsonObject.toString().getBytes("UTF-8");
-                con.setFixedLengthStreamingMode(bout.length);
-                con.connect();
-                
-                os = con.getOutputStream();
-                os.write(bout);
-                os.flush();
+            // NEW: Call check-identify API before saveReferraInfo
+            url = new URL("https://pru-api-nprd.prudential.com.vn/pruforce/lead-corporate/uat1/lead/check-identify"); 
+            con = (HttpURLConnection) url.openConnection(); 
+            con.setRequestProperty("Authorization", "Bearer " + accessToken);
+            con.setRequestProperty("Content-Type", "application/json");
+            con.setRequestProperty("accept", "application/json");
+            con.setRequestProperty("Cookie", "JSESSIONID=uMEqdM4bbxEPW3WxBnUsEB58FLtR7Ux0BD7eBS5W; visid_incap_2439160=HnGgAHe5RZGFXE7Zhb8VknNnAmEAAAAAQUIPAAAAAACGoKq1pBfgHaFiGxrNWX1K; visid_incap_2520419=Hlqz69LhTPWpwOn973fkR3BYB2EAAAAAQUIPAAAAAADK0LSSnRzumfMjGJF7f2jr");
+            con.setRequestMethod("POST"); 
+            con.setDoOutput(true);
+            con.setConnectTimeout(5000);
+            con.setReadTimeout(5000);
+            
+            // Use hardcoded nationalId value as per your existing code logic
+			String checkNationalId = "HCM"; // Using the same hardcoded value
+            
+            jsonObject = new JSONObject();
+            jsonObject.put("identifyNo", checkNationalId);
 
-                apiResponse = readResponse(con);
-               
-                if(con.getResponseCode() != 200){
-                    throw new Exception("API call failed. Response code: " + con.getResponseCode() + ", Response: " + apiResponse);    
-                } else {
-                    isApiCallSuccess = true;   
-                }
-                
-            } catch(SSLHandshakeException sslEx) {
-                throw new Exception("SSL Handshake failed during lead submission - Server connection rejected. This may be due to TLS version incompatibility. Details: " + sslEx.getMessage());
-            } catch(ConnectException connEx) {
-                throw new Exception("Connection refused during lead submission - Unable to connect to API server. Details: " + connEx.getMessage());
-            } catch(SocketTimeoutException timeEx) {
-                throw new Exception("Connection timeout during lead submission - API server did not respond in time. Details: " + timeEx.getMessage());
-            } finally {
-                if (os != null) { try { os.close(); } catch (Exception e) {} }
-                if (con != null) { con.disconnect(); }
+            bout = jsonObject.toString().getBytes(StandardCharsets.UTF_8);
+            length = bout.length;
+
+            con.setFixedLengthStreamingMode(length);
+            con.connect();
+            
+            os = con.getOutputStream();
+            os.write(bout);
+
+            content = new StringBuffer();           
+            in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            inputLine = "";
+            while ((inputLine = in.readLine()) != null) {
+                content.append(inputLine);
             }
+            in.close();
+            
+            String checkIdentifyResponse = content.toString();
+            con.disconnect();
+            
+            if(con.getResponseCode() != 200){
+                // Handle error response
+                try {
+                    JSONObject errorObj = new JSONObject(checkIdentifyResponse);
+                    String errorDesc = errorObj.getString("errorDescription");
+                    out.print(responeObject(400, errorDesc));
+                    return;
+                } catch(Exception jsonEx) {
+                    out.print(responeObject(400, "Error checking national ID"));
+                    return;
+                }
+            } else {
+                // Handle success response
+                try {
+                    JSONObject successObj = new JSONObject(checkIdentifyResponse);
+                    boolean isExist = successObj.getBoolean("isExist");
+                    if(!isExist) {
+                        out.print(responeObject(400, "Please enter valid national id"));
+                        return;
+                    }
+                    // If isExist is true, continue to saveReferraInfo API
+                } catch(Exception jsonEx) {
+                    out.print(responeObject(400, "Error processing check-identify response"));
+                    return;
+                }
+            }
+
+            //send payload to saveReferraInfo (only if check-identify passed)
+            url = new URL("https://pru-api-nprd.prudential.com.vn/pruforce/lead-corporate/uat1/lead/saveReferraInfo"); 
+            con = (HttpURLConnection) url.openConnection(); 
+            con.setRequestProperty("Authorization", "Bearer " + accessToken);
+            con.setRequestProperty("Content-Type", "application/json");
+            con.setRequestProperty("Cookie", "JSESSIONID=uMEqdM4bbxEPW3WxBnUsEB58FLtR7Ux0BD7eBS5W; visid_incap_2439160=HnGgAHe5RZGFXE7Zhb8VknNnAmEAAAAAQUIPAAAAAACGoKq1pBfgHaFiGxrNWX1K; visid_incap_2520419=Hlqz69LhTPWpwOn973fkR3BYB2EAAAAAQUIPAAAAAADK0LSSnRzumfMjGJF7f2jr");
+            con.setRequestMethod("POST"); 
+            con.setDoOutput(true);
+            //con.setConnectTimeout(2000);
+            //con.setReadTimeout(2000);
+            
+            String policy_number_status = "true";
+            if(StringUtils.isEmpty(policy_number)) {
+                policy_number_status = "false";
+            }
+            
+            Date dNow = new Date( );
+            SimpleDateFormat ft = new SimpleDateFormat ("dd-MMM-yyyy HH:mm");
+			
+			firstName = firstName.replaceAll("&nbsp;", " ");
+			lastName = lastName.replaceAll("&nbsp;", " ");
+			country_code = country_code.replace("+", "");
+			nationalId = "HCM";
+			lastName = "600000012";
+			provide_area = "76062238";
+            
+            jsonObject = new JSONObject();
+            //jsonObject.put("category", "PULSELEADS_MB");
+            jsonObject.put("fullName", firstName);
+            //jsonObject.put("name", lastName);
+            //jsonObject.put("gender", "gender");
+            jsonObject.put("mobile", country_code+phone_no);
+			jsonObject.put("nationalId", nationalId);
+			jsonObject.put("referralAgent", lastName);
+			jsonObject.put("policyNumber", provide_area);
+            /*jsonObject.put("email", emailAddressUser);
+            jsonObject.put("isCustomer", policy_number_status);
+            jsonObject.put("componentCode", componentCode);
+            jsonObject.put("messageCategory", maritalStatus);
+            jsonObject.put("nationalId", nationalId);
+            jsonObject.put("timeContact", ft.format(dNow));
+            jsonObject.put("messageDetails", provide_area);
+            jsonObject.put("check", true);
+            jsonObject.put("j_captcha", "");
+            jsonObject.put("utmCampaign", utmCampaign);
+            jsonObject.put("utmMedium", utmMedium);
+            jsonObject.put("utmSource", utmSource);
+            jsonObject.put("gender", "gender");
+            jsonObject.put("provinceCode", paramSelectTopics[1]);*/
+			
+
+            bout = jsonObject.toString().getBytes(StandardCharsets.UTF_8);
+  			length = bout.length;
+
+  			con.setFixedLengthStreamingMode(length);
+  			con.connect();
+			os = con.getOutputStream();
+			os.write(bout);
+	
+            content = new StringBuffer();
+	        
+            in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+		    inputLine = "";
+		    
+            while ((inputLine = in.readLine()) != null) {
+    		    content.append(inputLine);
+		    }
+            in.close();
+            apiResponse =content.toString();
+            con.disconnect();
+           
+		  
+		   
+            if (con.getResponseCode() != 200) {
+              throw new Exception("Error calling API: " + apiResponse);
+            } else {
+              isApiCallSuccess = true;
+
+              // Extract referralId from response for thank you page
+              try {
+        JSONObject saveReferraResponse = new JSONObject(apiResponse);
+        String referralId = saveReferraResponse.getString("referralId");
+
+        // ---- Store in Session (optional) ----
+        session.setAttribute("referralId", referralId);
+        session.setAttribute("referralAgent", lastName);
+
+        // ---- Store in Cookie for HTML/JavaScript access ----
+        Cookie referralCookie = new Cookie("referralId", referralId);
+        referralCookie.setPath("/"); // make it accessible for the whole domain
+        referralCookie.setMaxAge(60 * 60 * 24 * 7); // 1 week
+        response.addCookie(referralCookie);
+
+        Cookie agentCookie = new Cookie("referralAgent", lastName);
+        agentCookie.setPath("/");
+        agentCookie.setMaxAge(60 * 60 * 24 * 7); // 1 week
+        response.addCookie(agentCookie);
+
+    } catch (Exception jsonEx) {
+        // Log error but don't fail the process
+    }
+}
+
    
-        } catch(Exception ex) {
-            // Enhanced error reporting with specific SSL handling
-            String errorMessage = "API Error: " + ex.getMessage();
-            
-            if (ex.getMessage().contains("SSL") || ex.getMessage().contains("TLS")) {
-                errorMessage += " [SOLUTION: Update Java version or configure TLS settings]";
-            } else if (ex.getMessage().contains("timeout")) {
-                errorMessage += " [SOLUTION: Check network connectivity and increase timeout values]";
-            } else if (ex.getMessage().contains("Connection refused")) {
-                errorMessage += " [SOLUTION: Verify API endpoint URL and server availability]";
-            }
-            
-            out.print(responeObject(400, errorMessage));
-            hasResponded = true;
+        }catch(Exception ex){
+		
+			out.print(responeObject(400, ("API Error "+ex.toString()) ));
             isApiCallSuccess = false;
         }
-        
-        // Single response output
-        if (!hasResponded) {
-            if(isSendEmail && isApiCallSuccess){
-                out.print(responeObject(200, "send email and api call success."));    
-            } else if (isEmailSuccess) {
-                out.print(responeObject(200, "send email success."));
-            } else {
-                out.print(responeObject(500, "Unknown error occurred."));
-            }
+  
+        if(isSendEmail && isApiCallSuccess){
+            out.print(responeObject(200, "send email and api call success."));    
+        }else{
+           // out.print(responeObject(200, "send email success."));
         }
-        
-    } catch(Exception mainEx) {
-        if (!hasResponded) {
-            out.print(responeObject(500, "System Error: " + mainEx.getMessage()));
-        }
-    }
+                   
 %>
