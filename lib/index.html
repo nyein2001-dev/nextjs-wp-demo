@@ -1,772 +1,556 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.io.*" %>
-<%@ page import="java.net.*" %>
-<%@ page import="java.util.*" %>
-<%@ page import="javax.servlet.http.*" %>
-<%@ page import="javax.net.ssl.*" %>
-<%@ page import="java.security.cert.*" %>
+<%@ page session="false" contentType="text/html;charset=UTF-8" %>
+<%@ page import="java.io.*, java.net.*, javax.net.ssl.*, org.json.JSONObject,
+org.opencms.main.OpenCms, org.apache.commons.logging.Log, org.opencms.main.CmsLog, org.apache.commons.lang.StringUtils,
+java.util.*, org.opencms.jsp.util.*, java.io.IOException, java.text.*, java.nio.charset.* "%>
+<%@ page import="org.opencms.mail.CmsHtmlMail"%>
+<%@page import="java.util.Locale" %>
+<%@page import="org.opencms.jsp.CmsJspActionElement"%>
+<%@ taglib prefix="cms" uri="http://www.opencms.org/taglib/cms"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@page import="javax.xml.bind.DatatypeConverter"%>
+<%@page import="org.opencms.jsp.*, org.opencms.file.*, org.opencms.flex.*,org.opencms.util.*, java.util.*" %>
+
+<c:set var="locale" value="${cms.locale}" />
+<fmt:setLocale value="${param.language}" />
+
+<%
+//paramSelectTopic
+String paramSelectTopic = StringUtils.isEmpty(request.getParameter("selectTopic")) ? "" : request.getParameter("selectTopic");
+String[] paramSelectTopics = paramSelectTopic.split("&&");
+%>
+
+<cms:bundle basename="com.prudential.v2.ph.default">
+  <c:set var="productTitle"><fmt:message key="key.default.have.productTitle" /></c:set>
+  <c:set var="noProductTitle"><fmt:message key="key.default.none.productTitle" /></c:set>
+  <c:set var="adminMailSubject"><fmt:message key="key.default.admin.mail.subject" /></c:set>
+  <c:set var="paramSelectTopics"><%=paramSelectTopics[0]%></c:set>
+  <c:set var="emailEnquiry" value=""/>
+  <c:if test="${not empty paramSelectTopics}">
+  	<c:set var="emailEnquiry"><fmt:message key="key.mail.selected.enquiry.${paramSelectTopics}" /></c:set>
+  </c:if>
+</cms:bundle>
 
 <%!
-    // Helper method to read response from InputStream
-    private String readResponse(InputStream inputStream) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-        StringBuilder response = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            response.append(line);
-        }
-        reader.close();
-        return response.toString();
-    }
-    
-    // Simple JSON parser for extracting values (compatible with pre-Java 7)
-    private String extractJsonValue(String json, String key) {
+    // SSL Configuration method for older Java versions
+    public void configureSSL() {
         try {
-            String searchKey = "\"" + key + "\"";
-            int keyIndex = json.indexOf(searchKey);
-            if (keyIndex == -1) return null;
+            // Set system properties for SSL/TLS
+            System.setProperty("https.protocols", "TLSv1.2,TLSv1.1,TLSv1");
+            System.setProperty("javax.net.ssl.trustStore", System.getProperty("java.home") + "/lib/security/cacerts");
+            System.setProperty("javax.net.ssl.trustStorePassword", "changeit");
             
-            int colonIndex = json.indexOf(":", keyIndex);
-            if (colonIndex == -1) return null;
-            
-            int valueStart = colonIndex + 1;
-            while (valueStart < json.length() && 
-                   (json.charAt(valueStart) == ' ' || json.charAt(valueStart) == '\t')) {
-                valueStart++;
-            }
-            
-            if (valueStart >= json.length()) return null;
-            
-            char firstChar = json.charAt(valueStart);
-            int valueEnd;
-            
-            if (firstChar == '"') {
-                // String value
-                valueStart++; // Skip opening quote
-                valueEnd = json.indexOf('"', valueStart);
-                if (valueEnd == -1) return null;
-                return json.substring(valueStart, valueEnd);
-            } else {
-                // Number value
-                valueEnd = valueStart;
-                while (valueEnd < json.length() && 
-                       Character.isDigit(json.charAt(valueEnd))) {
-                    valueEnd++;
-                }
-                if (valueEnd == valueStart) return null;
-                return json.substring(valueStart, valueEnd);
-            }
-        } catch (Exception e) {
-            return null;
-        }
-    }
-    
-    // Method to get system properties for debugging
-    private Map<String, String> getSystemInfo() {
-        Map<String, String> sysInfo = new HashMap<String, String>();
-        try {
-            sysInfo.put("java.version", System.getProperty("java.version"));
-            sysInfo.put("java.vendor", System.getProperty("java.vendor"));
-            sysInfo.put("os.name", System.getProperty("os.name"));
-            sysInfo.put("os.version", System.getProperty("os.version"));
-            sysInfo.put("https.protocols", System.getProperty("https.protocols"));
-            sysInfo.put("java.protocol.handler.pkgs", System.getProperty("java.protocol.handler.pkgs"));
-        } catch (Exception e) {
-            sysInfo.put("system_info_error", e.getMessage());
-        }
-        return sysInfo;
-    }
-    
-    // Enhanced SSL setup for older Java versions
-    private void setupTrustAllCertificates() {
-        try {
+            // Create a trust manager that accepts all certificates (use with caution)
             TrustManager[] trustAllCerts = new TrustManager[] {
                 new X509TrustManager() {
-                    public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
-                    public void checkClientTrusted(X509Certificate[] certs, String authType) { }
-                    public void checkServerTrusted(X509Certificate[] certs, String authType) { }
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+                    }
                 }
             };
             
-            // Try multiple SSL contexts for compatibility
-            String[] protocols = {"TLS", "SSLv3", "SSL"};
-            SSLContext sc = null;
+            SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
             
-            for (String protocol : protocols) {
-                try {
-                    sc = SSLContext.getInstance(protocol);
-                    sc.init(null, trustAllCerts, new java.security.SecureRandom());
-                    break;
-                } catch (Exception e) {
-                    // Try next protocol
-                }
-            }
-            
-            if (sc != null) {
-                HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-            }
-            
+            // Create hostname verifier that accepts all hostnames
             HostnameVerifier allHostsValid = new HostnameVerifier() {
-                public boolean verify(String hostname, SSLSession session) { return true; }
+                public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                }
             };
             HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
             
         } catch (Exception e) {
-            // Ignore setup errors
+            // SSL configuration failed, will proceed with default settings
         }
     }
+
+	public String A1filter(String input){
+	    String tem = input;
+	    tem = tem.replaceAll("<", "&lt;");
+	    tem = tem.replaceAll(">", "&gt;");
+	    tem = tem.replaceAll("&", "&amp;");
+	    tem = tem.replaceAll("\"", "&quot;");
+	    tem = tem.replaceAll(" ", "&nbsp;");
+	    tem = tem.replaceAll("'", "&#39;");
+	    return tem;
+	}
     
-    // Setup SSL properties for older Java versions
-    private void setupSSLProperties() {
-        try {
-            // Enable older SSL protocols if needed
-            System.setProperty("https.protocols", "TLSv1,SSLv3,SSLv2Hello");
-            System.setProperty("javax.net.ssl.trustStore", "");
-            System.setProperty("javax.net.ssl.trustStorePassword", "");
-            System.setProperty("com.sun.net.ssl.checkRevocation", "false");
-            System.setProperty("sun.security.ssl.allowUnsafeRenegotiation", "true");
-            System.setProperty("sun.security.ssl.allowLegacyHelloMessages", "true");
-        } catch (Exception e) {
-            // Ignore property setup errors
-        }
+    public String A1filterHidden(String input,String temp){
+	    String tem = temp;
+	    String tmpinput = "content:'" + input + "'; mso-hide:all;display:none;";
+	    tem = tem.replaceAll(tmpinput, "");
+	    return tem;
     }
     
-    // Method to perform authentication API call with detailed debugging
-    private Map<String, String> authenticateUser(String username, String password, String apiBaseUrl, boolean trustAllCerts) {
-        Map<String, String> result = new HashMap<String, String>();
-        HttpURLConnection connection = null;
-        long startTime = System.currentTimeMillis();
+    public  String A1filter(String input,String value,String temp){
+        String tem = temp;
+        tem = tem.replaceAll(input, value);
+        return tem;
+    }
+    
+    public String A1filterNoProductTitle(String productTitleName,String temp,String noProductTitle){
+        String tem = temp;
+        tem = tem.replaceAll(productTitleName, noProductTitle);
+        return tem;
+    }
+    
+     public String responeObject(int statusCode,String message) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        sb.append("\"statusCode\":").append(statusCode).append(",");
+        sb.append("\"message\":\"").append(message).append("\"");
+        sb.append("}");
+        return sb.toString();
+    }
+    
+    // Enhanced HTTP connection method with SSL error handling
+    public HttpURLConnection createSecureConnection(String urlString, String method) throws Exception {
+        URL url = new URL(urlString);
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
         
+        // Configure connection timeouts
+        con.setConnectTimeout(10000); // 10 seconds
+        con.setReadTimeout(10000);    // 10 seconds
+        
+        // Set request method and headers
+        con.setRequestMethod(method);
+        con.setRequestProperty("Content-Type", "application/json");
+        con.setRequestProperty("Accept", "application/json");
+        con.setRequestProperty("User-Agent", "Mozilla/5.0 (Compatible OpenCms Client)");
+        
+        if ("POST".equals(method)) {
+            con.setDoOutput(true);
+        }
+        
+        return con;
+    }
+    
+    // Method to read response with proper error handling
+    public String readResponse(HttpURLConnection con) throws Exception {
+        InputStream inputStream = null;
         try {
-            // Setup SSL properties for older Java versions
-            setupSSLProperties();
-            result.put("ssl_properties_set", "SSL properties configured for older Java");
-            
-            // Setup SSL trust if requested
-            if (trustAllCerts) {
-                setupTrustAllCertificates();
-                result.put("ssl_trust", "All certificates trusted (DEBUG MODE)");
-            }
-            
-            // Construct the full API URL
-            String apiUrl = apiBaseUrl.endsWith("/") ? apiBaseUrl + "auth/login" : apiBaseUrl + "/auth/login";
-            result.put("request_url", apiUrl);
-            
-            URL url = new URL(apiUrl);
-            result.put("url_protocol", url.getProtocol());
-            result.put("url_host", url.getHost());
-            result.put("url_port", String.valueOf(url.getPort()));
-            result.put("url_path", url.getPath());
-            
-            // Create HTTP connection
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            connection.setRequestProperty("Accept", "application/json");
-            connection.setRequestProperty("User-Agent", "OpenCms-Auth-Client/1.0");
-            connection.setRequestProperty("Connection", "close");
-            connection.setDoOutput(true);
-            connection.setDoInput(true);
-            connection.setUseCaches(false);
-            
-            // Set timeout values (in milliseconds)
-            connection.setConnectTimeout(15000); // 15 seconds
-            connection.setReadTimeout(20000);    // 20 seconds
-            
-            result.put("connect_timeout", "15000ms");
-            result.put("read_timeout", "20000ms");
-            
-            // Prepare JSON request body
-            String jsonPayload = "{\"username\":\"" + username + "\",\"password\":\"" + password + "\"}";
-            result.put("request_body", jsonPayload);
-            result.put("request_body_length", String.valueOf(jsonPayload.getBytes("UTF-8").length));
-            
-            // Log request headers
-            StringBuilder requestHeaders = new StringBuilder();
-            Map<String, List<String>> reqProps = connection.getRequestProperties();
-            for (Map.Entry<String, List<String>> entry : reqProps.entrySet()) {
-                requestHeaders.append(entry.getKey()).append(": ");
-                for (String value : entry.getValue()) {
-                    requestHeaders.append(value).append("; ");
-                }
-                requestHeaders.append("\n");
-            }
-            result.put("request_headers", requestHeaders.toString());
-            
-            result.put("connection_start", String.valueOf(System.currentTimeMillis() - startTime) + "ms");
-            
-            // Send request
-            OutputStream outputStream = connection.getOutputStream();
-            OutputStreamWriter writer = new OutputStreamWriter(outputStream, "UTF-8");
-            writer.write(jsonPayload);
-            writer.flush();
-            writer.close();
-            outputStream.close();
-            
-            result.put("request_sent", String.valueOf(System.currentTimeMillis() - startTime) + "ms");
-            
-            // Get response code and headers
-            int responseCode = connection.getResponseCode();
-            String responseMessage = connection.getResponseMessage();
-            
-            result.put("responseCode", String.valueOf(responseCode));
-            result.put("responseMessage", responseMessage != null ? responseMessage : "No message");
-            result.put("response_received", String.valueOf(System.currentTimeMillis() - startTime) + "ms");
-            
-            // Log response headers
-            StringBuilder responseHeaders = new StringBuilder();
-            Map<String, List<String>> headerFields = connection.getHeaderFields();
-            if (headerFields != null) {
-                for (Map.Entry<String, List<String>> entry : headerFields.entrySet()) {
-                    String key = entry.getKey();
-                    if (key == null) key = "Status";
-                    responseHeaders.append(key).append(": ");
-                    for (String value : entry.getValue()) {
-                        responseHeaders.append(value).append("; ");
-                    }
-                    responseHeaders.append("\n");
-                }
-            }
-            result.put("response_headers", responseHeaders.toString());
-            
-            // Get content type and length
-            String contentType = connection.getContentType();
-            int contentLength = connection.getContentLength();
-            result.put("response_content_type", contentType != null ? contentType : "Not specified");
-            result.put("response_content_length", String.valueOf(contentLength));
-            
-            if (responseCode == 200) {
-                // Success - read response
-                InputStream inputStream = connection.getInputStream();
-                String response = readResponse(inputStream);
-                inputStream.close();
-                
-                result.put("success", "true");
-                result.put("response", response);
-                result.put("response_length", String.valueOf(response.length()));
-                
-                // Extract accessToken and expiresIn from JSON response
-                String accessToken = extractJsonValue(response, "accessToken");
-                String expiresIn = extractJsonValue(response, "expiresIn");
-                
-                if (accessToken != null) {
-                    result.put("accessToken", accessToken);
-                }
-                if (expiresIn != null) {
-                    result.put("expiresIn", expiresIn);
-                }
-                
+            if (con.getResponseCode() >= 200 && con.getResponseCode() < 300) {
+                inputStream = con.getInputStream();
             } else {
-                // Error response
-                result.put("success", "false");
-                try {
-                    InputStream errorStream = connection.getErrorStream();
-                    if (errorStream != null) {
-                        String errorResponse = readResponse(errorStream);
-                        errorStream.close();
-                        result.put("errorResponse", errorResponse);
-                        result.put("error_response_length", String.valueOf(errorResponse.length()));
-                    } else {
-                        result.put("errorResponse", "No error stream available");
-                    }
-                } catch (Exception e) {
-                    result.put("errorResponse", "Unable to read error response: " + e.getMessage());
-                }
+                inputStream = con.getErrorStream();
             }
             
-        } catch (SSLHandshakeException e) {
-            result.put("success", "false");
-            result.put("error", "SSL Handshake failed");
-            result.put("errorDetails", e.getMessage());
-            result.put("errorType", "SSLHandshakeException");
-            result.put("ssl_debug", "This might be due to SSL/TLS version mismatch, certificate issues, or cipher suite problems");
-            
-            // Enhanced SSL debugging
-            try {
-                SSLContext context = SSLContext.getDefault();
-                result.put("default_ssl_context", context.getProtocol());
-                
-                // Get supported protocols
-                SSLSocketFactory factory = context.getSocketFactory();
-                if (factory instanceof SSLSocketFactory) {
-                    try {
-                        SSLSocket socket = (SSLSocket) factory.createSocket();
-                        String[] supportedProtocols = socket.getSupportedProtocols();
-                        String[] enabledProtocols = socket.getEnabledProtocols();
-                        
-                        StringBuilder supported = new StringBuilder();
-                        for (String protocol : supportedProtocols) {
-                            supported.append(protocol).append(", ");
-                        }
-                        result.put("supported_protocols", supported.toString());
-                        
-                        StringBuilder enabled = new StringBuilder();
-                        for (String protocol : enabledProtocols) {
-                            enabled.append(protocol).append(", ");
-                        }
-                        result.put("enabled_protocols", enabled.toString());
-                        
-                        socket.close();
-                    } catch (Exception e) {
-                        result.put("protocol_check_error", e.getMessage());
-                    }
-                }
-            } catch (Exception ex) {
-                result.put("ssl_context_error", ex.getMessage());
+            if (inputStream == null) {
+                throw new IOException("No response stream available");
             }
             
-        } catch (SocketTimeoutException e) {
-            result.put("success", "false");
-            result.put("error", "Connection timeout occurred");
-            result.put("errorDetails", e.getMessage());
-            result.put("errorType", "SocketTimeoutException");
-            result.put("timeout_debug", "The server took too long to respond. Check network connectivity and server availability.");
+            BufferedReader in = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+            StringBuilder content = new StringBuilder();
+            String inputLine;
             
-        } catch (ConnectException e) {
-            result.put("success", "false");
-            result.put("error", "Unable to connect to the authentication server");
-            result.put("errorDetails", e.getMessage());
-            result.put("errorType", "ConnectException");
-            result.put("connection_debug", "Check if the server is running and the URL is correct");
-            
-        } catch (UnknownHostException e) {
-            result.put("success", "false");
-            result.put("error", "Authentication server not found");
-            result.put("errorDetails", e.getMessage());
-            result.put("errorType", "UnknownHostException");
-            result.put("dns_debug", "DNS resolution failed. Check the hostname in the URL");
-            
-        } catch (MalformedURLException e) {
-            result.put("success", "false");
-            result.put("error", "Invalid URL format");
-            result.put("errorDetails", e.getMessage());
-            result.put("errorType", "MalformedURLException");
-            
-        } catch (IOException e) {
-            result.put("success", "false");
-            result.put("error", "IO error occurred during authentication");
-            result.put("errorDetails", e.getMessage());
-            result.put("errorType", "IOException");
-            
-            // Check for specific SSL-related messages
-            String errorMsg = e.getMessage().toLowerCase();
-            if (errorMsg.contains("handshake")) {
-                result.put("ssl_handshake_debug", "SSL handshake failed. Try enabling 'Trust All Certificates' option for debugging.");
+            while ((inputLine = in.readLine()) != null) {
+                content.append(inputLine);
             }
-            if (errorMsg.contains("protocol")) {
-                result.put("protocol_debug", "Protocol version mismatch. The server might require a specific TLS version.");
-            }
-            if (errorMsg.contains("certificate")) {
-                result.put("certificate_debug", "Certificate validation failed. Check if the server certificate is valid.");
-            }
+            in.close();
             
-        } catch (Exception e) {
-            result.put("success", "false");
-            result.put("error", "Unexpected error occurred");
-            result.put("errorDetails", e.getMessage());
-            result.put("errorType", e.getClass().getSimpleName());
-            
+            return content.toString();
         } finally {
-            result.put("total_time", String.valueOf(System.currentTimeMillis() - startTime) + "ms");
-            if (connection != null) {
-                connection.disconnect();
+            if (inputStream != null) {
+                try { inputStream.close(); } catch (Exception e) {}
             }
         }
-        
-        return result;
     }
 %>
 
 <%
-    // Initialize variables
-    String username = "";
-    String password = "";
-    String apiBaseUrl = "";
-    Map<String, String> authResult = null;
-    Map<String, String> systemInfo = null;
-    boolean showResult = false;
-    boolean trustAllCerts = false;
+    // Configure SSL settings for older Java versions
+    configureSSL();
     
-    // Get system information
-    systemInfo = getSystemInfo();
+    // Response tracking to ensure single output
+    boolean hasResponded = false;
     
-    // Check if form was submitted
-    if ("POST".equalsIgnoreCase(request.getMethod())) {
-        username = request.getParameter("username");
-        password = request.getParameter("password");
-        apiBaseUrl = request.getParameter("apiBaseUrl");
-        trustAllCerts = "true".equals(request.getParameter("trustAllCerts"));
+    try {
+        CmsJspActionElement cms = new CmsJspActionElement(pageContext, request, response);
+        CmsObject cmsObject = cms.getCmsObject();
+        Locale locale = cms.getRequestContext().getLocale(); 
+        String productTitleParam = pageContext.getAttribute("productTitle").toString();
+        String noProductTitleParam = pageContext.getAttribute("noProductTitle").toString();
         
-        // Validate input
-        if (username != null && !username.trim().isEmpty() && 
-            password != null && !password.trim().isEmpty() &&
-            apiBaseUrl != null && !apiBaseUrl.trim().isEmpty()) {
+        // get file xml content
+        String pathFile = request.getParameter("file-path");
+        if (StringUtils.isEmpty(pathFile)) {
+            out.print(responeObject(400, "Missing file-path parameter"));
+            return;
+        }
+        
+        byte[] valueDecoded = DatatypeConverter.parseBase64Binary(pathFile);
+        String pathFileXml = new String(valueDecoded, "UTF-8");
+        CmsResource contentRs = cmsObject.readResource(pathFileXml);
+        CmsJspContentAccessBean componentPros = new CmsJspContentAccessBean(cmsObject, locale, contentRs);
+        
+        // get option send mail 
+        String SendEmail = componentPros.getValue().get("EmailAndDB").getValue().get("SendEmail").getStringValue();
+        Boolean isSendEmail = Boolean.valueOf(SendEmail);
+		
+        String SendEmailBasedonTopic = componentPros.getValue().get("EmailAndDB").getValue().get("SendEmailBasedonTopic").getStringValue();
+        Boolean isSendEmailBasedonTopic = Boolean.valueOf(SendEmailBasedonTopic);
+        
+        // get content template mail admin
+        String templateContentAdmin = componentPros.getValue().get("EmailAndDB").getValue().get("EmailContentAdmins").getStringValue();
+        CmsResource resource = cmsObject.readResource(templateContentAdmin);
+        CmsFile file = cmsObject.readFile(resource);
+        byte[] contentAdmin = file.getContents();
+        String mailContent = new String(contentAdmin);	
+		
+        // get content template mail user
+        String templateContentUser = componentPros.getValue().get("EmailAndDB").getValue().get("EmailContentEndUser").getStringValue();
+        CmsResource resourceUser = cmsObject.readResource(templateContentUser);
+        CmsFile fileUser = cmsObject.readFile(resourceUser);
+        byte[] contentUser = fileUser.getContents();
+        String mailContentUser = new String(contentUser);
+        
+        // mail admin in dialog
+        String emailAddressAdmin = componentPros.getValue().get("EmailAndDB").getValue().get("EmailAddress").getStringValue();
+        
+        // mail user in xml file
+        String emailAddressUser = "";
+        
+        // mail subject
+        String topic = StringUtils.isEmpty(paramSelectTopic) ? "" : paramSelectTopics[1];
+        String topickey = StringUtils.isEmpty(paramSelectTopic) ? "" : paramSelectTopics[0];
+        String adminMailSubject = pageContext.getAttribute("adminMailSubject").toString();
+        adminMailSubject = adminMailSubject.replace("#Topic#", topic);
+        String mailSubject = componentPros.getValue().get("EmailAndDB").getValue().get("EmailSubject").getStringValue();
+        mailSubject = mailSubject.replace("#Topic#", topic);
+		
+        String adminMailSubject2 = componentPros.getValue().get("EmailAndDB").getValue().get("AdminEmailSubject").getStringValue();
+        if(!StringUtils.isEmpty(adminMailSubject2)) {		
+            adminMailSubject2 = adminMailSubject2.replace("#Topic#", topic);
+            adminMailSubject = adminMailSubject2;
+        }
+        
+        // message send mail fails
+        String errMesageSendMailFails = componentPros.getValue().get("GeneralForm").getValue().get("GenericErrorMessage").getStringValue();
+        
+        // Process sections
+        String section1 = componentPros.getValue().get("Section1").getValue().get("SectionTitle").getStringValue();
+        if(!StringUtils.isEmpty(section1)){
+            String temp = "%class" + "Section1" + "%";
+            mailContent = A1filterHidden(temp, mailContent);
+            mailContentUser = A1filterHidden(temp, mailContentUser);
+        }
+        
+        String section2 = componentPros.getValue().get("Section2").getValue().get("SectionLabel").getStringValue();
+        if(!StringUtils.isEmpty(section2)){
+            String temp = "%class" + "Section2" + "%";
+            mailContent = A1filterHidden(temp, mailContent);
+            mailContentUser = A1filterHidden(temp, mailContentUser);
+        }
+        
+        String section3 = componentPros.getValue().get("Section3").getValue().get("SectionLabel").getStringValue();
+        if(!StringUtils.isEmpty(section3)){
+            String temp = "%class" + "Section3" + "%";
+            mailContent = A1filterHidden(temp, mailContent);
+            mailContentUser = A1filterHidden(temp, mailContentUser);
+        }
+        
+        String section5 = componentPros.getValue().get("Section5").getValue().get("SectionLabel").getStringValue();
+        if(!StringUtils.isEmpty(section5)){
+            String temp = "%class" + "Section5" + "%";
+            mailContent = A1filterHidden(temp, mailContent);
+            mailContentUser = A1filterHidden(temp, mailContentUser);
+        }
+
+        if(!isSendEmail){
+            out.print(responeObject(200,"send mail success"));
+            return;
+        }
+
+        Enumeration<?> enumeration = request.getParameterNames();
+        String firstName = "";
+        String lastName = "";
+        String maritalStatus = "";
+        String componentCode = "";
+        String policy_number = "";
+        String provide_area = "";
+        String country_code = "";
+        String phone_no = "";
+        String utmCampaign = "";
+        String utmMedium = "";
+        String utmSource = "";
+        String nationalId = "";
+        String accessToken = "";
+        boolean isEmailSuccess = false;
+        boolean isApiCallSuccess = true;
+        String apiResponse = "";
+
+        // Process form parameters
+        try {
+            while(enumeration.hasMoreElements()){
+                String parameterName = enumeration.nextElement().toString();
+                String value = "";
+                if(parameterName.equals("selectTopic")){
+                    value = topic;
+                }else{
+                    value = A1filter(request.getParameter(parameterName));
+                }
+                
+                if(!StringUtils.isEmpty(value)) {
+                    String temp = "%class" + parameterName + "%";
+                    mailContent = A1filterHidden(temp, mailContent);
+                    mailContentUser = A1filterHidden(temp, mailContentUser);
+                    mailContent = A1filter("%" + parameterName + "%", value, mailContent);
+                    mailContentUser = A1filter("%" + parameterName + "%", value, mailContentUser);
+                }
+                
+                // Extract specific parameters
+                if("first-name".equals(parameterName)){
+                    firstName = value;
+                }
+                if("last-name".equals(parameterName)){
+                    lastName = value;
+                }
+                if("email-address".equals(parameterName)) {
+                    emailAddressUser = value;
+                }
+                if("policy-number".equals(parameterName)){
+                    policy_number = value;
+                }
+                if("provide-area".equals(parameterName)){
+                    provide_area = value;
+                }
+                if("country-code".equals(parameterName)){
+                    country_code = value;
+                }
+                if("phone-no".equals(parameterName)){
+                    phone_no = value;
+                }
+                if("id-passport-number".equals(parameterName)){
+                    nationalId = value;
+                }
+                if("maritalStatus".equals(parameterName)){
+                    maritalStatus = value;
+                }
+                if("current-url".equals(parameterName)){
+                    componentCode = value;
+                }				
+                if("utmCampaign".equals(parameterName)){
+                    utmCampaign = value;
+                }
+                if("utmMedium".equals(parameterName)){
+                    utmMedium = value;
+                }
+                if("utmSource".equals(parameterName)){
+                    utmSource = value;
+                }
+                
+                // product title
+                if("product-title".equals(parameterName)) {
+                    String nameTitle = "%key-" + parameterName + "%";
+                    if(StringUtils.isEmpty(value)) {
+                        mailContent = A1filterNoProductTitle(nameTitle,mailContent,noProductTitleParam);
+                        mailContentUser = A1filterNoProductTitle(nameTitle,mailContentUser,noProductTitleParam);
+                    } else {
+                        String productTitle = productTitleParam + " " + value;
+                        mailContent = A1filter(nameTitle,productTitle,mailContent);
+                        mailContentUser = A1filter(nameTitle,productTitle,mailContentUser);
+                    }
+                }
+            }
             
-            // Perform authentication
-            authResult = authenticateUser(username.trim(), password.trim(), apiBaseUrl.trim(), trustAllCerts);
-            showResult = true;
+            if(StringUtils.isEmpty(policy_number)) {
+                mailContent = mailContent.replace("%policy-number%", "-");
+                mailContentUser = mailContentUser.replace("%policy-number%", "-");
+            }
+            
+            // get full name
+            String fullName = firstName + " " + lastName;
+            if(!StringUtils.isEmpty(fullName.trim())){
+                String temp = "%class" + "fullName" + "%";
+                mailContent = A1filterHidden(temp, mailContent);
+                mailContentUser = A1filterHidden(temp, mailContentUser);
+                mailContent = A1filter("%" + "fullName" + "%", fullName, mailContent);
+                mailContentUser = A1filter("%" + "fullName" + "%", fullName, mailContentUser);
+            }
+            
+            List<String> emailAddressAdmins = new ArrayList<String>();
+            if(isSendEmailBasedonTopic){
+                String emailEnquiry = componentPros.getValue().get("EmailAndDB").getValue().get("EmailAddress"+topickey).getStringValue();
+                if(!StringUtils.isEmpty(emailEnquiry) && !StringUtils.isEmpty(paramSelectTopic)){
+                    emailAddressAdmins = Arrays.asList(emailEnquiry.split(","));
+                }else{
+                    emailAddressAdmins = Arrays.asList(emailAddressAdmin.split(","));
+                }
+            } else {
+                String emailEnquiry = pageContext.getAttribute("emailEnquiry").toString();
+                if(!StringUtils.isEmpty(emailEnquiry) && !StringUtils.isEmpty(paramSelectTopic)){
+                    emailAddressAdmins = Arrays.asList(emailEnquiry.split(","));
+                }else{
+                    emailAddressAdmins = Arrays.asList(emailAddressAdmin.split(","));
+                }
+            }
+    
+            // Email sending code (commented out as in original)
+            /*
+            if(!StringUtils.isEmpty(emailAddressUser) && !StringUtils.isEmpty(mailSubject)){
+                CmsHtmlMail smToCs = new CmsHtmlMail();
+                smToCs.setMsg(mailContentUser);
+                smToCs.setSubject(mailSubject);
+                smToCs.setCharset("UTF-8");
+                smToCs.setFrom(emailAddressAdmins.get(0));
+                smToCs.addTo(emailAddressUser);
+                smToCs.send();
+            }
+            
+            for (String emailAdmin : emailAddressAdmins) {
+                CmsHtmlMail smToCsAdmin = new CmsHtmlMail();
+                smToCsAdmin.setMsg(mailContent);
+                smToCsAdmin.setSubject(adminMailSubject);
+                smToCsAdmin.setCharset("UTF-8");
+                smToCsAdmin.setFrom(emailAddressUser);
+                smToCsAdmin.addTo(emailAdmin);
+                smToCsAdmin.send(); 
+            }
+            */
+            
+            isEmailSuccess = true; 
+            
+        } catch(Exception e){
+            out.print(responeObject(500, errMesageSendMailFails + ": " + e.getMessage()));
+            return;
+        }
+
+        if(!isEmailSuccess){
+            return;
+        } 
+        
+        // API Call Section with Enhanced Error Handling
+        HttpURLConnection con = null;
+        OutputStream os = null;
+        
+        try {
+            // Step 1: Get access token with SSL error handling
+            try {
+                con = createSecureConnection("https://pru-api-nprd.prudential.com.vn/pruforce/lead-corporate/uat1/auth/login", "POST");
+                
+                JSONObject jsonObject = new JSONObject();
+
+                byte[] bout = jsonObject.toString().getBytes("UTF-8");
+                con.setFixedLengthStreamingMode(bout.length);
+                con.connect();
+                
+                os = con.getOutputStream();
+                os.write(bout);
+                os.flush();
+
+                String content = readResponse(con);
+                
+                if(con.getResponseCode() != 200){
+                    throw new Exception("Authentication failed. Response code: " + con.getResponseCode() + ", Response: " + content);    
+                }
+
+                JSONObject responseObj = new JSONObject(content);
+                accessToken = responseObj.getString("accessToken");
+                
+            } catch(SSLHandshakeException sslEx) {
+                throw new Exception("SSL Handshake failed - Server connection rejected. This may be due to TLS version incompatibility in older Java versions. Details: " + sslEx.getMessage());
+            } catch(ConnectException connEx) {
+                throw new Exception("Connection refused - Unable to connect to authentication server. Details: " + connEx.getMessage());
+            } catch(SocketTimeoutException timeEx) {
+                throw new Exception("Connection timeout - Authentication server did not respond in time. Details: " + timeEx.getMessage());
+            } finally {
+                if (os != null) { try { os.close(); } catch (Exception e) {} }
+                if (con != null) { con.disconnect(); }
+            }
+
+            // Step 2: Send lead data with enhanced error handling
+            try {
+                con = createSecureConnection("https://pru-api-nprd.prudential.com.vn/pruforce/lead-corporate/uat1/lead/saveReferraInfo", "POST");
+                con.setRequestProperty("Authorization", "Bearer " + accessToken);
+                con.setRequestProperty("Cookie", "JSESSIONID=uMEqdM4bbxEPW3WxBnUsEB58FLtR7Ux0BD7eBS5W; visid_incap_2439160=HnGgAHe5RZGFXE7Zhb8VknNnAmEAAAAAQUIPAAAAAACGoKq1pBfgHaFiGxrNWX1K; visid_incap_2520419=Hlqz69LhTPWpwOn973fkR3BYB2EAAAAAQUIPAAAAAADK0LSSnRzumfMjGJF7f2jr");
+                
+                String policy_number_status = "true";
+                if(StringUtils.isEmpty(policy_number)) {
+                    policy_number_status = "false";
+                }
+                
+                Date dNow = new Date();
+                SimpleDateFormat ft = new SimpleDateFormat("dd-MMM-yyyy HH:mm");
+    			
+    			firstName = firstName.replaceAll("&nbsp;", " ");
+    			lastName = lastName.replaceAll("&nbsp;", " ");
+    			country_code = country_code.replace("+", "");
+    			nationalId = "HCM";
+    			lastName = "600000012";
+    			provide_area = "76062238";
+                
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("fullName", firstName);
+                jsonObject.put("mobile", country_code+phone_no);
+                jsonObject.put("nationalId", nationalId);
+                jsonObject.put("referralAgent", lastName);
+                jsonObject.put("policyNumber", provide_area);
+
+                byte[] bout = jsonObject.toString().getBytes("UTF-8");
+                con.setFixedLengthStreamingMode(bout.length);
+                con.connect();
+                
+                os = con.getOutputStream();
+                os.write(bout);
+                os.flush();
+
+                apiResponse = readResponse(con);
+               
+                if(con.getResponseCode() != 200){
+                    throw new Exception("API call failed. Response code: " + con.getResponseCode() + ", Response: " + apiResponse);    
+                } else {
+                    isApiCallSuccess = true;   
+                }
+                
+            } catch(SSLHandshakeException sslEx) {
+                throw new Exception("SSL Handshake failed during lead submission - Server connection rejected. This may be due to TLS version incompatibility. Details: " + sslEx.getMessage());
+            } catch(ConnectException connEx) {
+                throw new Exception("Connection refused during lead submission - Unable to connect to API server. Details: " + connEx.getMessage());
+            } catch(SocketTimeoutException timeEx) {
+                throw new Exception("Connection timeout during lead submission - API server did not respond in time. Details: " + timeEx.getMessage());
+            } finally {
+                if (os != null) { try { os.close(); } catch (Exception e) {} }
+                if (con != null) { con.disconnect(); }
+            }
+   
+        } catch(Exception ex) {
+            // Enhanced error reporting with specific SSL handling
+            String errorMessage = "API Error: " + ex.getMessage();
+            
+            if (ex.getMessage().contains("SSL") || ex.getMessage().contains("TLS")) {
+                errorMessage += " [SOLUTION: Update Java version or configure TLS settings]";
+            } else if (ex.getMessage().contains("timeout")) {
+                errorMessage += " [SOLUTION: Check network connectivity and increase timeout values]";
+            } else if (ex.getMessage().contains("Connection refused")) {
+                errorMessage += " [SOLUTION: Verify API endpoint URL and server availability]";
+            }
+            
+            out.print(responeObject(400, errorMessage));
+            hasResponded = true;
+            isApiCallSuccess = false;
+        }
+        
+        // Single response output
+        if (!hasResponded) {
+            if(isSendEmail && isApiCallSuccess){
+                out.print(responeObject(200, "send email and api call success."));    
+            } else if (isEmailSuccess) {
+                out.print(responeObject(200, "send email success."));
+            } else {
+                out.print(responeObject(500, "Unknown error occurred."));
+            }
+        }
+        
+    } catch(Exception mainEx) {
+        if (!hasResponded) {
+            out.print(responeObject(500, "System Error: " + mainEx.getMessage()));
         }
     }
 %>
-
-<!DOCTYPE html>
-<html>
-<head>
-    <title>OpenCms Authentication API Integration - Debug Mode</title>
-    <meta charset="UTF-8">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-        }
-        input[type="text"], input[type="password"], input[type="url"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .checkbox-group input[type="checkbox"] {
-            margin-right: 10px;
-        }
-        .submit-btn {
-            background-color: #007cba;
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-        .submit-btn:hover {
-            background-color: #005a8b;
-        }
-        .result-container {
-            margin-top: 30px;
-            padding: 20px;
-            border-radius: 4px;
-        }
-        .success {
-            background-color: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-        }
-        .error {
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-        }
-        .debug-section {
-            background-color: #e9ecef;
-            border: 1px solid #dee2e6;
-            color: #495057;
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 15px;
-        }
-        .debug-title {
-            font-weight: bold;
-            color: #343a40;
-            margin-bottom: 10px;
-        }
-        .debug-item {
-            margin-bottom: 8px;
-            font-family: monospace;
-            font-size: 12px;
-        }
-        .token-info {
-            background-color: #e7f3ff;
-            border: 1px solid #b8daff;
-            color: #004085;
-            padding: 15px;
-            border-radius: 4px;
-            margin-top: 15px;
-        }
-        .token-value {
-            font-family: monospace;
-            background-color: #f8f9fa;
-            padding: 5px;
-            border-radius: 3px;
-            word-break: break-all;
-        }
-        .note {
-            background-color: #fff3cd;
-            border: 1px solid #ffeaa7;
-            color: #856404;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-        .warning {
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-        pre {
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 3px;
-            overflow-x: auto;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        .two-column {
-            display: flex;
-            gap: 20px;
-        }
-        .column {
-            flex: 1;
-        }
-        @media (max-width: 768px) {
-            .two-column {
-                flex-direction: column;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>OpenCms Authentication API Integration - Debug Mode</h1>
-        
-        <div class="note">
-            <strong>Debug Mode:</strong> This version provides comprehensive debugging information 
-            including request/response details, timing information, and detailed error analysis.
-        </div>
-        
-        <!-- System Information -->
-        <div class="debug-section">
-            <div class="debug-title">System Information</div>
-            <% for (Map.Entry<String, String> entry : systemInfo.entrySet()) { %>
-                <div class="debug-item"><strong><%= entry.getKey() %>:</strong> <%= entry.getValue() %></div>
-            <% } %>
-        </div>
-        
-        <form method="post" action="">
-            <div class="form-group">
-                <label for="apiBaseUrl">API Base URL:</label>
-                <input type="url" 
-                       id="apiBaseUrl" 
-                       name="apiBaseUrl" 
-                       value="<%= apiBaseUrl %>" 
-                       placeholder="https://your-api-server.com"
-                       required>
-            </div>
-            
-            <div class="form-group">
-                <label for="username">Username:</label>
-                <input type="text" 
-                       id="username" 
-                       name="username" 
-                       value="<%= username %>" 
-                       placeholder="Enter your username"
-                       required>
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" 
-                       id="password" 
-                       name="password" 
-                       placeholder="Enter your password"
-                       required>
-            </div>
-            
-            <div class="checkbox-group">
-                <input type="checkbox" 
-                       id="trustAllCerts" 
-                       name="trustAllCerts" 
-                       value="true"
-                       <%= trustAllCerts ? "checked" : "" %>>
-                <label for="trustAllCerts">Trust All Certificates (Debug Only - NOT for production)</label>
-            </div>
-            
-            <% if (trustAllCerts) { %>
-                <div class="warning">
-                    <strong>Warning:</strong> "Trust All Certificates" is enabled. This bypasses SSL certificate validation 
-                    and should ONLY be used for debugging purposes, never in production!
-                </div>
-            <% } %>
-            
-            <button type="submit" class="submit-btn">Authenticate & Debug</button>
-        </form>
-        
-        <% if (showResult && authResult != null) { %>
-            <div class="result-container <%= "true".equals(authResult.get("success")) ? "success" : "error" %>">
-                <% if ("true".equals(authResult.get("success"))) { %>
-                    <h3>✓ Authentication Successful!</h3>
-                <% } else { %>
-                    <h3>✗ Authentication Failed</h3>
-                <% } %>
-                
-                <!-- Request Details -->
-                <div class="debug-section">
-                    <div class="debug-title">Request Details</div>
-                    <div class="debug-item"><strong>URL:</strong> <%= authResult.get("request_url") %></div>
-                    <div class="debug-item"><strong>Protocol:</strong> <%= authResult.get("url_protocol") %></div>
-                    <div class="debug-item"><strong>Host:</strong> <%= authResult.get("url_host") %></div>
-                    <div class="debug-item"><strong>Port:</strong> <%= authResult.get("url_port") %></div>
-                    <div class="debug-item"><strong>Path:</strong> <%= authResult.get("url_path") %></div>
-                    <div class="debug-item"><strong>Request Body:</strong> <%= authResult.get("request_body") %></div>
-                    <div class="debug-item"><strong>Body Length:</strong> <%= authResult.get("request_body_length") %> bytes</div>
-                    <div class="debug-item"><strong>Connect Timeout:</strong> <%= authResult.get("connect_timeout") %></div>
-                    <div class="debug-item"><strong>Read Timeout:</strong> <%= authResult.get("read_timeout") %></div>
-                    
-                    <% if (authResult.get("ssl_trust") != null) { %>
-                        <div class="debug-item"><strong>SSL Trust:</strong> <%= authResult.get("ssl_trust") %></div>
-                    <% } %>
-                    
-                    <details style="margin-top: 10px;">
-                        <summary style="cursor: pointer; font-weight: bold;">Request Headers</summary>
-                        <pre><%= authResult.get("request_headers") %></pre>
-                    </details>
-                </div>
-                
-                <!-- Timing Information -->
-                <div class="debug-section">
-                    <div class="debug-title">Timing Information</div>
-                    <% if (authResult.get("connection_start") != null) { %>
-                        <div class="debug-item"><strong>Connection Start:</strong> <%= authResult.get("connection_start") %></div>
-                    <% } %>
-                    <% if (authResult.get("request_sent") != null) { %>
-                        <div class="debug-item"><strong>Request Sent:</strong> <%= authResult.get("request_sent") %></div>
-                    <% } %>
-                    <% if (authResult.get("response_received") != null) { %>
-                        <div class="debug-item"><strong>Response Received:</strong> <%= authResult.get("response_received") %></div>
-                    <% } %>
-                    <div class="debug-item"><strong>Total Time:</strong> <%= authResult.get("total_time") %></div>
-                </div>
-                
-                <!-- Response Details -->
-                <div class="debug-section">
-                    <div class="debug-title">Response Details</div>
-                    <div class="debug-item"><strong>Response Code:</strong> <%= authResult.get("responseCode") %></div>
-                    <div class="debug-item"><strong>Response Message:</strong> <%= authResult.get("responseMessage") %></div>
-                    <div class="debug-item"><strong>Content Type:</strong> <%= authResult.get("response_content_type") %></div>
-                    <div class="debug-item"><strong>Content Length:</strong> <%= authResult.get("response_content_length") %> bytes</div>
-                    <% if (authResult.get("response_length") != null) { %>
-                        <div class="debug-item"><strong>Actual Response Length:</strong> <%= authResult.get("response_length") %> characters</div>
-                    <% } %>
-                    
-                    <details style="margin-top: 10px;">
-                        <summary style="cursor: pointer; font-weight: bold;">Response Headers</summary>
-                        <pre><%= authResult.get("response_headers") %></pre>
-                    </details>
-                </div>
-                
-                <% if ("true".equals(authResult.get("success"))) { %>
-                    <!-- Success Information -->
-                    <% if (authResult.get("accessToken") != null || authResult.get("expiresIn") != null) { %>
-                        <div class="token-info">
-                            <h4>Authentication Details:</h4>
-                            
-                            <% if (authResult.get("accessToken") != null) { %>
-                                <p><strong>Access Token:</strong></p>
-                                <div class="token-value"><%= authResult.get("accessToken") %></div>
-                            <% } %>
-                            
-                            <% if (authResult.get("expiresIn") != null) { %>
-                                <p><strong>Expires In:</strong> <%= authResult.get("expiresIn") %> seconds</p>
-                            <% } %>
-                        </div>
-                    <% } %>
-                    
-                    <% if (authResult.get("response") != null) { %>
-                        <details style="margin-top: 15px;">
-                            <summary style="cursor: pointer; font-weight: bold;">Raw Response Body</summary>
-                            <pre><%= authResult.get("response") %></pre>
-                        </details>
-                    <% } %>
-                    
-                <% } else { %>
-                    <!-- Error Information -->
-                    <div class="debug-section">
-                        <div class="debug-title">Error Analysis</div>
-                        
-                        <% if (authResult.get("errorType") != null) { %>
-                            <div class="debug-item"><strong>Error Type:</strong> <%= authResult.get("errorType") %></div>
-                        <% } %>
-                        
-                        <% if (authResult.get("error") != null) { %>
-                            <div class="debug-item"><strong>Error:</strong> <%= authResult.get("error") %></div>
-                        <% } %>
-                        
-                        <% if (authResult.get("errorDetails") != null) { %>
-                            <div class="debug-item"><strong>Details:</strong> <%= authResult.get("errorDetails") %></div>
-                        <% } %>
-                        
-                        <!-- Specific debugging hints -->
-                        <% if (authResult.get("ssl_handshake_debug") != null) { %>
-                            <div class="debug-item"><strong>SSL Debug:</strong> <%= authResult.get("ssl_handshake_debug") %></div>
-                        <% } %>
-                        <% if (authResult.get("ssl_debug") != null) { %>
-                            <div class="debug-item"><strong>SSL Info:</strong> <%= authResult.get("ssl_debug") %></div>
-                        <% } %>
-                        <% if (authResult.get("protocol_debug") != null) { %>
-                            <div class="debug-item"><strong>Protocol Debug:</strong> <%= authResult.get("protocol_debug") %></div>
-                        <% } %>
-                        <% if (authResult.get("certificate_debug") != null) { %>
-                            <div class="debug-item"><strong>Certificate Debug:</strong> <%= authResult.get("certificate_debug") %></div>
-                        <% } %>
-                        <% if (authResult.get("timeout_debug") != null) { %>
-                            <div class="debug-item"><strong>Timeout Debug:</strong> <%= authResult.get("timeout_debug") %></div>
-                        <% } %>
-                        <% if (authResult.get("connection_debug") != null) { %>
-                            <div class="debug-item"><strong>Connection Debug:</strong> <%= authResult.get("connection_debug") %></div>
-                        <% } %>
-                        <% if (authResult.get("dns_debug") != null) { %>
-                            <div class="debug-item"><strong>DNS Debug:</strong> <%= authResult.get("dns_debug") %></div>
-                        <% } %>
-                        
-                        <% if (authResult.get("default_ssl_context") != null) { %>
-                            <div class="debug-item"><strong>Default SSL Context:</strong> <%= authResult.get("default_ssl_context") %></div>
-                        <% } %>
-                        <% if (authResult.get("ssl_context_error") != null) { %>
-                            <div class="debug-item"><strong>SSL Context Error:</strong> <%= authResult.get("ssl_context_error") %></div>
-                        <% } %>
-                    </div>
-                    
-                    <% if (authResult.get("errorResponse") != null) { %>
-                        <details style="margin-top: 15px;">
-                            <summary style="cursor: pointer; font-weight: bold;">Server Error Response</summary>
-                            <pre><%= authResult.get("errorResponse") %></pre>
-                        </details>
-                    <% } %>
-                <% } %>
-            </div>
-        <% } %>
-    </div>
-</body>
-</html>
