@@ -107,3 +107,31 @@ if (referralId && referralAgent) {
 }
 </script>
 
+<div class="share-btn" onclick="shareLink()">&#x1f4e4; Share</div>
+
+
+<button onclick="copyLink()">Copy Link</button>
+
+// Copy link to clipboard
+function copyLink() {
+    var text = document.getElementById("uniqueId").textContent;
+    navigator.clipboard.writeText(text).then(function() {
+        alert("Link copied to clipboard!");
+    }, function(err) {
+        alert("Failed to copy: " + err);
+    });
+}
+
+// Share link via Web Share API (if supported)
+function shareLink() {
+    var text = document.getElementById("uniqueId").textContent;
+    if (navigator.share) {
+        navigator.share({
+            title: "Referral Link",
+            text: "Here is my referral link:",
+            url: text
+        }).catch(err => console.log("Share failed:", err));
+    } else {
+        alert("Sharing not supported on this browser.");
+    }
+}
