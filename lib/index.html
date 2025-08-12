@@ -322,6 +322,13 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
         
         String responseMessage = "";
 
+        // 1 Debug Success Response
+        String checkIdentifyRequest = "";
+        String checkIdentifySuccessResponse = "";
+        String saveReferralRequest = "";
+        String saveReferralResponse = "";
+        // End Declare
+
         try{
 
             //get access token
@@ -381,6 +388,10 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
             
             jsonObject = new JSONObject();
             jsonObject.put("identifyNo", checkNationalId);
+            
+            // 2 Debug Success Response
+            checkIdentifyRequest = jsonObject.toString();
+            // End Store check-identify request
 
             bout = jsonObject.toString().getBytes(StandardCharsets.UTF_8);
             length = bout.length;
@@ -400,6 +411,10 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
             in.close();
             
             String checkIdentifyResponse = content.toString();
+            // 3 Debug Success Response
+            checkIdentifySuccessResponse = content.toString();
+            // End Store check-identify response
+
             con.disconnect();
             
             if(con.getResponseCode() != 200){
@@ -430,7 +445,7 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
             }
 
             //send payload to saveReferraInfo (only if check-identify passed)
-            url = new URL("https://pru-api-nprd.prudential.com.vn/pruforce/lead-corporate/uat1/lead/saveReferraInfo"); 
+            url = new URL("https://pru-api-nprd.prudential.com.vn/pruforce/lead-corporate/uat1/lead/saveReferralInfo"); 
             con = (HttpURLConnection) url.openConnection(); 
             con.setRequestProperty("Authorization", "Bearer " + accessToken);
             con.setRequestProperty("Content-Type", "application/json");
@@ -479,6 +494,9 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
             jsonObject.put("gender", "gender");
             jsonObject.put("provinceCode", paramSelectTopics[1]);*/
 			
+            // 4 Debug Success Response
+            saveReferralRequest = jsonObject.toString();
+            // End Store saveReferralInfo request
 
             bout = jsonObject.toString().getBytes(StandardCharsets.UTF_8);
   			length = bout.length;
@@ -497,7 +515,10 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
     		    content.append(inputLine);
 		    }
             in.close();
-            apiResponse =content.toString();
+            apiResponse = content.toString();
+            // 5 Debug Success Response
+            saveReferralResponse = content.toString();
+            // End Store saveReferralInfo response
             con.disconnect();
            
 		  
@@ -511,10 +532,6 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
               try {
         JSONObject saveReferraResponse = new JSONObject(apiResponse);
         String referralId = saveReferraResponse.getString("referralId");
-
-        // ---- Store in Session (optional) ----
-        session.setAttribute("referralId", referralId);
-        session.setAttribute("referralAgent", lastName);
 
         // ---- Store in Cookie for HTML/JavaScript access ----
         Cookie referralCookie = new Cookie("referralId", referralId);
@@ -540,7 +557,10 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
         }
   
         if(isSendEmail && isApiCallSuccess){
-            out.print(responeObject(200, "send email and api call success."));    
+            // 6 Debug Success Response
+            String successMessage = "send email and api call success. CHECK-IDENTIFY REQUEST: " + checkIdentifyRequest + " CHECK-IDENTIFY RESPONSE: " + checkIdentifySuccessResponse + " SAVE-REFERRAL REQUEST: " + saveReferralRequest + " SAVE-REFERRAL RESPONSE: " + saveReferralResponse;
+            out.print(responeObject(200, successMessage));    
+            // End
         }else{
            // out.print(responeObject(200, "send email success."));
         }
