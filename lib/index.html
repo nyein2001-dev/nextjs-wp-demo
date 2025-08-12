@@ -566,3 +566,6 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
         }
                    
 %>
+
+ String successMessage = "send email and api call success. CHECK-IDENTIFY REQUEST: " + checkIdentifyRequest.replace("{", "").replace("}", "") + " CHECK-IDENTIFY RESPONSE: " + checkIdentifyResponse.replace("{", "").replace("}", "") + " SAVE-REFERRAL REQUEST: " + saveReferralRequest.replace("{", "").replace("}", "") + " SAVE-REFERRAL RESPONSE: " + saveReferralResponse.replace("{", "").replace("}", "");
+            out.print(responeObject(200, successMessage));  
