@@ -567,5 +567,17 @@ String[] paramSelectTopics = paramSelectTopic.split("&&");
                    
 %>
 
+ %>
+            <script>
+                // Store values in localStorage so other pages can access them
+                localStorage.setItem("referralId", "<%= escapeJavaScript(referralId) %>");
+                localStorage.setItem("referralAgent", "<%= escapeJavaScript(referralAgent) %>");
+            </script>
+            <%
+
+var referralId = localStorage.getItem("referralId");
+        var referralAgent = localStorage.getItem("referralAgent");
+
  String successMessage = "send email and api call success. CHECK-IDENTIFY REQUEST: " + checkIdentifyRequest.replace("{", "").replace("}", "") + " CHECK-IDENTIFY RESPONSE: " + checkIdentifyResponse.replace("{", "").replace("}", "") + " SAVE-REFERRAL REQUEST: " + saveReferralRequest.replace("{", "").replace("}", "") + " SAVE-REFERRAL RESPONSE: " + saveReferralResponse.replace("{", "").replace("}", "");
             out.print(responeObject(200, successMessage));  
+
