@@ -10,3 +10,26 @@ public String responeObjectWithData(int statusCode, String message, String refer
         sb.append("}");
         return sb.toString();
     }
+
+
+setTimeout(function () {
+    let finalUrl = redirect_url_link; // base redirect link
+
+    // Extract values from API response
+    let referralId = t.referralId || "";
+    let referralAgent = t.referralAgent || "";
+
+    // Build query parameters
+    if (referralId) {
+        let params = "uniqueId=" + encodeURIComponent(referralId);
+        if (referralAgent) {
+            params += "&agentCode=" + encodeURIComponent(referralAgent);
+        }
+        params += "&source=corpweb";
+
+        finalUrl += (finalUrl.includes("?") ? "&" : "?") + params;
+    }
+
+    // Redirect
+    window.location.href = finalUrl;
+}, 300);
