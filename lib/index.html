@@ -33,3 +33,57 @@ setTimeout(function () {
     // Redirect
     window.location.href = finalUrl;
 }, 300);
+
+
+// Store referral data in sessionStorage
+if (t.referralId) {
+    sessionStorage.setItem("referralId", t.referralId);
+    sessionStorage.setItem("referralAgent", t.referralAgent || "");
+}
+
+
+let referralId = sessionStorage.getItem("referralId") || "";
+let referralAgent = sessionStorage.getItem("referralAgent") || "";
+
+let finalUrl = redirect_url_link;
+
+if (referralId) {
+    let params = "uniqueId=" + encodeURIComponent(referralId);
+    if (referralAgent) {
+        params += "&agentCode=" + encodeURIComponent(referralAgent);
+    }
+    params += "&source=corpweb";
+
+    finalUrl += (finalUrl.includes("?") ? "&" : "?") + params;
+}
+
+window.location.href = finalUrl;
+
+
+----------------------------------------------------------------------------
+
+// Save only if referralId is provided
+if (t.referralId) {
+    localStorage.setItem("referralId", t.referralId);
+    localStorage.setItem("referralAgent", t.referralAgent || "");
+}
+
+
+let referralId = localStorage.getItem("referralId") || "";
+let referralAgent = localStorage.getItem("referralAgent") || "";
+
+let finalUrl = redirect_url_link;
+
+if (referralId) {
+    let params = "uniqueId=" + encodeURIComponent(referralId);
+    if (referralAgent) {
+        params += "&agentCode=" + encodeURIComponent(referralAgent);
+    }
+    params += "&source=corpweb";
+
+    finalUrl += (finalUrl.includes("?") ? "&" : "?") + params;
+}
+
+// Redirect
+window.location.href = finalUrl;
+
