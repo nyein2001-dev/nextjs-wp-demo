@@ -1,89 +1,16 @@
- out.print(responeObjectWithData(200, "send email and api call success.", referralId, referralAgent));   
+1. Full Name        ^[a-zA-Z\s]{2,100}$
 
-public String responeObjectWithData(int statusCode, String message, String referralId, String referralAgent) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{");
-        sb.append("\"statusCode\":").append(statusCode).append(",");
-        sb.append("\"message\":\"").append(message).append("\",");
-        sb.append("\"referralId\":\"").append(referralId != null ? referralId : "").append("\",");
-        sb.append("\"referralAgent\":\"").append(referralAgent != null ? referralAgent : "").append("\"");
-        sb.append("}");
-        return sb.toString();
-    }
+Mobile number        ^[0-9]{10}$
 
 
-setTimeout(function () {
-    let finalUrl = redirect_url_link; // base redirect link
+national Id ^[0-9]{12}$
 
-    // Extract values from API response
-    let referralId = t.referralId || "";
-    let referralAgent = t.referralAgent || "";
+number only     ^[0-9]{1,20}$|^$
 
-    // Build query parameters
-    if (referralId) {
-        let params = "uniqueId=" + encodeURIComponent(referralId);
-        if (referralAgent) {
-            params += "&agentCode=" + encodeURIComponent(referralAgent);
-        }
-        params += "&source=corpweb";
-
-        finalUrl += (finalUrl.includes("?") ? "&" : "?") + params;
-    }
-
-    // Redirect
-    window.location.href = finalUrl;
-}, 300);
+dropdown         ^(?!^$).+$
 
 
-// Store referral data in sessionStorage
-if (t.referralId) {
-    sessionStorage.setItem("referralId", t.referralId);
-    sessionStorage.setItem("referralAgent", t.referralAgent || "");
-}
 
-
-let referralId = sessionStorage.getItem("referralId") || "";
-let referralAgent = sessionStorage.getItem("referralAgent") || "";
-
-let finalUrl = redirect_url_link;
-
-if (referralId) {
-    let params = "uniqueId=" + encodeURIComponent(referralId);
-    if (referralAgent) {
-        params += "&agentCode=" + encodeURIComponent(referralAgent);
-    }
-    params += "&source=corpweb";
-
-    finalUrl += (finalUrl.includes("?") ? "&" : "?") + params;
-}
-
-window.location.href = finalUrl;
-
-
-----------------------------------------------------------------------------
-
-// Save only if referralId is provided
-if (t.referralId) {
-    localStorage.setItem("referralId", t.referralId);
-    localStorage.setItem("referralAgent", t.referralAgent || "");
-}
-
-
-let referralId = localStorage.getItem("referralId") || "";
-let referralAgent = localStorage.getItem("referralAgent") || "";
-
-let finalUrl = redirect_url_link;
-
-if (referralId) {
-    let params = "uniqueId=" + encodeURIComponent(referralId);
-    if (referralAgent) {
-        params += "&agentCode=" + encodeURIComponent(referralAgent);
-    }
-    params += "&source=corpweb";
-
-    finalUrl += (finalUrl.includes("?") ? "&" : "?") + params;
-}
-
-// Redirect
-window.location.href = finalUrl;
-
+When calling the api endpoint /lead/check-identify to verify if the user is existing customer, if the API response is False, display the error message: "Anh/Chị không thỏa điều kiện tham gia chương trình"
+If the user accesses an invalid referral link which is missing parameters,
+Display an error message: "Đường dẫn trang người được giới thiệu không hợp lệ" above the Referee form
