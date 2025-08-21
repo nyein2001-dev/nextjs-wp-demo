@@ -24,6 +24,17 @@ https://10.193.16.22:447/en/
 maxlength="10"
 
 https://sgrasstvn4yt5w9.pru.intranet.asia:8443/opencms/vi/referee-form/index.html?uniqueId=040fa5f4-988d-472e-a64a-18f0fe6dfd2d&source=corpweb
- 
+
+
+<input class="field-input" type="tel" name="phone-no" id="phone-no"
+    ${isCheckRegex}
+    ${isCheckRequirePhone}
+    placeholder=" "
+    data-parsley-trigger="keyup input"
+    data-parsley-validation-threshold="1"
+    maxlength="10"
+    oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+
+
 
 
