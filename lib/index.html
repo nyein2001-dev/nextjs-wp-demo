@@ -9,7 +9,8 @@ data-parsley-validation-threshold="1"
 
 ^[^0-9@#$%^&*+=|\\<>/]*$
 
-^[a-zA-Z\u00C0-\u017F\u1EA0-\u1EF9\u4E00-\u9FFF\u0E00-\u0E7F\s\-'\.]+$
+
+<input onkeypress="return !/[0-9@#$%^&*+=|\\<>/]/.test(String.fromCharCode(event.which))"/>
 
 PAMB (Malaysia)
 
@@ -40,6 +41,7 @@ https://sgrasstvn4yt5w9.pru.intranet.asia:8443/opencms/vi/referee-form/index.htm
     data-parsley-validation-threshold="1"
     maxlength="10"
     oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+
 
 
 
