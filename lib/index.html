@@ -9,6 +9,8 @@ data-parsley-validation-threshold="1"
 
 ^[^0-9@#$%^&*+=|\\<>/]*$
 
+    <input data-parsley-pattern="^[^0-9!@#$%^&*()_+=[\]{}|\\:;\"<>?,~/`]*$"
+       onkeypress="return !/[0-9!@#$%^&*()_+=[\]{}|\\:;\"<>?,~/`]/.test(String.fromCharCode(event.which))"/>
 
 <input onkeypress="return !/[0-9@#$%^&*+=|\\<>/]/.test(String.fromCharCode(event.which))"/>
 
@@ -41,6 +43,7 @@ https://sgrasstvn4yt5w9.pru.intranet.asia:8443/opencms/vi/referee-form/index.htm
     data-parsley-validation-threshold="1"
     maxlength="10"
     oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+
 
 
 
