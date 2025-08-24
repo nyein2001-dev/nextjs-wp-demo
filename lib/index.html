@@ -1,63 +1,162 @@
-Form: https://10.193.16.22:449/vi/referrer-form/index.html
-Thank You page: https://10.193.16.22:449/vi/referrer-form/thank-you/index.html
 
-Form: https://10.193.16.22:449/vi/referee-form/index.html
-Thank You page: https://10.193.16.22:449/vi/referee-form/thank-you/index.html
+<div class="agreement-form_label">${item.value.Instructions}</div>
 
-data-parsley-trigger="change focus blur" 
-data-parsley-validation-threshold="1"
+<c:if test="${fn:length(item.valueList.Attachment) > 0}">
+    <c:if test="${item.value.AttachmentNotice.isSet}">
+        <br>
+        <h2 class="agreement-form_label">Attachment:</h2>
+        <div class="agreement-form_label">${item.value.AttachmentNotice}</div>
+    </c:if>
+</c:if>
 
-^[^0-9@#$%^&*+=|\\<>/]*$
-
-   <input data-parsley-pattern="^[^0-9!@#$%^&*()_+=[\]{}|\\:;&quot;'<>?,~/`]*$"
-       onkeypress="return !/[0-9!@#$%^&*()_+=[\]{}|\\:;&quot;'<>?,~/`]/.test(String.fromCharCode(event.which))"/>
-
-    <input data-parsley-pattern="^[^0-9!@#$%^&*()_+=[\]{}|\\:;\"<>?,~/`]*$"
-       onkeypress="return !/[0-9!@#$%^&*()_+=[\]{}|\\:;\"<>?,~/`]/.test(String.fromCharCode(event.which))"/>
-
-<input onkeypress="return !/[0-9@#$%^&*+=|\\<>/]/.test(String.fromCharCode(event.which))"/>
-
-PAMB (Malaysia)
-
-https://10.193.16.22:450/en/
-
-PBTB (Malaysia)
-
-https://10.193.16.22:451/ms/
-
-PLUK (Philippines)
-
-https://10.193.16.22:447/en/
-
-
-maxlength="10"
-
-/^\p{L}+$/u
-
-
-https://sgrasstvn4yt5w9.pru.intranet.asia:8443/opencms/vi/referee-form/index.html?uniqueId=040fa5f4-988d-472e-a64a-18f0fe6dfd2d&source=corpweb
-
-
-<input class="field-input" type="tel" name="phone-no" id="phone-no"
-    ${isCheckRegex}
-    ${isCheckRequirePhone}
-    placeholder=" "
-    data-parsley-trigger="keyup input"
-    data-parsley-validation-threshold="1"
-    maxlength="10"
-    oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
-
-
-
-
-
-
-const baseUrl = window.location.origin;
-console.log(baseUrl);
-
-
-
-
-
-
-
+<c:if test="${fn:length(item.valueList.Attachment) > 0}">
+    <c:choose>
+        <c:when test="${item.value.dynamicfiles == 'true'}">
+            <!-- Dynamic Files Version -->
+            <div id="dynamic-files-container">
+                <c:forEach var="attachment" items="${item.valueList.Attachment}" varStatus="status">
+                    <div class="file-attachment-item" id="file-item-${status.index}" style="${status.index == 0 ? 'display: block;' : 'display: none;'}">
+                        <h2 class="group-field_title" ${attachment.value.IsRequired == 'true' ? 'data-required' : ''}>${attachment.value.Description}</h2>
+                        <fieldset class="section-radio-checkbox" data-radio-checkbox-popup="">
+                            <legend class="sr-only">${attachment.value.Description}</legend>
+                            <div class="radio-checkbox_wrapper field-item">
+                                <div class="radio-checkbox" style="${status.index > 0 ? 'position: relative;' : ''}">
+                                    <c:set var="isCheckRequireATopic" value=""></c:set>
+                                    <c:if test="${attachment.value.AttachementValidation.value.Title == 'Mandatory'}">
+                                        <c:set var="isCheckRequireATopic" value="required data-parsley-required-message='${attachment.value.AttachementValidation.value.ErrorMessageMandatoryField}'"></c:set>
+                                    </c:if>
+                                    <input class="field-input" ${status.index == 0 ? isCheckRequireATopic : ''} type="file" 
+                                           name="${attachment.value.Description}" 
+                                           placeholder="${attachment.value.Description}" 
+                                           data-is-required="${attachment.value.IsRequired}" 
+                                           data-parsley-trigger="keyup input" 
+                                           accept="${attachment.value.AcceptFileType}">
+                                    <c:if test="${status.index > 0}">
+                                        <button type="button" class="remove-file-btn" onclick="removeFileItem(${status.index})" 
+                                                style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); background: #ff4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 14px; line-height: 1;">×</button>
+                                    </c:if>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                </c:forEach>
+                
+                <!-- Add Document Button -->
+                <button type="button" id="add-document-btn" onclick="addNextDocument()" 
+                        style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 10px;">
+                    Add Next Document
+                </button>
+                
+                <!-- Max Files Message -->
+                <div id="max-files-message" style="display: none; color: #666; font-style: italic; margin-top: 10px;">
+                    You have reached the maximum number of documents allowed.
+                </div>
+            </div>
+            
+            <script>
+                var currentVisibleIndex = 0; // Currently showing first file (index 0)
+                var totalFiles = ${fn:length(item.valueList.Attachment)}; // Total number of files from forEach
+                
+                function addNextDocument() {
+                    var nextIndex = currentVisibleIndex + 1;
+                    
+                    if (nextIndex < totalFiles) {
+                        var nextItem = document.getElementById('file-item-' + nextIndex);
+                        if (nextItem) {
+                            nextItem.style.display = 'block';
+                            currentVisibleIndex = nextIndex;
+                            
+                            // If we've reached the last file, hide the add button and show message
+                            if (currentVisibleIndex >= totalFiles - 1) {
+                                document.getElementById('add-document-btn').style.display = 'none';
+                                document.getElementById('max-files-message').style.display = 'block';
+                            }
+                        }
+                    }
+                }
+                
+                function removeFileItem(index) {
+                    if (index === 0) return; // First item cannot be removed
+                    
+                    var fileItem = document.getElementById('file-item-' + index);
+                    var fileInput = fileItem.querySelector('input[type="file"]');
+                    
+                    // Clear the file input
+                    fileInput.value = '';
+                    
+                    // Hide the file item
+                    fileItem.style.display = 'none';
+                    
+                    // Adjust currentVisibleIndex if needed
+                    if (index === currentVisibleIndex && currentVisibleIndex > 0) {
+                        currentVisibleIndex--;
+                    }
+                    
+                    // Show add button and hide max message if we're not at the end
+                    var visibleCount = 0;
+                    for (var i = 0; i < totalFiles; i++) {
+                        var item = document.getElementById('file-item-' + i);
+                        if (item && item.style.display !== 'none') {
+                            visibleCount++;
+                        }
+                    }
+                    
+                    if (visibleCount < totalFiles) {
+                        document.getElementById('add-document-btn').style.display = 'inline-block';
+                        document.getElementById('max-files-message').style.display = 'none';
+                        
+                        // Update currentVisibleIndex to the last visible item
+                        for (var i = totalFiles - 1; i >= 0; i--) {
+                            var item = document.getElementById('file-item-' + i);
+                            if (item && item.style.display !== 'none') {
+                                currentVisibleIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // Initialize
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Ensure only the first file item is visible initially
+                    for (var i = 1; i < totalFiles; i++) {
+                        var item = document.getElementById('file-item-' + i);
+                        if (item) {
+                            item.style.display = 'none';
+                        }
+                    }
+                    currentVisibleIndex = 0;
+                    
+                    // Hide add button if there's only one file
+                    if (totalFiles <= 1) {
+                        document.getElementById('add-document-btn').style.display = 'none';
+                    }
+                });
+            </script>
+        </c:when>
+        
+        <c:otherwise>
+            <!-- Original Static Files Version (unchanged when dynamicfiles is false) -->
+            <c:forEach var="attachment" items="${item.valueList.Attachment}">
+                <h2 class="group-field_title" ${attachment.value.IsRequired == 'true' ? 'data-required' : ''}>${attachment.value.Description}</h2>
+                <fieldset class="section-radio-checkbox" data-radio-checkbox-popup="">
+                    <legend class="sr-only">${attachment.value.Description}</legend>
+                    <div class="radio-checkbox_wrapper field-item">
+                        <div class="radio-checkbox">
+                            <c:set var="isCheckRequireATopic" value=""></c:set>
+                            <c:if test="${attachment.value.AttachementValidation.value.Title == 'Mandatory'}">
+                                <c:set var="isCheckRequireATopic" value="required data-parsley-required-message='${attachment.value.AttachementValidation.value.ErrorMessageMandatoryField}'"></c:set>
+                            </c:if>
+                            <input class="field-input" ${isCheckRequireATopic} type="file" 
+                                   name="${attachment.value.Description}" 
+                                   placeholder="${attachment.value.Description}" 
+                                   data-is-required="${attachment.value.IsRequired}" 
+                                   data-parsley-trigger="keyup input" 
+                                   accept="${attachment.value.AcceptFileType}">
+                        </div>
+                    </div>
+                </fieldset>
+            </c:forEach>
+        </c:otherwise>
+    </c:choose>
+</c:if>
