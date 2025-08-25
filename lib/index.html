@@ -1,3 +1,10 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Enhanced File Attachments</title>
+</head>
+<body>
 
 <div class="agreement-form_label">${item.value.Instructions}</div>
 
@@ -54,24 +61,31 @@
             </div>
             
             <script>
-                var currentVisibleIndex = 0; // Currently showing first file (index 0)
                 var totalFiles = ${fn:length(item.valueList.Attachment)}; // Total number of files from forEach
                 
                 function addNextDocument() {
-                    var nextIndex = currentVisibleIndex + 1;
-                    
-                    if (nextIndex < totalFiles) {
-                        var nextItem = document.getElementById('file-item-' + nextIndex);
-                        if (nextItem) {
-                            nextItem.style.display = 'block';
-                            currentVisibleIndex = nextIndex;
-                            
-                            // If we've reached the last file, hide the add button and show message
-                            if (currentVisibleIndex >= totalFiles - 1) {
-                                document.getElementById('add-document-btn').style.display = 'none';
-                                document.getElementById('max-files-message').style.display = 'block';
-                            }
+                    // Find the first hidden file item to show
+                    for (var i = 1; i < totalFiles; i++) {
+                        var item = document.getElementById('file-item-' + i);
+                        if (item && item.style.display === 'none') {
+                            item.style.display = 'block';
+                            break;
                         }
+                    }
+                    
+                    // Check if all files are now visible
+                    var visibleCount = 0;
+                    for (var i = 0; i < totalFiles; i++) {
+                        var item = document.getElementById('file-item-' + i);
+                        if (item && item.style.display !== 'none') {
+                            visibleCount++;
+                        }
+                    }
+                    
+                    // If all files are visible, hide add button and show max message
+                    if (visibleCount >= totalFiles) {
+                        document.getElementById('add-document-btn').style.display = 'none';
+                        document.getElementById('max-files-message').style.display = 'block';
                     }
                 }
                 
@@ -87,35 +101,22 @@
                     // Hide the file item
                     fileItem.style.display = 'none';
                     
-                    // Adjust currentVisibleIndex if needed
-                    if (index === currentVisibleIndex && currentVisibleIndex > 0) {
-                        currentVisibleIndex--;
-                    }
-                    
-                    // Show add button and hide max message if we're not at the end
-                    var visibleCount = 0;
-                    for (var i = 0; i < totalFiles; i++) {
+                    // Check if we have any hidden files to potentially show
+                    var hasHiddenFiles = false;
+                    for (var i = 1; i < totalFiles; i++) {
                         var item = document.getElementById('file-item-' + i);
-                        if (item && item.style.display !== 'none') {
-                            visibleCount++;
+                        if (item && item.style.display === 'none') {
+                            hasHiddenFiles = true;
+                            break;
                         }
                     }
                     
-                    if (visibleCount < totalFiles) {
+                    // Show add button and hide max message if there are hidden files
+                    if (hasHiddenFiles) {
                         document.getElementById('add-document-btn').style.display = 'inline-block';
                         document.getElementById('max-files-message').style.display = 'none';
-                        
-                        // Update currentVisibleIndex to the last visible item
-                        for (var i = totalFiles - 1; i >= 0; i--) {
-                            var item = document.getElementById('file-item-' + i);
-                            if (item && item.style.display !== 'none') {
-                                currentVisibleIndex = i;
-                                break;
-                            }
-                        }
                     }
                 }
-                
                 // Initialize
                 document.addEventListener('DOMContentLoaded', function() {
                     // Ensure only the first file item is visible initially
@@ -125,7 +126,6 @@
                             item.style.display = 'none';
                         }
                     }
-                    currentVisibleIndex = 0;
                     
                     // Hide add button if there's only one file
                     if (totalFiles <= 1) {
@@ -160,3 +160,6 @@
         </c:otherwise>
     </c:choose>
 </c:if>
+
+</body>
+</html>
