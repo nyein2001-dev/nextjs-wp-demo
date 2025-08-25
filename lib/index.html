@@ -37,7 +37,9 @@
                                            placeholder="${attachment.value.Description}" 
                                            data-is-required="${attachment.value.IsRequired}" 
                                            data-parsley-trigger="keyup input" 
-                                           accept="${attachment.value.AcceptFileType}">
+                                           accept="${attachment.value.AcceptFileType}"
+                                           onchange="handleFileChange(${status.index})"
+                                           data-file-index="${status.index}">
                                     <c:if test="${status.index > 0}">
                                         <button type="button" class="remove-file-btn" onclick="removeFileItem(${status.index})" 
                                                 style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); background: #ff4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 14px; line-height: 1;">×</button>
@@ -48,9 +50,9 @@
                     </div>
                 </c:forEach>
                 
-                <!-- Add Document Button -->
+                <!-- Add Document Button (hidden by default) -->
                 <button type="button" id="add-document-btn" onclick="addNextDocument()" 
-                        style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 10px;">
+                        style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 10px; display: none;">
                     Add Next Document
                 </button>
                 
