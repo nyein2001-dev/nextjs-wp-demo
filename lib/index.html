@@ -65,35 +65,103 @@
             <script>
                 var totalFiles = ${fn:length(item.valueList.Attachment)}; // Total number of files from forEach
                 
+                function handleFileChange(index) {
+                    console.log('File changed for input ' + index);
+                    var fileInput = document.querySelector('input[data-file-index="' + index + '"]');
+                    var addButton = document.getElementById('add-document-btn');
+                    
+                    if (fileInput && fileInput.files.length > 0) {
+                        // File was attached, check if we can show the add button
+                        console.log('File attached to input ' + index);
+                        updateAddButtonVisibility();
+                    } else {
+                        // File was removed, hide the add button
+                        console.log('File removed from input ' + index);
+                        addButton.style.display = 'none';
+                    }
+                }
+                
+                function updateAddButtonVisibility() {
+                    console.log('Updating add button visibility');
+                    var addButton = document.getElementById('add-document-btn');
+                    var maxMessage = document.getElementById('max-files-message');
+                    
+                    // Check if all files are visible
+                    var allVisible = true;
+                    for (var i = 0; i < totalFiles; i++) {
+                        var item = document.getElementById('file-item-' + i);
+                        if (item && item.style.display === 'none') {
+                            allVisible = false;
+                            break;
+                        }
+                    }
+                    
+                    if (allVisible) {
+                        // All files are visible, show max message and hide button
+                        addButton.style.display = 'none';
+                        maxMessage.style.display = 'block';
+                        console.log('All files visible - hiding button');
+                        return;
+                    }
+                    
+                    // Check if the highest visible file has an attachment
+                    var highestVisibleIndex = -1;
+                    var highestVisibleHasFile = false;
+                    
+                    for (var i = totalFiles - 1; i >= 0; i--) {
+                        var item = document.getElementById('file-item-' + i);
+                        if (item && item.style.display !== 'none') {
+                            highestVisibleIndex = i;
+                            var fileInput = item.querySelector('input[type="file"]');
+                            if (fileInput && fileInput.files.length > 0) {
+                                highestVisibleHasFile = true;
+                            }
+                            break;
+                        }
+                    }
+                    
+                    console.log('Highest visible index: ' + highestVisibleIndex + ', has file: ' + highestVisibleHasFile);
+                    
+                    // Show button only if the highest visible file has an attachment
+                    if (highestVisibleHasFile && highestVisibleIndex < totalFiles - 1) {
+                        addButton.style.display = 'inline-block';
+                        maxMessage.style.display = 'none';
+                        console.log('Showing add button');
+                    } else {
+                        addButton.style.display = 'none';
+                        if (allVisible) {
+                            maxMessage.style.display = 'block';
+                        } else {
+                            maxMessage.style.display = 'none';
+                        }
+                        console.log('Hiding add button');
+                    }
+                }
+                
                 function addNextDocument() {
+                    console.log('Adding next document');
                     // Find the first hidden file item to show
                     for (var i = 1; i < totalFiles; i++) {
                         var item = document.getElementById('file-item-' + i);
                         if (item && item.style.display === 'none') {
                             item.style.display = 'block';
+                            console.log('Showing file item ' + i);
                             break;
                         }
                     }
                     
-                    // Check if all files are now visible
-                    var visibleCount = 0;
-                    for (var i = 0; i < totalFiles; i++) {
-                        var item = document.getElementById('file-item-' + i);
-                        if (item && item.style.display !== 'none') {
-                            visibleCount++;
-                        }
-                    }
+                    // Hide the add button after adding (will show again when new file is attached)
+                    var addButton = document.getElementById('add-document-btn');
+                    addButton.style.display = 'none';
                     
-                    // If all files are visible, hide add button and show max message
-                    if (visibleCount >= totalFiles) {
-                        document.getElementById('add-document-btn').style.display = 'none';
-                        document.getElementById('max-files-message').style.display = 'block';
-                    }
+                    // Update button visibility based on current state
+                    updateAddButtonVisibility();
                 }
                 
                 function removeFileItem(index) {
                     if (index === 0) return; // First item cannot be removed
                     
+                    console.log('Removing file item ' + index);
                     var fileItem = document.getElementById('file-item-' + index);
                     var fileInput = fileItem.querySelector('input[type="file"]');
                     
@@ -103,24 +171,14 @@
                     // Hide the file item
                     fileItem.style.display = 'none';
                     
-                    // Check if we have any hidden files to potentially show
-                    var hasHiddenFiles = false;
-                    for (var i = 1; i < totalFiles; i++) {
-                        var item = document.getElementById('file-item-' + i);
-                        if (item && item.style.display === 'none') {
-                            hasHiddenFiles = true;
-                            break;
-                        }
-                    }
-                    
-                    // Show add button and hide max message if there are hidden files
-                    if (hasHiddenFiles) {
-                        document.getElementById('add-document-btn').style.display = 'inline-block';
-                        document.getElementById('max-files-message').style.display = 'none';
-                    }
+                    // Update button visibility
+                    updateAddButtonVisibility();
                 }
+                
                 // Initialize
                 document.addEventListener('DOMContentLoaded', function() {
+                    console.log('Initializing dynamic files with total files: ' + totalFiles);
+                    
                     // Ensure only the first file item is visible initially
                     for (var i = 1; i < totalFiles; i++) {
                         var item = document.getElementById('file-item-' + i);
@@ -129,10 +187,9 @@
                         }
                     }
                     
-                    // Hide add button if there's only one file
-                    if (totalFiles <= 1) {
-                        document.getElementById('add-document-btn').style.display = 'none';
-                    }
+                    // Hide add button and max message initially
+                    document.getElementById('add-document-btn').style.display = 'none';
+                    document.getElementById('max-files-message').style.display = 'none';
                 });
             </script>
         </c:when>
