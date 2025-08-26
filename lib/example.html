@@ -76,7 +76,36 @@ Details of your concern:
 
 Message
 
-pattern="^[A-Za-z0-9.,'&quot;!?()\-\\s]{1,2000}$"
+<div id="refund_request" class="dropdown-view" style="display: block;">
+  <div class="radio-checkbox_wrapper field-item" style="display:flex; gap:40px;">
+    
+    <!-- First radio -->
+    <label for="refund_of_excess_renewal_premium_payment" 
+           style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+      <input type="radio" 
+             name="Refund Request" 
+             id="refund_of_excess_renewal_premium_payment" 
+             value="Refund of excess renewal premium payment"
+             data-dropdown-id="refund_request" 
+             data-parsley-multiple="Refund Request">
+      Refund of Excess Renewal Premium Payment
+    </label>
+
+    <!-- Second radio -->
+    <label for="refund_of_application_payment" 
+           style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+      <input type="radio" 
+             name="Refund Request" 
+             id="refund_of_application_payment" 
+             value="Refund of application payment"
+             data-dropdown-id="refund_request" 
+             data-parsley-multiple="Refund Request">
+      Refund of Application Payment
+    </label>
+
+  </div>
+</div>
+
 
 
 
