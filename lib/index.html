@@ -19,31 +19,37 @@
 <c:if test="${fn:length(item.valueList.Attachment) > 0}">
     <c:choose>
         <c:when test="${item.value.dynamicfiles == 'true'}">
-            <!-- Dynamic Files Version -->
+            <!-- Enhanced Dynamic Files Version -->
             <div id="dynamic-files-container">
                 <c:forEach var="attachment" items="${item.valueList.Attachment}" varStatus="status">
                     <div class="file-attachment-item" id="file-item-${status.index}" style="${status.index == 0 ? 'display: block;' : 'display: none;'}">
-                        <h2 class="group-field_title" ${attachment.value.IsRequired == 'true' ? 'data-required' : ''}>${attachment.value.Description}</h2>
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <h2 class="group-field_title" ${attachment.value.IsRequired == 'true' ? 'data-required' : ''} style="margin: 0; flex: 1;">${attachment.value.Description}</h2>
+                            <c:if test="${status.index > 0}">
+                                <button type="button" class="remove-file-btn" onclick="removeFileItem(${status.index})" 
+                                        style="background: #ff4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 14px; line-height: 1; margin-left: 10px;">×</button>
+                            </c:if>
+                        </div>
                         <fieldset class="section-radio-checkbox" data-radio-checkbox-popup="">
                             <legend class="sr-only">${attachment.value.Description}</legend>
                             <div class="radio-checkbox_wrapper field-item">
-                                <div class="radio-checkbox" style="${status.index > 0 ? 'position: relative;' : ''}">
+                                <div class="radio-checkbox">
                                     <c:set var="isCheckRequireATopic" value=""></c:set>
                                     <c:if test="${attachment.value.AttachementValidation.value.Title == 'Mandatory'}">
-                                        <c:set var="isCheckRequireATopic" value="required data-parsley-required-message='${attachment.value.AttachementValidation.value.ErrorMessageMandatoryField}'"></c:set>
+                                        <c:set var="isCheckRequireATopic" value="data-parsley-required-message='${attachment.value.AttachementValidation.value.ErrorMessageMandatoryField}'"></c:set>
                                     </c:if>
-                                    <input class="field-input" ${status.index == 0 ? isCheckRequireATopic : ''} type="file" 
+                                    <input class="field-input" 
+                                           ${status.index == 0 && attachment.value.IsRequired == 'true' ? 'required' : ''} 
+                                           type="file" 
                                            name="${attachment.value.Description}" 
                                            placeholder="${attachment.value.Description}" 
                                            data-is-required="${attachment.value.IsRequired}" 
+                                           data-original-required="${attachment.value.IsRequired}"
                                            data-parsley-trigger="keyup input" 
                                            accept="${attachment.value.AcceptFileType}"
                                            onchange="handleFileChange(${status.index})"
-                                           data-file-index="${status.index}">
-                                    <c:if test="${status.index > 0}">
-                                        <button type="button" class="remove-file-btn" onclick="removeFileItem(${status.index})" 
-                                                style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); background: #ff4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 14px; line-height: 1;">×</button>
-                                    </c:if>
+                                           data-file-index="${status.index}"
+                                           ${isCheckRequireATopic}>
                                 </div>
                             </div>
                         </fieldset>
@@ -52,7 +58,7 @@
                 
                 <!-- Add Document Button (hidden by default) -->
                 <button type="button" id="add-document-btn" onclick="addNextDocument()" 
-                        style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 10px; display: none;">
+                        style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 10px; display: none;">
                     Add Next Document
                 </button>
                 
@@ -64,6 +70,41 @@
             
             <script>
                 var totalFiles = ${fn:length(item.valueList.Attachment)}; // Total number of files from forEach
+                
+                function updateRequiredAttribute(fileInput, isVisible) {
+                    var originalRequired = fileInput.getAttribute('data-original-required');
+                    var parsleyMessage = fileInput.getAttribute('data-parsley-required-message');
+                    
+                    if (isVisible && originalRequired === 'true') {
+                        // Make it required only if visible AND the specific attachment.value.IsRequired is true
+                        fileInput.setAttribute('required', 'required');
+                        fileInput.setAttribute('data-is-required', 'true');
+                        if (parsleyMessage) {
+                            fileInput.setAttribute('data-parsley-required-message', parsleyMessage);
+                        }
+                        // Update the title element's data-required attribute
+                        var parentItem = fileInput.closest('.file-attachment-item');
+                        if (parentItem) {
+                            var title = parentItem.querySelector('.group-field_title');
+                            if (title) {
+                                title.setAttribute('data-required', '');
+                            }
+                        }
+                    } else {
+                        // Remove required if hidden OR the specific attachment.value.IsRequired is false
+                        fileInput.removeAttribute('required');
+                        fileInput.setAttribute('data-is-required', 'false');
+                        fileInput.removeAttribute('data-parsley-required-message');
+                        // Remove the title element's data-required attribute
+                        var parentItem = fileInput.closest('.file-attachment-item');
+                        if (parentItem) {
+                            var title = parentItem.querySelector('.group-field_title');
+                            if (title) {
+                                title.removeAttribute('data-required');
+                            }
+                        }
+                    }
+                }
                 
                 function handleFileChange(index) {
                     console.log('File changed for input ' + index);
@@ -146,6 +187,12 @@
                         if (item && item.style.display === 'none') {
                             item.style.display = 'block';
                             console.log('Showing file item ' + i);
+                            
+                            // Update required attribute for this newly visible item
+                            var fileInput = item.querySelector('input[type="file"]');
+                            if (fileInput) {
+                                updateRequiredAttribute(fileInput, true);
+                            }
                             break;
                         }
                     }
@@ -168,6 +215,9 @@
                     // Clear the file input
                     fileInput.value = '';
                     
+                    // Update required attribute for this now hidden item
+                    updateRequiredAttribute(fileInput, false);
+                    
                     // Hide the file item
                     fileItem.style.display = 'none';
                     
@@ -184,6 +234,20 @@
                         var item = document.getElementById('file-item-' + i);
                         if (item) {
                             item.style.display = 'none';
+                            // Update required attribute for hidden items
+                            var fileInput = item.querySelector('input[type="file"]');
+                            if (fileInput) {
+                                updateRequiredAttribute(fileInput, false);
+                            }
+                        }
+                    }
+                    
+                    // Ensure the first item has correct required attribute
+                    var firstItem = document.getElementById('file-item-0');
+                    if (firstItem) {
+                        var fileInput = firstItem.querySelector('input[type="file"]');
+                        if (fileInput) {
+                            updateRequiredAttribute(fileInput, true);
                         }
                     }
                     
