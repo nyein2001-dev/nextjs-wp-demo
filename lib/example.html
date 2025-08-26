@@ -76,39 +76,35 @@ Details of your concern:
 
 Message
 
-<div id="refund_request" class="dropdown-view" style="display:block;">
-  <div class="field-item"
-       style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:24px;">
-
-    <!-- Option 1 -->
-    <label for="refund_of_excess_renewal_premium_payment"
-           style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; line-height:1.3;">
-      <input type="radio"
-             name="Refund Request"
-             id="refund_of_excess_renewal_premium_payment"
-             value="Refund of excess renewal premium payment"
-             data-dropdown-id="refund_request"
-             data-parsley-multiple="Refund Request"
-             style="flex:0 0 auto; margin-top:2px; position:static; appearance:auto; -webkit-appearance:auto;">
-      <span>Refund Of Excess Renewal Premium Payment</span>
-    </label>
-
-    <!-- Option 2 -->
-    <label for="refund_of_application_payment"
-           style="display:flex; align-items:flex-start; gap:10px; cursor:pointer; line-height:1.3;">
-      <input type="radio"
-             name="Refund Request"
-             id="refund_of_application_payment"
-             value="Refund of application payment"
-             data-dropdown-id="refund_request"
-             data-parsley-multiple="Refund Request"
-             style="flex:0 0 auto; margin-top:2px; position:static; appearance:auto; -webkit-appearance:auto;">
-      <span>Refund Of Application Payment</span>
-    </label>
-
-  </div>
+<div id="refund_request" style="display: block;">
+    <div style="display: flex; gap: 40px; flex-wrap: wrap;">
+        <!-- First radio -->
+        <label for="refund_of_excess_renewal_premium_payment" 
+               style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; border-radius: 4px; transition: background-color 0.2s;"
+               onmouseover="this.style.backgroundColor='#f8f9fa'" 
+               onmouseout="this.style.backgroundColor='transparent'">
+            <input type="radio" 
+                   style="width: 18px; height: 18px; cursor: pointer; accent-color: #007bff;"
+                   name="refund_request" 
+                   id="refund_of_excess_renewal_premium_payment" 
+                   value="Refund of excess renewal premium payment">
+            <span>Refund of Excess Renewal Premium Payment</span>
+        </label>
+        
+        <!-- Second radio -->
+        <label for="refund_of_application_payment" 
+               style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; border-radius: 4px; transition: background-color 0.2s;"
+               onmouseover="this.style.backgroundColor='#f8f9fa'" 
+               onmouseout="this.style.backgroundColor='transparent'">
+            <input type="radio" 
+                   style="width: 18px; height: 18px; cursor: pointer; accent-color: #007bff;"
+                   name="refund_request" 
+                   id="refund_of_application_payment" 
+                   value="Refund of application payment">
+            <span>Refund of Application Payment</span>
+        </label>
+    </div>
 </div>
-
 
 
 
