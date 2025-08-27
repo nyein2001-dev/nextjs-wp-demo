@@ -1,288 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Enhanced File Attachments</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Form</title>
 </head>
 <body>
-
-<div class="agreement-form_label">${item.value.Instructions}</div>
-
-<c:if test="${fn:length(item.valueList.Attachment) > 0}">
-    <c:if test="${item.value.AttachmentNotice.isSet}">
-        <br>
-        <h2 class="agreement-form_label">Attachment:</h2>
-        <div class="agreement-form_label">${item.value.AttachmentNotice}</div>
-    </c:if>
-</c:if>
-
-<c:if test="${fn:length(item.valueList.Attachment) > 0}">
-    <c:choose>
-        <c:when test="${item.value.dynamicfiles == 'true'}">
-            <!-- Enhanced Dynamic Files Version -->
-            <div id="dynamic-files-container">
-                <c:forEach var="attachment" items="${item.valueList.Attachment}" varStatus="status">
-                    <div class="file-attachment-item" id="file-item-${status.index}" style="${status.index == 0 ? 'display: block;' : 'display: none;'}">
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <h2 class="group-field_title" ${attachment.value.IsRequired == 'true' ? 'data-required' : ''} style="margin: 0; flex: 1;">${attachment.value.Description}</h2>
-                            <c:if test="${status.index > 0}">
-                                <button type="button" class="remove-file-btn" onclick="removeFileItem(${status.index})" 
-                                        style="background: #ff4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 14px; line-height: 1; margin-left: 10px;">×</button>
-                            </c:if>
-                        </div>
-                        <fieldset class="section-radio-checkbox" data-radio-checkbox-popup="">
-                            <legend class="sr-only">${attachment.value.Description}</legend>
-                            <div class="radio-checkbox_wrapper field-item">
-                                <div class="radio-checkbox">
-                                    <c:set var="isCheckRequireATopic" value=""></c:set>
-                                    <c:if test="${attachment.value.AttachementValidation.value.Title == 'Mandatory'}">
-                                        <c:set var="isCheckRequireATopic" value="data-parsley-required-message='${attachment.value.AttachementValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                                    </c:if>
-                                    <input class="field-input" 
-                                           ${status.index == 0 && attachment.value.IsRequired == 'true' ? 'required' : ''} 
-                                           type="file" 
-                                           name="${attachment.value.Description}" 
-                                           placeholder="${attachment.value.Description}" 
-                                           data-is-required="${attachment.value.IsRequired}" 
-                                           data-original-required="${attachment.value.IsRequired}"
-                                           data-parsley-trigger="keyup input" 
-                                           accept="${attachment.value.AcceptFileType}"
-                                           onchange="handleFileChange(${status.index})"
-                                           data-file-index="${status.index}"
-                                           ${isCheckRequireATopic}>
-                                </div>
-                            </div>
-                        </fieldset>
-                    </div>
-                </c:forEach>
+    <div>
+        <form id="agentForm">
+            <div>
+                <select id="agentDropdown" onchange="handleDropdownChange()">
+                    <option value="no-agent">No active agent</option>
+                    <option value="with-agent">With existing agent</option>
+                </select>
+            </div>
+            
+            <div>
+                <label>Fields marked with * are required</label>
+            </div>
+            
+            <div>
+                <label for="policyNumber">Policy number *</label>
+                <input type="text" id="policyNumber" required>
+            </div>
+            
+            <div>
+                <label for="emailAddress">Email address *</label>
+                <input type="email" id="emailAddress" required>
+            </div>
+            
+            <!-- No Agent Section -->
+            <div id="noAgentSection">
+                <div>New Servicing Agent Information *</div>
+                <div>Please advise these details directly from your newly appointed agent.</div>
                 
-                <!-- Add Document Button (hidden by default) -->
-                <button type="button" id="add-document-btn" onclick="addNextDocument()" 
-                        style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-top: 10px; display: none;">
-                    Add Next Document
-                </button>
+                <div>
+                    <label for="agentCompleteName">New servicing agent's complete name *</label>
+                    <input type="text" id="agentCompleteName" required>
+                </div>
                 
-                <!-- Max Files Message -->
-                <div id="max-files-message" style="display: none; color: #666; font-style: italic; margin-top: 10px;">
-                    You have reached the maximum number of documents allowed.
+                <div>
+                    <label for="agentCode">New servicing agent's code *</label>
+                    <input type="text" id="agentCode" required>
+                </div>
+                
+                <div>
+                    <label for="branchName">New servicing agent's branch name *</label>
+                    <input type="text" id="branchName" required>
                 </div>
             </div>
             
-            <script>
-                var totalFiles = ${fn:length(item.valueList.Attachment)}; // Total number of files from forEach
+            <!-- With Agent Section -->
+            <div id="withAgentSection" style="display: none;">
+                <div>
+                    To request for Change of Agent or Transfer of Business, kindly attach the following:
+                </div>
                 
-                function updateRequiredAttribute(fileInput, isVisible) {
-                    var originalRequired = fileInput.getAttribute('data-original-required');
-                    var parsleyMessage = fileInput.getAttribute('data-parsley-required-message');
-                    
-                    if (isVisible && originalRequired === 'true') {
-                        // Make it required only if visible AND the specific attachment.value.IsRequired is true
-                        fileInput.setAttribute('required', 'required');
-                        fileInput.setAttribute('data-is-required', 'true');
-                        if (parsleyMessage) {
-                            fileInput.setAttribute('data-parsley-required-message', parsleyMessage);
-                        }
-                        // Update the title element's data-required attribute
-                        var parentItem = fileInput.closest('.file-attachment-item');
-                        if (parentItem) {
-                            var title = parentItem.querySelector('.group-field_title');
-                            if (title) {
-                                title.setAttribute('data-required', '');
-                            }
-                        }
-                    } else {
-                        // Remove required if hidden OR the specific attachment.value.IsRequired is false
-                        fileInput.removeAttribute('required');
-                        fileInput.setAttribute('data-is-required', 'false');
-                        fileInput.removeAttribute('data-parsley-required-message');
-                        // Remove the title element's data-required attribute
-                        var parentItem = fileInput.closest('.file-attachment-item');
-                        if (parentItem) {
-                            var title = parentItem.querySelector('.group-field_title');
-                            if (title) {
-                                title.removeAttribute('data-required');
-                            }
-                        }
-                    }
-                }
+                <div>
+                    • Duly accomplished <span style="color: blue; text-decoration: underline;">Change of Servicing Agent form</span> with the following signature requirements.
+                </div>
                 
-                function handleFileChange(index) {
-                    console.log('File changed for input ' + index);
-                    var fileInput = document.querySelector('input[data-file-index="' + index + '"]');
-                    var addButton = document.getElementById('add-document-btn');
-                    
-                    if (fileInput && fileInput.files.length > 0) {
-                        // File was attached, check if we can show the add button
-                        console.log('File attached to input ' + index);
-                        updateAddButtonVisibility();
-                    } else {
-                        // File was removed, hide the add button
-                        console.log('File removed from input ' + index);
-                        addButton.style.display = 'none';
-                    }
-                }
-                
-                function updateAddButtonVisibility() {
-                    console.log('Updating add button visibility');
-                    var addButton = document.getElementById('add-document-btn');
-                    var maxMessage = document.getElementById('max-files-message');
-                    
-                    // Check if all files are visible
-                    var allVisible = true;
-                    for (var i = 0; i < totalFiles; i++) {
-                        var item = document.getElementById('file-item-' + i);
-                        if (item && item.style.display === 'none') {
-                            allVisible = false;
-                            break;
-                        }
-                    }
-                    
-                    if (allVisible) {
-                        // All files are visible, show max message and hide button
-                        addButton.style.display = 'none';
-                        maxMessage.style.display = 'block';
-                        console.log('All files visible - hiding button');
-                        return;
-                    }
-                    
-                    // Check if the highest visible file has an attachment
-                    var highestVisibleIndex = -1;
-                    var highestVisibleHasFile = false;
-                    
-                    for (var i = totalFiles - 1; i >= 0; i--) {
-                        var item = document.getElementById('file-item-' + i);
-                        if (item && item.style.display !== 'none') {
-                            highestVisibleIndex = i;
-                            var fileInput = item.querySelector('input[type="file"]');
-                            if (fileInput && fileInput.files.length > 0) {
-                                highestVisibleHasFile = true;
-                            }
-                            break;
-                        }
-                    }
-                    
-                    console.log('Highest visible index: ' + highestVisibleIndex + ', has file: ' + highestVisibleHasFile);
-                    
-                    // Show button only if the highest visible file has an attachment
-                    if (highestVisibleHasFile && highestVisibleIndex < totalFiles - 1) {
-                        addButton.style.display = 'inline-block';
-                        maxMessage.style.display = 'none';
-                        console.log('Showing add button');
-                    } else {
-                        addButton.style.display = 'none';
-                        if (allVisible) {
-                            maxMessage.style.display = 'block';
-                        } else {
-                            maxMessage.style.display = 'none';
-                        }
-                        console.log('Hiding add button');
-                    }
-                }
-                
-                function addNextDocument() {
-                    console.log('Adding next document');
-                    // Find the first hidden file item to show
-                    for (var i = 1; i < totalFiles; i++) {
-                        var item = document.getElementById('file-item-' + i);
-                        if (item && item.style.display === 'none') {
-                            item.style.display = 'block';
-                            console.log('Showing file item ' + i);
-                            
-                            // Update required attribute for this newly visible item
-                            var fileInput = item.querySelector('input[type="file"]');
-                            if (fileInput) {
-                                updateRequiredAttribute(fileInput, true);
-                            }
-                            break;
-                        }
-                    }
-                    
-                    // Hide the add button after adding (will show again when new file is attached)
-                    var addButton = document.getElementById('add-document-btn');
-                    addButton.style.display = 'none';
-                    
-                    // Update button visibility based on current state
-                    updateAddButtonVisibility();
-                }
-                
-                function removeFileItem(index) {
-                    if (index === 0) return; // First item cannot be removed
-                    
-                    console.log('Removing file item ' + index);
-                    var fileItem = document.getElementById('file-item-' + index);
-                    var fileInput = fileItem.querySelector('input[type="file"]');
-                    
-                    // Clear the file input
-                    fileInput.value = '';
-                    
-                    // Update required attribute for this now hidden item
-                    updateRequiredAttribute(fileInput, false);
-                    
-                    // Hide the file item
-                    fileItem.style.display = 'none';
-                    
-                    // Update button visibility
-                    updateAddButtonVisibility();
-                }
-                
-                // Initialize
-                document.addEventListener('DOMContentLoaded', function() {
-                    console.log('Initializing dynamic files with total files: ' + totalFiles);
-                    
-                    // Ensure only the first file item is visible initially
-                    for (var i = 1; i < totalFiles; i++) {
-                        var item = document.getElementById('file-item-' + i);
-                        if (item) {
-                            item.style.display = 'none';
-                            // Update required attribute for hidden items
-                            var fileInput = item.querySelector('input[type="file"]');
-                            if (fileInput) {
-                                updateRequiredAttribute(fileInput, false);
-                            }
-                        }
-                    }
-                    
-                    // Ensure the first item has correct required attribute
-                    var firstItem = document.getElementById('file-item-0');
-                    if (firstItem) {
-                        var fileInput = firstItem.querySelector('input[type="file"]');
-                        if (fileInput) {
-                            updateRequiredAttribute(fileInput, true);
-                        }
-                    }
-                    
-                    // Hide add button and max message initially
-                    document.getElementById('add-document-btn').style.display = 'none';
-                    document.getElementById('max-files-message').style.display = 'none';
-                });
-            </script>
-        </c:when>
-        
-        <c:otherwise>
-            <!-- Original Static Files Version (unchanged when dynamicfiles is false) -->
-            <c:forEach var="attachment" items="${item.valueList.Attachment}">
-                <h2 class="group-field_title" ${attachment.value.IsRequired == 'true' ? 'data-required' : ''}>${attachment.value.Description}</h2>
-                <fieldset class="section-radio-checkbox" data-radio-checkbox-popup="">
-                    <legend class="sr-only">${attachment.value.Description}</legend>
-                    <div class="radio-checkbox_wrapper field-item">
-                        <div class="radio-checkbox">
-                            <c:set var="isCheckRequireATopic" value=""></c:set>
-                            <c:if test="${attachment.value.AttachementValidation.value.Title == 'Mandatory'}">
-                                <c:set var="isCheckRequireATopic" value="required data-parsley-required-message='${attachment.value.AttachementValidation.value.ErrorMessageMandatoryField}'"></c:set>
-                            </c:if>
-                            <input class="field-input" ${isCheckRequireATopic} type="file" 
-                                   name="${attachment.value.Description}" 
-                                   placeholder="${attachment.value.Description}" 
-                                   data-is-required="${attachment.value.IsRequired}" 
-                                   data-parsley-trigger="keyup input" 
-                                   accept="${attachment.value.AcceptFileType}">
-                        </div>
-                    </div>
-                </fieldset>
-            </c:forEach>
-        </c:otherwise>
-    </c:choose>
-</c:if>
+                <div>
+                    Additional requirements may be requested after your submission is reviewed.
+                </div>
+            </div>
+        </form>
+    </div>
 
+    <script>
+        function handleDropdownChange() {
+            const dropdown = document.getElementById('agentDropdown');
+            const noAgentSection = document.getElementById('noAgentSection');
+            const withAgentSection = document.getElementById('withAgentSection');
+            const agentFields = ['agentCompleteName', 'agentCode', 'branchName'];
+            
+            if (dropdown.value === 'no-agent') {
+                // Show no agent section
+                noAgentSection.style.display = 'block';
+                withAgentSection.style.display = 'none';
+                
+                // Make agent fields required
+                agentFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    field.required = true;
+                });
+            } else if (dropdown.value === 'with-agent') {
+                // Show with agent section
+                noAgentSection.style.display = 'none';
+                withAgentSection.style.display = 'block';
+                
+                // Remove required from agent fields
+                agentFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    field.required = false;
+                    field.value = ''; // Clear the fields
+                });
+            }
+        }
+        
+        // Initialize the form on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            handleDropdownChange();
+        });
+    </script>
 </body>
 </html>
