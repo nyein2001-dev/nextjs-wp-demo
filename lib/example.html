@@ -249,3 +249,7 @@ private String parseErrorMessage(String errorJson) {
 }
 
 080300002551
+
+if (r(e.currentTarget).attr("name") === "policyRadios") {
+        return; // Exit early, don't show popup
+    }
