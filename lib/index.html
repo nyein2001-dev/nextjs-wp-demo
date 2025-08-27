@@ -9,44 +9,54 @@
     <div>
         <form id="agentForm">
             <div>
+                <label for="agentDropdown">Do you have an existing agent?</label>
                 <select id="agentDropdown" onchange="handleDropdownChange()">
+                    <option value="">Please select...</option>
                     <option value="no-agent">No active agent</option>
                     <option value="with-agent">With existing agent</option>
                 </select>
             </div>
             
-            <div>
-                <label>Fields marked with * are required</label>
-            </div>
-            
-            <div>
-                <label for="policyNumber">Policy number *</label>
-                <input type="text" id="policyNumber" required>
-            </div>
-            
-            <div>
-                <label for="emailAddress">Email address *</label>
-                <input type="email" id="emailAddress" required>
+            <!-- Common Fields (initially hidden) -->
+            <div id="commonFields" style="display: none;">
+                <div>
+                    <label>Fields marked with * are required</label>
+                </div>
+                
+                <div>
+                    <label for="policyNumber">Policy number *</label>
+                    <input type="text" id="policyNumber" required>
+                </div>
+                
+                <div>
+                    <label for="emailAddress">Email address *</label>
+                    <input type="email" id="emailAddress" required>
+                </div>
             </div>
             
             <!-- No Agent Section -->
-            <div id="noAgentSection">
+            <div id="noAgentSection" style="display: none;">
                 <div>New Servicing Agent Information *</div>
                 <div>Please advise these details directly from your newly appointed agent.</div>
                 
                 <div>
                     <label for="agentCompleteName">New servicing agent's complete name *</label>
-                    <input type="text" id="agentCompleteName" required>
+                    <input type="text" id="agentCompleteName">
                 </div>
                 
                 <div>
                     <label for="agentCode">New servicing agent's code *</label>
-                    <input type="text" id="agentCode" required>
+                    <input type="text" id="agentCode">
                 </div>
                 
                 <div>
                     <label for="branchName">New servicing agent's branch name *</label>
-                    <input type="text" id="branchName" required>
+                    <input type="text" id="branchName">
+                </div>
+                
+                <div>
+                    <label for="noAgentFile">Upload required documents *</label>
+                    <input type="file" id="noAgentFile">
                 </div>
             </div>
             
@@ -63,6 +73,11 @@
                 <div>
                     Additional requirements may be requested after your submission is reviewed.
                 </div>
+                
+                <div>
+                    <label for="withAgentFile">Upload Change of Servicing Agent form *</label>
+                    <input type="file" id="withAgentFile">
+                </div>
             </div>
         </form>
     </div>
@@ -70,31 +85,47 @@
     <script>
         function handleDropdownChange() {
             const dropdown = document.getElementById('agentDropdown');
+            const commonFields = document.getElementById('commonFields');
             const noAgentSection = document.getElementById('noAgentSection');
             const withAgentSection = document.getElementById('withAgentSection');
+            
             const agentFields = ['agentCompleteName', 'agentCode', 'branchName'];
+            const noAgentFileField = document.getElementById('noAgentFile');
+            const withAgentFileField = document.getElementById('withAgentFile');
+            
+            // Hide all sections first
+            commonFields.style.display = 'none';
+            noAgentSection.style.display = 'none';
+            withAgentSection.style.display = 'none';
+            
+            // Reset all required fields
+            agentFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                field.required = false;
+                field.value = '';
+            });
+            noAgentFileField.required = false;
+            withAgentFileField.required = false;
             
             if (dropdown.value === 'no-agent') {
-                // Show no agent section
+                // Show common fields and no agent section
+                commonFields.style.display = 'block';
                 noAgentSection.style.display = 'block';
-                withAgentSection.style.display = 'none';
                 
-                // Make agent fields required
+                // Make agent fields and file required
                 agentFields.forEach(fieldId => {
                     const field = document.getElementById(fieldId);
                     field.required = true;
                 });
+                noAgentFileField.required = true;
+                
             } else if (dropdown.value === 'with-agent') {
-                // Show with agent section
-                noAgentSection.style.display = 'none';
+                // Show common fields and with agent section
+                commonFields.style.display = 'block';
                 withAgentSection.style.display = 'block';
                 
-                // Remove required from agent fields
-                agentFields.forEach(fieldId => {
-                    const field = document.getElementById(fieldId);
-                    field.required = false;
-                    field.value = ''; // Clear the fields
-                });
+                // Only file field is required for existing agent
+                withAgentFileField.required = true;
             }
         }
         
