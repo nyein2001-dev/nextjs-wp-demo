@@ -89,7 +89,6 @@
             const noAgentSection = document.getElementById('noAgentSection');
             const withAgentSection = document.getElementById('withAgentSection');
             
-            const agentFields = ['agentCompleteName', 'agentCode', 'branchName'];
             const noAgentFileField = document.getElementById('noAgentFile');
             const withAgentFileField = document.getElementById('withAgentFile');
             
@@ -98,12 +97,7 @@
             noAgentSection.style.display = 'none';
             withAgentSection.style.display = 'none';
             
-            // Reset all required fields
-            agentFields.forEach(fieldId => {
-                const field = document.getElementById(fieldId);
-                field.required = false;
-                field.value = '';
-            });
+            // Reset file fields required status
             noAgentFileField.required = false;
             withAgentFileField.required = false;
             
@@ -112,11 +106,7 @@
                 commonFields.style.display = 'block';
                 noAgentSection.style.display = 'block';
                 
-                // Make agent fields and file required
-                agentFields.forEach(fieldId => {
-                    const field = document.getElementById(fieldId);
-                    field.required = true;
-                });
+                // Make no agent file required
                 noAgentFileField.required = true;
                 
             } else if (dropdown.value === 'with-agent') {
@@ -124,7 +114,7 @@
                 commonFields.style.display = 'block';
                 withAgentSection.style.display = 'block';
                 
-                // Only file field is required for existing agent
+                // Make with agent file required
                 withAgentFileField.required = true;
             }
         }
