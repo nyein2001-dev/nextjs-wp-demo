@@ -158,3 +158,81 @@ submissionID and leadSource
 
 const uniqueId = params.get('uniqueId') || params.get('submissionID');
 
+// Replace your existing try-catch block with this enhanced version
+
+try {
+    os = con.getOutputStream();
+    os.write(bout);
+    
+    content = new StringBuffer();
+    
+    // Check response code first
+    int responseCode = con.getResponseCode();
+    
+    if (responseCode == 200) {
+        // Success - read from input stream
+        in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+        inputLine = "";
+        
+        while ((inputLine = in.readLine()) != null) {
+            content.append(inputLine);
+        }
+        in.close();
+        apiResponse = content.toString();
+        saveReferreeResponse = content.toString();
+        con.disconnect();
+        
+        isApiCallSuccess = true;
+    } else {
+        // Error - read from error stream to get detailed error message
+        InputStream errorStream = con.getErrorStream();
+        if (errorStream != null) {
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));
+            StringBuilder errorContent = new StringBuilder();
+            String errorLine;
+            
+            while ((errorLine = errorReader.readLine()) != null) {
+                errorContent.append(errorLine);
+            }
+            errorReader.close();
+            
+            // Parse the error JSON to extract user-friendly message
+            String errorResponse = errorContent.toString();
+            String userFriendlyMessage = parseErrorMessage(errorResponse);
+            
+            out.print(responseObject(400, "API Request Failed: " + userFriendlyMessage));
+        } else {
+            out.print(responseObject(400, "API Request Failed with status code: " + responseCode));
+        }
+        
+        isApiCallSuccess = false;
+        con.disconnect();
+        return; // Exit early on error
+    }
+    
+} catch (Exception ex) {
+    out.print(responseObject(400, "Connection Error: Unable to connect to the API service"));
+    isApiCallSuccess = false;
+}
+
+// Add this helper method to parse the error JSON and extract user-friendly message
+private String parseErrorMessage(String errorJson) {
+    try {
+        // Simple JSON parsing - you can use a JSON library like Jackson or Gson for better parsing
+        if (errorJson.contains("errorDescription")) {
+            // Extract error description from JSON
+            String[] parts = errorJson.split("\"errorDescription\":");
+            if (parts.length > 1) {
+                String desc = parts[1].split(",")[0].replace("\"", "").trim();
+                return desc;
+            }
+        }
+        
+        // If no specific error description found, return the full error
+        return errorJson;
+        
+    } catch (Exception e) {
+        return "Error processing request";
+    }
+}
+
