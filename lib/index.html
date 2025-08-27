@@ -3,126 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agent Form</title>
+    <title>Checkbox System</title>
 </head>
 <body>
     <div>
-        <form id="agentForm">
+        <form id="checkboxForm">
             <div>
-                <label for="agentDropdown">Do you have an existing agent?</label>
-                <select id="agentDropdown" onchange="handleDropdownChange()">
-                    <option value="">Please select...</option>
-                    <option value="no-agent">No active agent</option>
-                    <option value="with-agent">With existing agent</option>
-                </select>
+                <div>Acknowledgement of Policyowner: * (Pick at least 1)</div>
+                <div>I, as the Policyowner, would like to request to be transferred to the new Pru Life UK servicing agent as stated above due to the following reason/s:</div>
+                
+                <div>
+                    <input type="checkbox" id="reason1" name="acknowledgement" onchange="validateCheckboxes()">
+                    <label for="reason1">I want to consolidate all my policies with one servicing agent.</label>
+                </div>
+                
+                <div>
+                    <input type="checkbox" id="reason2" name="acknowledgement" onchange="validateCheckboxes()">
+                    <label for="reason2">It is convenient for me to make transactions, I find it easy to contact the new agent, and I am comfortable discussing my policy needs.</label>
+                </div>
+                
+                <div>
+                    <input type="checkbox" id="reason3" name="acknowledgement" onchange="validateCheckboxes()">
+                    <label for="reason3">Others (Please specify)</label>
+                    <input type="text" id="othersText" placeholder="Please specify..." style="display: none;">
+                </div>
+                
+                <div id="checkboxError" style="display: none; color: red;">Please select at least one reason.</div>
+                <div id="othersError" style="display: none; color: red;">Please specify the other reason.</div>
+                
+                <div style="font-style: italic;">Additional requirements may be requested after your submission is reviewed.</div>
             </div>
             
-            <!-- Common Fields (initially hidden) -->
-            <div id="commonFields" style="display: none;">
-                <div>
-                    <label>Fields marked with * are required</label>
-                </div>
-                
-                <div>
-                    <label for="policyNumber">Policy number *</label>
-                    <input type="text" id="policyNumber" required>
-                </div>
-                
-                <div>
-                    <label for="emailAddress">Email address *</label>
-                    <input type="email" id="emailAddress" required>
-                </div>
-            </div>
-            
-            <!-- No Agent Section -->
-            <div id="noAgentSection" style="display: none;">
-                <div>New Servicing Agent Information *</div>
-                <div>Please advise these details directly from your newly appointed agent.</div>
-                
-                <div>
-                    <label for="agentCompleteName">New servicing agent's complete name *</label>
-                    <input type="text" id="agentCompleteName">
-                </div>
-                
-                <div>
-                    <label for="agentCode">New servicing agent's code *</label>
-                    <input type="text" id="agentCode">
-                </div>
-                
-                <div>
-                    <label for="branchName">New servicing agent's branch name *</label>
-                    <input type="text" id="branchName">
-                </div>
-                
-                <div>
-                    <label for="noAgentFile">Upload required documents *</label>
-                    <input type="file" id="noAgentFile">
-                </div>
-            </div>
-            
-            <!-- With Agent Section -->
-            <div id="withAgentSection" style="display: none;">
-                <div>
-                    To request for Change of Agent or Transfer of Business, kindly attach the following:
-                </div>
-                
-                <div>
-                    • Duly accomplished <span style="color: blue; text-decoration: underline;">Change of Servicing Agent form</span> with the following signature requirements.
-                </div>
-                
-                <div>
-                    Additional requirements may be requested after your submission is reviewed.
-                </div>
-                
-                <div>
-                    <label for="withAgentFile">Upload Change of Servicing Agent form *</label>
-                    <input type="file" id="withAgentFile">
-                </div>
+            <!-- Output Display -->
+            <div id="acknowledgementOutput" style="margin-top: 20px; padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd; display: none;">
+                <div style="font-weight: bold;">Acknowledgement of Policyowner:</div>
+                <div id="outputContent"></div>
             </div>
         </form>
     </div>
 
     <script>
-        function handleDropdownChange() {
-            const dropdown = document.getElementById('agentDropdown');
-            const commonFields = document.getElementById('commonFields');
-            const noAgentSection = document.getElementById('noAgentSection');
-            const withAgentSection = document.getElementById('withAgentSection');
+        function validateCheckboxes() {
+            const checkboxes = document.querySelectorAll('input[name="acknowledgement"]');
+            const othersCheckbox = document.getElementById('reason3');
+            const othersText = document.getElementById('othersText');
+            const checkboxError = document.getElementById('checkboxError');
+            const othersError = document.getElementById('othersError');
             
-            const noAgentFileField = document.getElementById('noAgentFile');
-            const withAgentFileField = document.getElementById('withAgentFile');
+            let isChecked = false;
             
-            // Hide all sections first
-            commonFields.style.display = 'none';
-            noAgentSection.style.display = 'none';
-            withAgentSection.style.display = 'none';
+            // Check if at least one checkbox is selected
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    isChecked = true;
+                }
+            });
             
-            // Reset file fields required status
-            noAgentFileField.required = false;
-            withAgentFileField.required = false;
-            
-            if (dropdown.value === 'no-agent') {
-                // Show common fields and no agent section
-                commonFields.style.display = 'block';
-                noAgentSection.style.display = 'block';
-                
-                // Make no agent file required
-                noAgentFileField.required = true;
-                
-            } else if (dropdown.value === 'with-agent') {
-                // Show common fields and with agent section
-                commonFields.style.display = 'block';
-                withAgentSection.style.display = 'block';
-                
-                // Make with agent file required
-                withAgentFileField.required = true;
+            // Show/hide checkbox error
+            if (isChecked) {
+                checkboxError.style.display = 'none';
+            } else {
+                checkboxError.style.display = 'block';
             }
+            
+            // Handle "Others" text field
+            if (othersCheckbox.checked) {
+                othersText.style.display = 'inline-block';
+                othersText.required = true;
+                
+                // Add event listener to others text field for real-time output
+                othersText.addEventListener('input', updateOutput);
+            } else {
+                othersText.style.display = 'none';
+                othersText.required = false;
+                othersText.value = '';
+                othersError.style.display = 'none';
+                othersText.removeEventListener('input', updateOutput);
+            }
+            
+            updateOutput();
         }
         
-        // Initialize the form on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            handleDropdownChange();
-        });
+        function updateOutput() {
+            const reason1 = document.getElementById('reason1');
+            const reason2 = document.getElementById('reason2');
+            const reason3 = document.getElementById('reason3');
+            const othersText = document.getElementById('othersText');
+            const output = document.getElementById('acknowledgementOutput');
+            const outputContent = document.getElementById('outputContent');
+            
+            let outputText = '';
+            let hasSelection = false;
+            
+            if (reason1.checked) {
+                outputText += 'I want to consolidate all my policies with one servicing agent.<br>';
+                hasSelection = true;
+            }
+            
+            if (reason2.checked) {
+                outputText += 'It is convenient for me to make transactions, I find it easy to contact the new agent, and I am comfortable discussing my policy needs.<br>';
+                hasSelection = true;
+            }
+            
+            if (reason3.checked) {
+                if (othersText.value.trim()) {
+                    outputText += `Others: ${othersText.value.trim()}<br>`;
+                } else {
+                    outputText += 'Others (Please specify)<br>';
+                }
+                hasSelection = true;
+            }
+            
+            if (hasSelection) {
+                outputContent.innerHTML = outputText;
+                output.style.display = 'block';
+            } else {
+                output.style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>
