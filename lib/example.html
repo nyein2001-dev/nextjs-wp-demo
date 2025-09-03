@@ -350,7 +350,22 @@ outputText += "Others: " + othersValue;
         });
     </script>
 
-    <div style="position: absolute; bottom: 8px; right: 12px; font-size: 11px; color: #666; background-color: rgba(255, 255, 255, 0.9); padding: 2px 4px; border-radius: 3px; pointer-events: none;" id="char-counter">2000 remaining</div>
+    <h2 style="font-weight: bold; margin-bottom: 8px;">Details of your concern:</h2>
+        <div style="position: relative; margin-bottom: 10px;">
+            <div style="position: relative;">
+                <textarea style="width: 100%; min-height: 120px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: Arial, sans-serif; font-size: 14px; resize: vertical; box-sizing: border-box;" 
+                         name="detail-concern" 
+                         id="detail-concern" 
+                         data-parsley-pattern="^([\s\S]{1,2000})$"
+                         data-parsley-pattern-message="'Details of your concern' exceeds the 2,000-character limit" 
+                         required=""
+                         data-parsley-required-message="Please tell us your concern " 
+                         placeholder=" " 
+                         title="Message"></textarea>
+                <label style="color: #666; font-size: 12px; margin-top: 5px; display: block;" for="detail-concern">Message</label>
+                <div style="position: absolute; bottom: 8px; right: 12px; font-size: 11px; color: #666; background-color: rgba(255, 255, 255, 0.9); padding: 2px 4px; border-radius: 3px; pointer-events: none;" id="char-counter">2000 remaining</div>
+            </div>
+        </div>
 
  
 
