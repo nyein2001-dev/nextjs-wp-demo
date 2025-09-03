@@ -367,5 +367,79 @@ outputText += "Others: " + othersValue;
             </div>
         </div>
 
+
+
+
+ const params = new URLSearchParams(window.location.search);
+const uniqueId = params.get('uniqueId') || params.get('submissionID');
+const agentCode = params.get('agentCode');
+const leadSource = params.get('leadSource');
+const uniqueIdInput = document.getElementById('uniqueId');
+const agentCodeInput = document.getElementById('agentCode');
+const leadSourceInput = document.getElementById('leadSource');
+const submitBtn = document.getElementById('submitBtn');
+
+if (uniqueId) uniqueIdInput.value = uniqueId;
+if (agentCode) agentCodeInput.value = agentCode;
+if (leadSource) leadSourceInput.value = leadSource;
+
+// Enhanced validation with new conditions
+if (!uniqueId && !leadSource) {
+    submitBtn.disabled = true;
+} else if (leadSource === 'corpweb') {
+    // If leadSource is corpweb: submissionID params must include value, uniqueId params should not include value
+    if (!params.get('submissionID') || params.get('uniqueId')) {
+        submitBtn.disabled = true;
+    }
+} else if (leadSource && leadSource !== 'corpweb') {
+    // If leadSource is not corpweb: uniqueId params must include value, submissionID should not include value, agentCode must include value
+    if (!params.get('uniqueId') || params.get('submissionID') || !agentCode) {
+        submitBtn.disabled = true;
+    }
+} else {
+    submitBtn.disabled = true;
+}
+
+const notificationElement = document.querySelector('[data-notification]');
+const messageElement = notificationElement.querySelector('[data-notification-message]');
+
+if (messageElement) {
+    let errorMessage = '';
+    let isError = false;
+    
+    if (!leadSource) {
+        errorMessage = "Đường dẫn trang người được giới thiệu không hợp lệ";
+        isError = true;
+    } else if (leadSource === 'corpweb') {
+        if (!params.get('submissionID')) {
+            errorMessage = "Đường dẫn trang người được giới thiệu không hợp lệ";
+            isError = true;
+        } else if (params.get('uniqueId')) {
+            errorMessage = "Đường dẫn trang người được giới thiệu không hợp lệ";
+            isError = true;
+        }
+    } else if (leadSource !== 'corpweb') {
+        if (!params.get('uniqueId')) {
+            errorMessage = "Đường dẫn trang người được giới thiệu không hợp lệ";
+            isError = true;
+        } else if (params.get('submissionID')) {
+            errorMessage = "Đường dẫn trang người được giới thiệu không hợp lệ";
+            isError = true;
+        } else if (!agentCode) {
+            errorMessage = "Đường dẫn trang người được giới thiệu không hợp lệ";
+            isError = true;
+        }
+    }
+    
+    if (isError) {
+        messageElement.textContent = errorMessage;
+        notificationElement.classList.add('error');
+    } else {
+        notificationElement.classList.remove('error');
+    }
+    
+    notificationElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
  
 
