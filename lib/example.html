@@ -309,4 +309,48 @@ outputText += "Others: " + othersValue;
 
 
 
+ <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const textarea = document.getElementById('detail-concern');
+            const counter = document.getElementById('char-counter');
+            const maxLength = 2000;
+            
+            function updateCharacterCount() {
+                const currentLength = textarea.value.length;
+                const remaining = maxLength - currentLength;
+                
+                if (remaining < 0) {
+                    const exceeded = Math.abs(remaining);
+                    counter.textContent = exceeded + ' exceeds';
+                    counter.style.color = '#f44336';
+                } else {
+                    counter.textContent = remaining + ' remaining';
+                    
+                    // Add appropriate styling based on remaining characters
+                    if (remaining <= 100 && remaining > 50) {
+                        counter.style.color = '#ff9800';
+                    } else if (remaining <= 50) {
+                        counter.style.color = '#f44336';
+                    } else {
+                        counter.style.color = '#666';
+                    }
+                }
+            }
+            
+            // Update counter on input
+            textarea.addEventListener('input', updateCharacterCount);
+            
+            // Update counter on paste
+            textarea.addEventListener('paste', function() {
+                setTimeout(updateCharacterCount, 10);
+            });
+            
+            // Initial update
+            updateCharacterCount();
+        });
+    </script>
+
+    <div style="position: absolute; bottom: 8px; right: 12px; font-size: 11px; color: #666; background-color: rgba(255, 255, 255, 0.9); padding: 2px 4px; border-radius: 3px; pointer-events: none;" id="char-counter">2000 remaining</div>
+
+ 
 
