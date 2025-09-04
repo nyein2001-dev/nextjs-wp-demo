@@ -482,3 +482,75 @@ Start referring now to enjoy cash rewards together.
  You are one step away from referring your friends and family (introduce) to us!
 
  Please fill in the below form so that our Wealth planner / Takaful Agent can contact them to share more information on our products and services.
+
+
+
+
+
+
+
+
+
+
+ <label for="detail-concern">Details of your concern:</label>
+<textarea id="detail-concern" name="detail-concern"
+         cols="60" rows="6"
+         wrap="hard"              <!-- inserts real newlines on submit -->
+         maxlength="2000"></textarea>
+
+
+ <style>
+  #detail-concern {
+    white-space: pre-wrap;      /* keep user newlines */
+    overflow-wrap: anywhere;    /* break very long words visually */
+    word-break: break-word;
+  }
+</style>
+
+
+ <script>
+  (function () {
+    const ta = document.getElementById('detail-concern');
+    const WRAP_COLS = 60; // keep in sync with cols above
+
+    function hardWrapText(text, width = WRAP_COLS) {
+      return text.replace(/\r\n/g, '\n')               // normalize
+                 .split('\n')
+                 .map(line => {
+                   if (line.length <= width) return line;
+                   const out = [];
+                   for (let i = 0; i < line.length; i += width) {
+                     out.push(line.slice(i, i + width));
+                   }
+                   return out.join('\n');
+                 })
+                 .join('\n');
+    }
+
+    // Wrap while typing (also catches super-long single lines)
+    ta.addEventListener('input', (e) => {
+      const v = ta.value;
+      const wrapped = hardWrapText(v);
+      if (wrapped !== v) {
+        const pos = ta.selectionStart;
+        ta.value = wrapped;
+        // keep caret position close to where it was
+        const delta = wrapped.length - v.length;
+        const newPos = Math.max(0, Math.min(wrapped.length, pos + delta));
+        ta.setSelectionRange(newPos, newPos);
+      }
+    });
+
+    // Wrap on paste so users cannot paste one giant line
+    ta.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text');
+      const wrapped = hardWrapText(text);
+      // insert at caret
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      ta.setRangeText(wrapped, start, end, 'end');
+      ta.dispatchEvent(new Event('input')); // trigger validators, etc.
+    });
+  })();
+</script>
+
