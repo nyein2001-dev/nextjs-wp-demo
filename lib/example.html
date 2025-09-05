@@ -554,3 +554,31 @@ Start referring now to enjoy cash rewards together.
   })();
 </script>
 
+ <textarea 
+        id="textInput" 
+        rows="10" 
+        cols="80" 
+        placeholder="Start typing... Text will automatically format to 10 words per line"
+        oninput="formatText()"
+    ></textarea>
+    <input type="hidden" id="output" />
+
+    <script>
+        function formatText() {
+            const textarea = document.getElementById('textInput');
+            const output = document.getElementById('output');
+            
+            let text = textarea.value;
+            
+            let words = text.split(/\s+/).filter(word => word.length > 0);
+            
+            let lines = [];
+            for (let i = 0; i < words.length; i += 10) {
+                let line = words.slice(i, i + 10).join(' ');
+                lines.push(line);
+            }
+            
+            output.innerHTML = lines.map(line => '<div>' + line + '</div>').join('');
+        }
+    </script>
+
