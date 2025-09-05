@@ -491,94 +491,66 @@ Start referring now to enjoy cash rewards together.
 
 
 
+<textarea 
+    id="textInput" 
+    rows="10" 
+    cols="80" 
+    placeholder="Start typing... Text will automatically format to 10 words per line"
+    oninput="formatText()"
+></textarea>
+<div id="char-counter" style="font-size:14px; color:#666; margin-top:5px;"></div>
+<input type="hidden" id="detail-concern" class="detail-concern" />
 
- <label for="detail-concern">Details of your concern:</label>
-<textarea id="detail-concern" name="detail-concern"
-         cols="60" rows="6"
-         wrap="hard"              <!-- inserts real newlines on submit -->
-         maxlength="2000"></textarea>
+<script>
+    const textarea = document.getElementById('textInput');
+    const output = document.getElementById('detail-concern');
+    const counter = document.getElementById('char-counter');
+    const maxLength = 2000;
 
+    function updateCharacterCount() {
+        const currentLength = textarea.value.length;
+        const remaining = maxLength - currentLength;
 
- <style>
-  #detail-concern {
-    white-space: pre-wrap;      /* keep user newlines */
-    overflow-wrap: anywhere;    /* break very long words visually */
-    word-break: break-word;
-  }
-</style>
-
-
- <script>
-  (function () {
-    const ta = document.getElementById('detail-concern');
-    const WRAP_COLS = 60; // keep in sync with cols above
-
-    function hardWrapText(text, width = WRAP_COLS) {
-      return text.replace(/\r\n/g, '\n')               // normalize
-                 .split('\n')
-                 .map(line => {
-                   if (line.length <= width) return line;
-                   const out = [];
-                   for (let i = 0; i < line.length; i += width) {
-                     out.push(line.slice(i, i + width));
-                   }
-                   return out.join('\n');
-                 })
-                 .join('\n');
+        if (remaining < 0) {
+            const exceeded = Math.abs(remaining);
+            counter.textContent = exceeded + ' exceeds';
+            counter.style.color = '#f44336';
+        } else {
+            counter.textContent = remaining + ' remaining';
+            if (remaining <= 100 && remaining > 50) {
+                counter.style.color = '#ff9800';
+            } else if (remaining <= 50) {
+                counter.style.color = '#f44336';
+            } else {
+                counter.style.color = '#666';
+            }
+        }
     }
 
-    // Wrap while typing (also catches super-long single lines)
-    ta.addEventListener('input', (e) => {
-      const v = ta.value;
-      const wrapped = hardWrapText(v);
-      if (wrapped !== v) {
-        const pos = ta.selectionStart;
-        ta.value = wrapped;
-        // keep caret position close to where it was
-        const delta = wrapped.length - v.length;
-        const newPos = Math.max(0, Math.min(wrapped.length, pos + delta));
-        ta.setSelectionRange(newPos, newPos);
-      }
-    });
+    function formatText() {
+        updateCharacterCount();
+        
+        let text = textarea.value;
+        let words = text.split(/\s+/).filter(word => word.length > 0);
 
-    // Wrap on paste so users cannot paste one giant line
-    ta.addEventListener('paste', (e) => {
-      e.preventDefault();
-      const text = (e.clipboardData || window.clipboardData).getData('text');
-      const wrapped = hardWrapText(text);
-      // insert at caret
-      const start = ta.selectionStart, end = ta.selectionEnd;
-      ta.setRangeText(wrapped, start, end, 'end');
-      ta.dispatchEvent(new Event('input')); // trigger validators, etc.
+        let lines = [];
+        for (let i = 0; i < words.length; i += 10) {
+            let line = words.slice(i, i + 10).join(' ');
+            lines.push(line);
+        }
+
+        output.value = lines.join('\n'); // store processed text in hidden input
+    }
+
+    // Initial counter update
+    updateCharacterCount();
+
+    // Handle paste properly
+    textarea.addEventListener('paste', function() {
+        setTimeout(() => {
+            formatText();
+        }, 10);
     });
-  })();
 </script>
 
- <textarea 
-        id="textInput" 
-        rows="10" 
-        cols="80" 
-        placeholder="Start typing... Text will automatically format to 10 words per line"
-        oninput="formatText()"
-    ></textarea>
-    <input type="hidden" id="output" />
-
-    <script>
-        function formatText() {
-            const textarea = document.getElementById('textInput');
-            const output = document.getElementById('output');
-            
-            let text = textarea.value;
-            
-            let words = text.split(/\s+/).filter(word => word.length > 0);
-            
-            let lines = [];
-            for (let i = 0; i < words.length; i += 10) {
-                let line = words.slice(i, i + 10).join(' ');
-                lines.push(line);
-            }
-            
-            output.innerHTML = lines.map(line => '<div>' + line + '</div>').join('');
-        }
-    </script>
 
