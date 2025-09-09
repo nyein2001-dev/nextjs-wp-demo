@@ -557,6 +557,33 @@ Start referring now to enjoy cash rewards together.
   <input type="submit" name="submit" value="Submit" style="background-color: #dc3545; color: white; padding: 12px 30px; border: none; border-radius: 25px; font-size: 1rem; font-weight: 600; cursor: pointer; align-self: flex-start; transition: background-color 0.3s ease;" onmouseover="this.style.backgroundColor='#c82333'" onmouseout="this.style.backgroundColor='#dc3545'">
 
 
+ const elements = container.querySelectorAll('input, select, textarea');
+  
+  elements.forEach(el => {
+    switch (el.type) {
+      case 'text':
+      case 'password':
+      case 'textarea':
+      case 'email':
+      case 'number':
+      case 'url':
+      case 'tel':
+        el.value = '';
+        break;
+      case 'checkbox':
+      case 'radio':
+        el.checked = false;
+        break;
+      case 'select-one':
+      case 'select-multiple':
+        el.selectedIndex = -1;
+        break;
+      default:
+        el.value = '';
+    }
+  });
+
+ 
  
 
 
