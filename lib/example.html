@@ -61,3 +61,79 @@ function decodeToQuery(token) {
 const token = "PASTE_TOKEN_HERE"; // from Encode.js
 console.log("Decoded object:", decodePayload(token));
 console.log("Decoded query:", decodeToQuery(token));
+
+const params = new URLSearchParams(window.location.search);
+
+// Initialize variables
+let uniqueId, agentCode, leadSource;
+let isValidLink = false;
+
+// Check if data parameter exists (new design only)
+const dataParam = params.get('data');
+if (dataParam) {
+    try {
+        const decodedData = decodePayload(dataParam);
+        uniqueId = decodedData.uniqueId;
+        agentCode = decodedData.agentCode;
+        leadSource = decodedData.leadSource;
+        
+        // Validate decoded data
+        if (uniqueId && leadSource) {
+            if (leadSource === 'corpweb') {
+                // For corpweb: uniqueId and leadSource required, agentCode optional
+                isValidLink = true;
+            } else {
+                // For non-corpweb: uniqueId, leadSource, and agentCode required
+                isValidLink = agentCode ? true : false;
+            }
+        }
+    } catch (error) {
+        console.error('Error decoding data parameter:', error);
+        isValidLink = false;
+    }
+}
+
+// Update form fields
+const uniqueIdInput = document.getElementById('uniqueId');
+const agentCodeInput = document.getElementById('agentCode');
+const leadSourceInput = document.getElementById('leadSource');
+const submitBtn = document.getElementById('submitBtn');
+
+if (uniqueId && uniqueIdInput) uniqueIdInput.value = uniqueId;
+if (agentCode && agentCodeInput) agentCodeInput.value = agentCode;
+if (leadSource && leadSourceInput) leadSourceInput.value = leadSource;
+
+// Enable/disable submit button based on validation
+submitBtn.disabled = !isValidLink;
+
+// Handle notifications
+const notificationElement = document.querySelector('[data-notification]');
+const messageElement = notificationElement?.querySelector('[data-notification-message]');
+
+if (messageElement) {
+    let errorMessage = '';
+    let isError = false;
+    
+    if (!dataParam) {
+        // No data parameter
+        errorMessage = "Đường dẫn trang người được giới thiệu không hợp lệ";
+        isError = true;
+    } else if (!uniqueId || !leadSource) {
+        // Missing required fields from decoded data
+        errorMessage = "Đường dẫn trang người được giới thiệu không hợp lệ";
+        isError = true;
+    } else if (leadSource !== 'corpweb' && !agentCode) {
+        // Non-corpweb requires agentCode
+        errorMessage = "Đường dẫn trang người được giới thiệu không hợp lệ";
+        isError = true;
+    }
+    
+    if (isError) {
+        messageElement.textContent = errorMessage;
+        notificationElement.classList.add('error');
+        notificationElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+        messageElement.textContent = '';
+        notificationElement.classList.remove('error');
+    }
+}
