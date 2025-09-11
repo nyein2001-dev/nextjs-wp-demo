@@ -1,601 +1,113 @@
- Change Beneficiary 
-Change Method of Payment to Auto-Debit-Arrangement (ADA) or Direct debit
-Change Method of Payment to Credit Card or Credit Card enrollment 
-Change Payment Frequency 
-Dividend Withdrawal for Traditional Policies
-Feedback
-Follow-up Request (New)
-Full Withdrawal or Cash Surrender 
-Fund Switch or Premium Redirection 
-Inclusion of Rider or Deletion of Rider 
-Increase Sum Assured or Increase in Premium
-Other questions
-Partial Withdrawal
-Pay Premium
-Refund Request
-Reinstatement
-Submission of pending requirements (New)
-Top-up
-Change of Agent or Transfer of Business (New)
-Update Mobile number or Email address 
-Update Residential or Correspondence Address
+<%@ page import="java.util.*" %>
+<%@ page import="java.io.*" %>
+<%@ page import="javax.xml.bind.DatatypeConverter" %>
 
-Let us know what you're looking for in your new agent
-Dropdown requirements:
-Default display text: Gender
+<%!
+// ===== Helper Functions for Encoding =====
 
-Dropdown options:
-Female
-Male
-No preference
-
-Do you prefer your new agent to be based close to your registered address?
-
-Service Number * (example: PLUK1234567890)
-
-<input 
-  type="text" 
-  pattern="^PLUK[0-9]{8,10}$" 
-  title="Must start with PLUK followed by 8 to 10 digits" 
-  required
-/>
-
-
-Please enter a valid Service Number
-
-Your service number is included in the auto-generated email you receive after submitting your initial request. Alternatively, it may be provided directly by one of our customer support team members.
-
-The service number format is case-sensitive and must begin with "PLUK" followed by numeric characters (e.g., PLUK1234567890).
-
-----------------------------------------------------
-Service Number * (example: PLUK1234567890)
-
-Your service number is included in the auto-generated email you receive after submitting your initial request. Alternatively, it may be provided directly by one of our customer support team members.
-
-The service number format is case-sensitive and must begin with "PLUK" followed by numeric characters (e.g., PLUK1234567890).
-
-Attach the pending requirement/s here:
-
-Note: The maximum file size for each document is 5 MB. Acceptable doc type to be uploaded: png, jpeg, pdf, doc, docx, heic, jpg.
-
-Document 1*
-
-
-----------------------------------------------------------
-Added Radio button options:
-Refund of excess renewal premium payment – for after sales refund request
-Refund of application payment – for new business refund request
-
-
-Updated text for upload fields
-Signed refund request letter *
-Clear copy of government issued IDs reflecting signature*
-Proof of Bank Account (for fund transfer disbursement)
-
-Details of your concern:
-
-Message
-
-<div id="refund_request" style="display: block;">
-    <div style="display: flex; gap: 30px; align-items: flex-start; flex-wrap: wrap;">
-        
-        <!-- First radio -->
-        <label for="refund_of_excess_renewal_premium_payment" 
-               style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px; border-radius: 4px;">
-            <input type="radio" 
-                   style="width: 18px; height: 18px; cursor: pointer; margin: 0; flex-shrink: 0;"
-                   name="refund_request" 
-                   id="refund_of_excess_renewal_premium_payment" 
-                   value="Refund of excess renewal premium payment">
-            <span style="font-size: 14px; line-height: 1.3;">Refund Of Excess Renewal Premium Payment</span>
-        </label>
-        
-        <!-- Second radio -->
-        <label for="refund_of_application_payment" 
-               style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px; border-radius: 4px;">
-            <input type="radio" 
-                   style="width: 18px; height: 18px; cursor: pointer; margin: 0; flex-shrink: 0;"
-                   name="refund_request" 
-                   id="refund_of_application_payment" 
-                   value="Refund of application payment">
-            <span style="font-size: 14px; line-height: 1.3;">Refund Of Application Payment</span>
-        </label>
-        
-    </div>
-</div>
-
-
----------------------------------
-New Servicing Agent Information *
-
-Please obtain these details directly from your newly selected agent.
-
-New servicing agent’s complete name *
-New servicing agent’s code *
-New servicing agent’s branch name *
-
-Acknowledgement of Policyowner: * (Pick at least 1)
-I, as the Policyowner, would like to request to be transferred to the new Pru Life UK servicing agent as stated above due to the following reason/s:
-
-I want to consolidate all my policies with one servicing agent.
-It is convenient for me to make transactions, I find it easy to contact the new agent, and I am comfortable discussing my policy needs. 
-Others (Please specify)
-
-Additional requirements may be requested after your submission is reviewed.
-Attachment:
-Note: The maximum file size for each document is 5 MB. Acceptable doc type to be uploaded: png, jpeg, pdf, doc, docx, heic, jpg.
-Clear copy of valid ID/s *
-
---------
-To request for Change of Agent or Transfer of Business, kindly attach the following:
-Duly accomplished Change of Servicing Agent form with the following signature requirements:
-Additional requirements may be requested after your submission is reviewed.
-Attachment:
-Note: The maximum file size for each document is 5 MB. Acceptable doc type to be uploaded: png, jpeg, pdf, doc, docx, heic, jpg.
-Change of Servicing Agent Form*
-
-Links:
-Change of Servicing Agent form - https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/change-of-servicing-agent-form.pdf 
-
-
-Dropdown requirements:
-Default display text: Do you have an existing agent?
-
-Dropdown options:
-No active agent
-With existing agent
-
-Do you have a preferred agent? 
-
-
-
-
-When testing with the following referral link generated by CEP:  https://10.193.16.22:449/vi/referee-form-test/index.html?uniqueId=be8ab868-9e7b-5fd9-b99a-0599a5644541&agentCode=4dc00ca4-21fd-5e96-92c9-14a176ae16a4&leadSource=cep_ob1 or
-
-https://10.193.16.22:449/vi/referee-form-test/?uniqueId=be8ab868-9e7b-5fd9-b99a-0599a5644541&agentCode=4dc00ca4-21fd-5e96-92c9-14a176ae16a4&leadSource=cep_nps
-
-submissionID and leadSource 
-
-const uniqueId = params.get('uniqueId') || params.get('submissionID');
-
-// Replace your existing try-catch block with this enhanced version
-
-try {
-    os = con.getOutputStream();
-    os.write(bout);
+/**
+ * Converts a UUID string to byte array (16 bytes)
+ */
+private byte[] uuidToBytes(String uuid) {
+    if (uuid == null) return null;
     
-    content = new StringBuffer();
+    String hex = uuid.replaceAll("-", "");
+    if (hex.length() != 32) return null;
     
-    // Check response code first
-    int responseCode = con.getResponseCode();
-    
-    if (responseCode == 200) {
-        // Success - read from input stream
-        in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-        inputLine = "";
-        
-        while ((inputLine = in.readLine()) != null) {
-            content.append(inputLine);
-        }
-        in.close();
-        apiResponse = content.toString();
-        saveReferreeResponse = content.toString();
-        con.disconnect();
-        
-        isApiCallSuccess = true;
-    } else {
-        // Error - read from error stream to get detailed error message
-        InputStream errorStream = con.getErrorStream();
-        if (errorStream != null) {
-            BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));
-            StringBuilder errorContent = new StringBuilder();
-            String errorLine;
-            
-            while ((errorLine = errorReader.readLine()) != null) {
-                errorContent.append(errorLine);
-            }
-            errorReader.close();
-            
-            // Parse the error JSON to extract user-friendly message
-            String errorResponse = errorContent.toString();
-            String userFriendlyMessage = parseErrorMessage(errorResponse);
-            
-            out.print(responseObject(400, "API Request Failed: " + userFriendlyMessage));
-        } else {
-            out.print(responseObject(400, "API Request Failed with status code: " + responseCode));
-        }
-        
-        isApiCallSuccess = false;
-        con.disconnect();
-        return; // Exit early on error
-    }
-    
-} catch (Exception ex) {
-    out.print(responseObject(400, "Connection Error: Unable to connect to the API service"));
-    isApiCallSuccess = false;
-}
-
-// Add this helper method to parse the error JSON and extract user-friendly message
-private String parseErrorMessage(String errorJson) {
+    byte[] bytes = new byte[16];
     try {
-        // Simple JSON parsing - you can use a JSON library like Jackson or Gson for better parsing
-        if (errorJson.contains("errorDescription")) {
-            // Extract error description from JSON
-            String[] parts = errorJson.split("\"errorDescription\":");
-            if (parts.length > 1) {
-                String desc = parts[1].split(",")[0].replace("\"", "").trim();
-                return desc;
-            }
+        for (int i = 0; i < 16; i++) {
+            String hexPair = hex.substring(i * 2, i * 2 + 2);
+            bytes[i] = (byte) Integer.parseInt(hexPair, 16);
         }
-        
-        // If no specific error description found, return the full error
-        return errorJson;
-        
-    } catch (Exception e) {
-        return "Error processing request";
-    }
-}
-
-{
-    "fullName": "viet Test",
-    "mobile": "0346786789",
-    "messageDetails": "remark string",
-   // "referralId": "be8ab868-9e7b-5fd9-b99a-0599a5644541",
-    "clientId": "ed10432e-8afb-48a0-8262-88d7e17a6b70",
-    "leadSource": "cep_ob1",
-    "location": "HCM",
-    "referralAgent": "600000012",
-    "email": "test@gmail.com"
-}
-
-080300002551
-
-if (r(e.currentTarget).attr("name") === "policyRadios") {
-        return; // Exit early, don't show popup
-    }
-
-
-Policy number:
-Email address:
-Transaction:
-Preferred agent’s gender:
-Located near client’s address:
-
- const selected = document.querySelector('input[name="fruit"]:checked');
-
-
-Change of Agent or Transfer of Business No preferred agent
-
-Change of Agent or Transfer of Business With existing agent
-
-Change of Agent or Transfer of Business No active agent 
-
-New servicing agent’s complete name: <Agent name entered>
-New servicing agent’s code: <Agent’s code entered>
-New servicing agent’s branch name: <Agent’s branch entered>
-
-
- “Details of your concern” exceeds the 2,000-character limit
-
- <style>
-  input[type="radio"] {
-    accent-color: red;
-  }
-</style>
-
-thank-you?ReferralID=28063f3b-484d-4f47-8240-99e8ccd8188e
-
-
-/^([\s\S]{1,2000})$/
-
- var othersValue = othersText.value.trim();
-outputText += "Others: " + othersValue;
-
-
-<button onclick="shareWhatsApp()" style="background-color: #25d366; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 5px;">
-        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.785"/>
-    </svg>
-    WhatsApp
-</button>
-
- function shareWhatsApp() {
-    var text = document.getElementById("uniqueId").textContent;
-    var message = encodeURIComponent("Hey! Check out this amazing service using my referral link: " + text);
-    var whatsappUrl = "https://wa.me/?text=" + message;
-    window.open(whatsappUrl, '_blank');
-}
-
-
-
-
- <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const textarea = document.getElementById('detail-concern');
-            const counter = document.getElementById('char-counter');
-            const maxLength = 2000;
-            
-            function updateCharacterCount() {
-                const currentLength = textarea.value.length;
-                const remaining = maxLength - currentLength;
-                
-                if (remaining < 0) {
-                    const exceeded = Math.abs(remaining);
-                    counter.textContent = exceeded + ' exceeds';
-                    counter.style.color = '#f44336';
-                } else {
-                    counter.textContent = remaining + ' remaining';
-                    
-                    // Add appropriate styling based on remaining characters
-                    if (remaining <= 100 && remaining > 50) {
-                        counter.style.color = '#ff9800';
-                    } else if (remaining <= 50) {
-                        counter.style.color = '#f44336';
-                    } else {
-                        counter.style.color = '#666';
-                    }
-                }
-            }
-            
-            // Update counter on input
-            textarea.addEventListener('input', updateCharacterCount);
-            
-            // Update counter on paste
-            textarea.addEventListener('paste', function() {
-                setTimeout(updateCharacterCount, 10);
-            });
-            
-            // Initial update
-            updateCharacterCount();
-        });
-    </script>
-
-    <h2 style="font-weight: bold; margin-bottom: 8px;">Details of your concern:</h2>
-        <div style="position: relative; margin-bottom: 10px;">
-            <div style="position: relative;">
-                <textarea style="width: 100%; min-height: 120px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: Arial, sans-serif; font-size: 14px; resize: vertical; box-sizing: border-box;" 
-                         name="detail-concern" 
-                         id="detail-concern" 
-                         data-parsley-pattern="^([\s\S]{1,2000})$"
-                         data-parsley-pattern-message="'Details of your concern' exceeds the 2,000-character limit" 
-                         required=""
-                         data-parsley-required-message="Please tell us your concern " 
-                         placeholder=" " 
-                         title="Message"></textarea>
-                <label style="color: #666; font-size: 12px; margin-top: 5px; display: block;" for="detail-concern">Message</label>
-                <div style="position: absolute; bottom: 8px; right: 12px; font-size: 11px; color: #666; background-color: rgba(255, 255, 255, 0.9); padding: 2px 4px; border-radius: 3px; pointer-events: none;" id="char-counter">2000 remaining</div>
-            </div>
-        </div>
-
-
-
-
- const params = new URLSearchParams(window.location.search);
-const uniqueId = params.get('uniqueId') || params.get('submissionID');
-const agentCode = params.get('agentCode');
-const leadSource = params.get('leadSource');
-const uniqueIdInput = document.getElementById('uniqueId');
-const agentCodeInput = document.getElementById('agentCode');
-const leadSourceInput = document.getElementById('leadSource');
-const submitBtn = document.getElementById('submitBtn');
-
-if (uniqueId) uniqueIdInput.value = uniqueId;
-if (agentCode) agentCodeInput.value = agentCode;
-if (leadSource) leadSourceInput.value = leadSource;
-
-// Enhanced validation with new conditions
-if (!uniqueId && !leadSource) {
-    submitBtn.disabled = true;
-} else if (leadSource === 'corpweb') {
-    // If leadSource is corpweb: submissionID params must include value, uniqueId params should not include value
-    if (!params.get('submissionID') || params.get('uniqueId')) {
-        submitBtn.disabled = true;
-    }
-} else if (leadSource && leadSource !== 'corpweb') {
-    // If leadSource is not corpweb: uniqueId params must include value, submissionID should not include value, agentCode must include value
-    if (!params.get('uniqueId') || params.get('submissionID') || !agentCode) {
-        submitBtn.disabled = true;
-    }
-} else {
-    submitBtn.disabled = true;
-}
-
-const notificationElement = document.querySelector('[data-notification]');
-const messageElement = notificationElement.querySelector('[data-notification-message]');
-
-if (messageElement) {
-    let errorMessage = '';
-    let isError = false;
-    
-    if (!leadSource) {
-        errorMessage = "Đường dẫn trang người được giới thiệu không hợp lệ";
-        isError = true;
-    } else if (leadSource === 'corpweb') {
-        if (!params.get('submissionID')) {
-            errorMessage = "Đường dẫn trang người được giới thiệu không hợp lệ";
-            isError = true;
-        } else if (params.get('uniqueId')) {
-            errorMessage = "Đường dẫn trang người được giới thiệu không hợp lệ";
-            isError = true;
-        }
-    } else if (leadSource !== 'corpweb') {
-        if (!params.get('uniqueId')) {
-            errorMessage = "Đường dẫn trang người được giới thiệu không hợp lệ";
-            isError = true;
-        } else if (params.get('submissionID')) {
-            errorMessage = "Đường dẫn trang người được giới thiệu không hợp lệ";
-            isError = true;
-        } else if (!agentCode) {
-            errorMessage = "Đường dẫn trang người được giới thiệu không hợp lệ";
-            isError = true;
-        }
+    } catch (NumberFormatException e) {
+        return null;
     }
     
-    if (isError) {
-        messageElement.textContent = errorMessage;
-        notificationElement.classList.add('error');
+    return bytes;
+}
+
+/**
+ * Base64 URL-safe encoding
+ */
+private String base64UrlEncode(byte[] bytes) {
+    String base64 = DatatypeConverter.printBase64Binary(bytes);
+    return base64.replace('+', '-')
+                 .replace('/', '_')
+                 .replaceAll("=+$", "");
+}
+
+/**
+ * Encode payload with uniqueId, agentCode, and leadSource
+ */
+private String encodePayload(String uniqueId, String agentCode, String leadSource) throws Exception {
+    byte[] uBytes = uuidToBytes(uniqueId);
+    if (uBytes == null) {
+        throw new Exception("uniqueId must be a valid UUID");
+    }
+    
+    // Detect if agentCode is a UUID
+    byte[] aBytes;
+    boolean aIsUuid = false;
+    byte[] maybeUuidBytes = uuidToBytes(agentCode);
+    
+    if (maybeUuidBytes != null) {
+        aIsUuid = true;
+        aBytes = maybeUuidBytes;
     } else {
-        notificationElement.classList.remove('error');
+        aBytes = agentCode.getBytes("UTF-8");
     }
     
-    notificationElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Lead source as UTF-8 bytes
+    byte[] lBytes = leadSource.getBytes("UTF-8");
+    
+    // Pack: uniqueId(16) + flag(1) + aLen(1) + agentCode + lLen(1) + leadSource
+    int totalLength = 16 + 1 + 1 + aBytes.length + 1 + lBytes.length;
+    byte[] result = new byte[totalLength];
+    
+    int pos = 0;
+    
+    // Copy uniqueId (16 bytes)
+    System.arraycopy(uBytes, 0, result, pos, 16);
+    pos += 16;
+    
+    // UUID flag (1 byte)
+    result[pos++] = (byte)(aIsUuid ? 1 : 0);
+    
+    // Agent code length (1 byte)
+    result[pos++] = (byte)aBytes.length;
+    
+    // Agent code bytes
+    System.arraycopy(aBytes, 0, result, pos, aBytes.length);
+    pos += aBytes.length;
+    
+    // Lead source length (1 byte)
+    result[pos++] = (byte)lBytes.length;
+    
+    // Lead source bytes
+    System.arraycopy(lBytes, 0, result, pos, lBytes.length);
+    
+    return base64UrlEncode(result);
 }
+%>
 
- 
-Welcome to Buddy Up Reward Returns Campaign
-
- Thank You for your interest in our Referral Program - Buddy Up Reward Returns Campaign.
-Kindly complete the form below to register as an introducer.
-
- Buddy Up Reward Returns, You, your friends, and your family can each earn up to RM100 cash rewards* for every successful referral. The more you refer, the more you earn – there’s no limit!
-Start referring now to enjoy cash rewards together.
-
- Terms & Conditions apply
-
- <tr>
-  <td class="innerpaddingbody">
-    <table width="220" align="left" border="0" cellpadding="0" cellspacing="0">
-      <tr>
-        <td class="colortxtleft" 
-            style="word-break: break-word; 
-                   white-space: normal; 
-                   overflow-wrap: break-word; 
-                   width:220px;">
-          <b>Details of concern:</b><br/>
-          <p style="margin:0; word-break: break-word; white-space: normal;">
-            %detail-concern%
-          </p>
-        </td>
-      </tr>
-    </table>
-  </td>
-</tr>
-
- <textarea id="detail-concern" name="detail-concern"
-          cols="60" rows="6"
-          wrap="hard" maxlength="2000"
-          style="white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word;">
-</textarea>
-
-
- ----------------
- You are one step away from referring your friends and family (introduce) to us!
-
- Please fill in the below form so that our Wealth planner / Takaful Agent can contact them to share more information on our products and services.
-
-
-
-
-
-
-
-
-
-<textarea 
-    id="textInput" 
-    rows="10" 
-    cols="80" 
-    placeholder="Start typing... Text will automatically format to 10 words per line"
-    oninput="formatText()"
-></textarea>
-<div id="char-counter" style="font-size:14px; color:#666; margin-top:5px;"></div>
-<input type="hidden" id="detail-concern" class="detail-concern" />
-
-<script>
-    const textarea = document.getElementById('textInput');
-    const output = document.getElementById('detail-concern');
-    const counter = document.getElementById('char-counter');
-    const maxLength = 2000;
-
-    function updateCharacterCount() {
-        const currentLength = textarea.value.length;
-        const remaining = maxLength - currentLength;
-
-        if (remaining < 0) {
-            const exceeded = Math.abs(remaining);
-            counter.textContent = exceeded + ' exceeds';
-            counter.style.color = '#f44336';
-        } else {
-            counter.textContent = remaining + ' remaining';
-            if (remaining <= 100 && remaining > 50) {
-                counter.style.color = '#ff9800';
-            } else if (remaining <= 50) {
-                counter.style.color = '#f44336';
-            } else {
-                counter.style.color = '#666';
-            }
-        }
-    }
-
-    function formatText() {
-        updateCharacterCount();
-        
-        let text = textarea.value;
-        let words = text.split(/\s+/).filter(word => word.length > 0);
-
-        let lines = [];
-        for (let i = 0; i < words.length; i += 10) {
-            let line = words.slice(i, i + 10).join(' ');
-            lines.push(line);
-        }
-
-        output.value = lines.join('\n'); // store processed text in hidden input
-    }
-
-    // Initial counter update
-    updateCharacterCount();
-
-    // Handle paste properly
-    textarea.addEventListener('paste', function() {
-        setTimeout(() => {
-            formatText();
-        }, 10);
-    });
-</script>
-
-
- https://mcwy466qpdfwk05msztftftnmgf.pub.sfmc-content.com/efaliyhq4jt
-
- { 
- "campaignId": "mgm_cep_uat", 
- "SubscriberKey": "f22f04e8-7a19-417a-9ea5-b369b23b4f77", 
- "expiryDuration": 365, 
- "longURL": "https://playcode.io/javascript", 
- "trackingEnable": true 
-} 
-
-
-
-  <input type="submit" name="submit" value="Submit" style="background-color: #dc3545; color: white; padding: 12px 30px; border: none; border-radius: 25px; font-size: 1rem; font-weight: 600; cursor: pointer; align-self: flex-start; transition: background-color 0.3s ease;" onmouseover="this.style.backgroundColor='#c82333'" onmouseout="this.style.backgroundColor='#dc3545'">
-
-
- const elements = container.querySelectorAll('input, select, textarea');
-  
-  elements.forEach(el => {
-    switch (el.type) {
-      case 'text':
-      case 'password':
-      case 'textarea':
-      case 'email':
-      case 'number':
-      case 'url':
-      case 'tel':
-        el.value = '';
-        break;
-      case 'checkbox':
-      case 'radio':
-        el.checked = false;
-        break;
-      case 'select-one':
-      case 'select-multiple':
-        el.selectedIndex = -1;
-        break;
-      default:
-        el.value = '';
-    }
-  });
-
- 
- 
-
-
+<%
+// ===== Usage Example =====
+try {
+    // Configure your parameters here
+    String uniqueId = "d5c03976-cc89-403b-973f-992d2c2b37bd";
+    String agentCode = "12345678";
+    String leadSource = "corpweb";
+    
+    // Encode the payload
+    String token = encodePayload(uniqueId, agentCode, leadSource);
+    
+    // Output the token (you can modify this to store in session, database, etc.)
+    out.print(token);
+    
+} catch (Exception e) {
+    // Handle error as needed
+    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    out.print("Error: " + e.getMessage());
+}
+%>
