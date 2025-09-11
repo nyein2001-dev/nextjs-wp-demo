@@ -113,3 +113,24 @@ try {
 %>
 
      133479830000
+
+    <%
+    String scheme = request.getScheme();          // http or https
+    String serverName = request.getServerName();  // domain or IP
+    int serverPort = request.getServerPort();     // port
+
+    // Build base origin
+    String origin = scheme + "://" + serverName;
+    if ((scheme.equals("http") && serverPort != 80) ||
+        (scheme.equals("https") && serverPort != 443)) {
+        origin += ":" + serverPort;
+    }
+
+    // Special handling for intranet host
+    if (("sgrasstvn4yt5w9.pru.intranet.asia".equals(serverName) && serverPort == 8443)) {
+        origin += "/opencms";
+    }
+
+    out.println("Origin URL: " + origin);
+%>
+
