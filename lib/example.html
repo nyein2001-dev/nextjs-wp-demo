@@ -1,136 +1,63 @@
-<%@ page import="java.util.*" %>
-<%@ page import="java.io.*" %>
-<%@ page import="javax.xml.bind.DatatypeConverter" %>
-
-<%!
-// ===== Helper Functions for Encoding =====
-
-/**
- * Converts a UUID string to byte array (16 bytes)
- */
-private byte[] uuidToBytes(String uuid) {
-    if (uuid == null) return null;
-    
-    String hex = uuid.replaceAll("-", "");
-    if (hex.length() != 32) return null;
-    
-    byte[] bytes = new byte[16];
-    try {
-        for (int i = 0; i < 16; i++) {
-            String hexPair = hex.substring(i * 2, i * 2 + 2);
-            bytes[i] = (byte) Integer.parseInt(hexPair, 16);
-        }
-    } catch (NumberFormatException e) {
-        return null;
-    }
-    
-    return bytes;
+// ===== Helper functions (Decode only) =====
+function bytesToHex(bytes) {
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
-/**
- * Base64 URL-safe encoding
- */
-private String base64UrlEncode(byte[] bytes) {
-    String base64 = DatatypeConverter.printBase64Binary(bytes);
-    return base64.replace('+', '-')
-                 .replace('/', '_')
-                 .replaceAll("=+$", "");
+function hexToUuid(h) {
+  return (
+    h.slice(0, 8) +
+    "-" +
+    h.slice(8, 12) +
+    "-" +
+    h.slice(12, 16) +
+    "-" +
+    h.slice(16, 20) +
+    "-" +
+    h.slice(20)
+  );
 }
 
-/**
- * Encode payload with uniqueId, agentCode, and leadSource
- */
-private String encodePayload(String uniqueId, String agentCode, String leadSource) throws Exception {
-    byte[] uBytes = uuidToBytes(uniqueId);
-    if (uBytes == null) {
-        throw new Exception("uniqueId must be a valid UUID");
-    }
-    
-    // Detect if agentCode is a UUID
-    byte[] aBytes;
-    boolean aIsUuid = false;
-    byte[] maybeUuidBytes = uuidToBytes(agentCode);
-    
-    if (maybeUuidBytes != null) {
-        aIsUuid = true;
-        aBytes = maybeUuidBytes;
-    } else {
-        aBytes = agentCode.getBytes("UTF-8");
-    }
-    
-    // Lead source as UTF-8 bytes
-    byte[] lBytes = leadSource.getBytes("UTF-8");
-    
-    // Pack: uniqueId(16) + flag(1) + aLen(1) + agentCode + lLen(1) + leadSource
-    int totalLength = 16 + 1 + 1 + aBytes.length + 1 + lBytes.length;
-    byte[] result = new byte[totalLength];
-    
-    int pos = 0;
-    
-    // Copy uniqueId (16 bytes)
-    System.arraycopy(uBytes, 0, result, pos, 16);
-    pos += 16;
-    
-    // UUID flag (1 byte)
-    result[pos++] = (byte)(aIsUuid ? 1 : 0);
-    
-    // Agent code length (1 byte)
-    result[pos++] = (byte)aBytes.length;
-    
-    // Agent code bytes
-    System.arraycopy(aBytes, 0, result, pos, aBytes.length);
-    pos += aBytes.length;
-    
-    // Lead source length (1 byte)
-    result[pos++] = (byte)lBytes.length;
-    
-    // Lead source bytes
-    System.arraycopy(lBytes, 0, result, pos, lBytes.length);
-    
-    return base64UrlEncode(result);
+function base64UrlDecode(str) {
+  const b64 = str.replace(/-/g, "+").replace(/_/g, "/");
+  const pad = b64.length % 4 ? "=".repeat(4 - (b64.length % 4)) : "";
+  const s = b64 + pad;
+  const bin = atob(s);
+  return Uint8Array.from(Array.from(bin).map((c) => c.charCodeAt(0)));
 }
-%>
 
-<%
-// ===== Usage Example =====
-try {
-    // Configure your parameters here
-    String uniqueId = "d5c03976-cc89-403b-973f-992d2c2b37bd";
-    String agentCode = "12345678";
-    String leadSource = "corpweb";
-    
-    // Encode the payload
-    String token = encodePayload(uniqueId, agentCode, leadSource);
-    
-    // Output the token (you can modify this to store in session, database, etc.)
-    out.print(token);
-    
-} catch (Exception e) {
-    // Handle error as needed
-    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    out.print("Error: " + e.getMessage());
+// ===== Decoder =====
+function decodePayload(token) {
+  const bytes = base64UrlDecode(token);
+  const uHex = bytesToHex(bytes.slice(0, 16));
+  const uniqueId = hexToUuid(uHex);
+
+  const aIsUuid = bytes[16] === 1;
+  const aLen = bytes[17];
+  const aBytes = bytes.slice(18, 18 + aLen);
+
+  let agentCode;
+  if (aIsUuid) {
+    agentCode = hexToUuid(bytesToHex(aBytes));
+  } else {
+    agentCode = new TextDecoder().decode(aBytes);
+  }
+
+  const lLen = bytes[18 + aLen];
+  const lBytes = bytes.slice(19 + aLen, 19 + aLen + lLen);
+  const leadSource = new TextDecoder().decode(lBytes);
+
+  return { uniqueId, agentCode, leadSource };
 }
-%>
 
-     133479830000
+// ===== Build back query string =====
+function decodeToQuery(token) {
+  const { uniqueId, agentCode, leadSource } = decodePayload(token);
+  return `uniqueId=${uniqueId}&agentCode=${agentCode}&leadSource=${leadSource}`;
+}
 
-    <%
-    String scheme = request.getScheme();          // http or https
-    String serverName = request.getServerName();  // domain or IP
-    int serverPort = request.getServerPort();     // port
-
-    // Build base origin
-    String origin = scheme + "://" + serverName;
-    if ((scheme.equals("http") && serverPort != 80) ||
-        (scheme.equals("https") && serverPort != 443)) {
-        origin += ":" + serverPort;
-    }
-
-    // Special handling for intranet host
-    if (("sgrasstvn4yt5w9.pru.intranet.asia".equals(serverName) && serverPort == 8443)) {
-        origin += "/opencms";
-    }
-
-    out.println("Origin URL: " + origin);
-%>
-
+// ===== Example usage =====
+const token = "PASTE_TOKEN_HERE"; // from Encode.js
+console.log("Decoded object:", decodePayload(token));
+console.log("Decoded query:", decodeToQuery(token));
