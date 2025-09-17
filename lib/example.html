@@ -3,9 +3,39 @@
                   <div class="component-rich-text__wrapper" style="padding: 0 !important; margin: 0 !important">
                      <div class="bk-blue-gray"></div>
                      <br/><br/>
-                     <div class="contact-form row" style="padding: 0 !important; margin: 0 !important; display: flex; flex-direction: row;">
+                     <!-- Mobile title section - shows at top on mobile only -->
+                     <style>
+                        @media (max-width: 767px) {
+                           .mobile-title-wrapper {
+                              display: block !important;
+                              order: -1 !important;
+                              width: 100% !important;
+                              margin-bottom: 20px !important;
+                           }
+                           .desktop-title-wrapper {
+                              display: none !important;
+                           }
+                        }
+                        @media (min-width: 768px) {
+                           .mobile-title-wrapper {
+                              display: none !important;
+                           }
+                           .desktop-title-wrapper {
+                              display: block !important;
+                           }
+                        }
+                     </style>
+                     
+                     <div class="mobile-title-wrapper" style="display: none;">
+                        <h1 class="title-form" data-product-title><span class="title-form__bold">${content.value.GeneralForm.value.DefaultFormTitleBold}</span> ${content.value.GeneralForm.value.DefaultFormTitleNonBold}</h1>
+                        <c:if test ="${content.value.GeneralForm.value.DescriptionText.isSet}">
+                            <div class="title-form__desc">${content.value.GeneralForm.value.DescriptionText}</div>
+                        </c:if>
+                     </div>
+
+                     <div class="contact-form row" style="padding: 0 !important; margin: 0 !important;">
                         <c:if test ="${content.value.GeneralForm.value.Image.isSet}">
-                           <div class="col-md-5 col-lg-6" style="padding: 0 !important; margin: 0 !important; order: 1;">
+                           <div class="col-md-5 col-lg-6"  style="padding: 0 !important; margin: 0 !important">
                               <div class="img-contact-form">
                                  <img class="lazyload" src='<cms:link>/system/modules/com.prudential.v2.global/resources/images/spinner.gif</cms:link>' data-src="<cms:link>${content.value.GeneralForm.value.Image}</cms:link>"  alt="${content.value.GeneralForm.value.ImageAlt}" />
                               </div>
@@ -35,11 +65,15 @@
                               </div>
                            </div>
                         </c:if>
-                        <div class="col-md-7 col-lg-6 pd-100-60" style="display: flex; flex-direction: column; order: 2;">
-                           <!-- Mobile-first title section (will show at top on mobile) -->
-                           <div class="title-form__wrapper" style="order: 1; display: block;">
-                              <h1 class="title-form" data-product-title><span class="title-form__bold">${content.value.GeneralForm.value.DefaultFormTitleBold}</span> ${content.value.GeneralForm.value.DefaultFormTitleNonBold}</h1>
-                              <c:if test ="${content.value.GeneralForm.value.DescriptionText.isSet}">
-                                  <div class="title-form__desc">${content.value.GeneralForm.value.DescriptionText}</div>
-                              </c:if>
-                           </div>
+                        <div class="col-md-7 col-lg-6 pd-100-60">
+                           <form id="form" data-submit-form data-url-submit="<cms:link>../action/mgm-referrer-form.jsp</cms:link>" 
+                          data-analytics='{"event":"formStarts","formName":"Contact us form vn","formType":"Contact us vn"}'
+                          data-url-redirect="<cms:link> ${content.value.GeneralForm.value.SuccessPageLink} </cms:link>" data-method="POST">
+                       
+                       <!-- Desktop title section - shows in original position on desktop only -->
+                       <div class="desktop-title-wrapper title-form__wrapper">
+                          <h1 class="title-form" data-product-title><span class="title-form__bold">${content.value.GeneralForm.value.DefaultFormTitleBold}</span> ${content.value.GeneralForm.value.DefaultFormTitleNonBold}</h1>
+                          <c:if test ="${content.value.GeneralForm.value.DescriptionText.isSet}">
+                              <div class="title-form__desc">${content.value.GeneralForm.value.DescriptionText}</div>
+                          </c:if>
+                       </div>>
