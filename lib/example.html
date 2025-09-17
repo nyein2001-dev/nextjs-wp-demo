@@ -1,9 +1,4 @@
-<section data-pru-link class="component-rich-text component-rich-text-right" style="padding: 0 !important; margin: 0 !important;">
-               <div data-pru-link class="container" style="padding: 0 !important; margin: 0 !important">
-                  <div class="component-rich-text__wrapper" style="padding: 0 !important; margin: 0 !important">
-                     <div class="bk-blue-gray"></div>
-                     <br/><br/>
-                     <!-- Mobile title section - shows at top on mobile only -->
+   <!-- Mobile title section - shows at top on mobile only -->
                      <style>
                         @media (max-width: 767px) {
                            .mobile-title-wrapper {
@@ -13,6 +8,9 @@
                               margin-bottom: 20px !important;
                            }
                            .desktop-title-wrapper {
+                              display: none !important;
+                           }
+                           .bk-blue-gray {
                               display: none !important;
                            }
                         }
@@ -33,47 +31,6 @@
                         </c:if>
                      </div>
 
-                     <div class="contact-form row" style="padding: 0 !important; margin: 0 !important;">
-                        <c:if test ="${content.value.GeneralForm.value.Image.isSet}">
-                           <div class="col-md-5 col-lg-6"  style="padding: 0 !important; margin: 0 !important">
-                              <div class="img-contact-form">
-                                 <img class="lazyload" src='<cms:link>/system/modules/com.prudential.v2.global/resources/images/spinner.gif</cms:link>' data-src="<cms:link>${content.value.GeneralForm.value.Image}</cms:link>"  alt="${content.value.GeneralForm.value.ImageAlt}" />
-                              </div>
-                              <div style="padding: 40px; margin-bottom: 16px;">
-                                 <c:forEach var="item" items="${content.value.BenenitsUiSection.valueList.BenefitContainer}">
-                                    <div class="card-static__wrapper " data-card="" style="margin-bottom: 32px;">
-                                       <div class="card-static" style="padding: 0 !important; margin: 0 !important; padding-top: 10px !important;">
-                                          <div class="card-static__content " style="display: flex;  align-items: center;  gap: 16px;">
-                                             <div class="btn-arrow" style="background: #F6F4FD !important; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                                <span style="color: white; font-size: 18px; font-weight: bold;">
-                                                   <svg width="20" height="18" viewBox="0 0 20 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                      <path d="M15 17L11 13M5 13V1V13ZM5 1L1 5L5 1ZM5 1L9 5L5 1ZM15 5V17V5ZM15 17L19 13L15 17Z" stroke="#503D9C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                                   </svg>
-                                                </span>
-                                             </div>
-                                             <div>
-                                                <h5 class="card-static__content--title">${item.value.Title}</h5>
-                                                <div class="card-static__content--desc">${item.value.Description}</div>
-                                             </div>
-                                          </div>
-                                       </div>
-                                    </div>
-                                 </c:forEach>
-                                 <div>
-                                    ${content.value.BenenitsUiSection.value.NoteSection}
-                                 </div>
-                              </div>
-                           </div>
-                        </c:if>
-                        <div class="col-md-7 col-lg-6 pd-100-60">
-                           <form id="form" data-submit-form data-url-submit="<cms:link>../action/mgm-referrer-form.jsp</cms:link>" 
-                          data-analytics='{"event":"formStarts","formName":"Contact us form vn","formType":"Contact us vn"}'
-                          data-url-redirect="<cms:link> ${content.value.GeneralForm.value.SuccessPageLink} </cms:link>" data-method="POST">
-                       
-                       <!-- Desktop title section - shows in original position on desktop only -->
-                       <div class="desktop-title-wrapper title-form__wrapper">
-                          <h1 class="title-form" data-product-title><span class="title-form__bold">${content.value.GeneralForm.value.DefaultFormTitleBold}</span> ${content.value.GeneralForm.value.DefaultFormTitleNonBold}</h1>
-                          <c:if test ="${content.value.GeneralForm.value.DescriptionText.isSet}">
-                              <div class="title-form__desc">${content.value.GeneralForm.value.DescriptionText}</div>
-                          </c:if>
-                       </div>>
+------------------------------------------------
+
+desktop-title-wrapper
