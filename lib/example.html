@@ -1,161 +1,45 @@
-// ===== Helper functions (Decode only) =====
-function bytesToHex(bytes) {
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-function hexToUuid(h) {
-  return (
-    h.slice(0, 8) +
-    "-" +
-    h.slice(8, 12) +
-    "-" +
-    h.slice(12, 16) +
-    "-" +
-    h.slice(16, 20) +
-    "-" +
-    h.slice(20)
-  );
-}
-
-function base64UrlDecode(str) {
-  const b64 = str.replace(/-/g, "+").replace(/_/g, "/");
-  const pad = b64.length % 4 ? "=".repeat(4 - (b64.length % 4)) : "";
-  const s = b64 + pad;
-  const bin = atob(s);
-  return Uint8Array.from(Array.from(bin).map((c) => c.charCodeAt(0)));
-}
-
-// ===== Decoder =====
-function decodePayload(token) {
-  const bytes = base64UrlDecode(token);
-  const uHex = bytesToHex(bytes.slice(0, 16));
-  const uniqueId = hexToUuid(uHex);
-
-  const aIsUuid = bytes[16] === 1;
-  const aLen = bytes[17];
-  const aBytes = bytes.slice(18, 18 + aLen);
-
-  let agentCode;
-  if (aIsUuid) {
-    agentCode = hexToUuid(bytesToHex(aBytes));
-  } else {
-    agentCode = new TextDecoder().decode(aBytes);
-  }
-
-  const lLen = bytes[18 + aLen];
-  const lBytes = bytes.slice(19 + aLen, 19 + aLen + lLen);
-  const leadSource = new TextDecoder().decode(lBytes);
-
-  return { uniqueId, agentCode, leadSource };
-}
-
-// ===== Build back query string =====
-function decodeToQuery(token) {
-  const { uniqueId, agentCode, leadSource } = decodePayload(token);
-  return `uniqueId=${uniqueId}&agentCode=${agentCode}&leadSource=${leadSource}`;
-}
-
-// ===== Example usage =====
-const token = "PASTE_TOKEN_HERE"; // from Encode.js
-console.log("Decoded object:", decodePayload(token));
-console.log("Decoded query:", decodeToQuery(token));
-
-const params = new URLSearchParams(window.location.search);
-
-// Initialize variables
-let uniqueId, agentCode, leadSource;
-let isValidLink = false;
-
-// Check if data parameter exists (new design only)
-const dataParam = params.get('data');
-if (dataParam) {
-    try {
-        const decodedData = decodePayload(dataParam);
-        uniqueId = decodedData.uniqueId;
-        agentCode = decodedData.agentCode;
-        leadSource = decodedData.leadSource;
-        
-        // Validate decoded data
-        if (uniqueId && leadSource) {
-            if (leadSource === 'corpweb') {
-                // For corpweb: uniqueId and leadSource required, agentCode optional
-                isValidLink = true;
-            } else {
-                // For non-corpweb: uniqueId, leadSource, and agentCode required
-                isValidLink = agentCode ? true : false;
-            }
-        }
-    } catch (error) {
-        console.error('Error decoding data parameter:', error);
-        isValidLink = false;
-    }
-}
-
-// Update form fields
-const uniqueIdInput = document.getElementById('uniqueId');
-const agentCodeInput = document.getElementById('agentCode');
-const leadSourceInput = document.getElementById('leadSource');
-const submitBtn = document.getElementById('submitBtn');
-
-if (uniqueId && uniqueIdInput) uniqueIdInput.value = uniqueId;
-if (agentCode && agentCodeInput) agentCodeInput.value = agentCode;
-if (leadSource && leadSourceInput) leadSourceInput.value = leadSource;
-
-// Enable/disable submit button based on validation
-submitBtn.disabled = !isValidLink;
-
-// Handle notifications
-const notificationElement = document.querySelector('[data-notification]');
-const messageElement = notificationElement?.querySelector('[data-notification-message]');
-
-if (messageElement) {
-    let errorMessage = '';
-    let isError = false;
-    
-    if (!dataParam) {
-        // No data parameter
-        errorMessage = "Đường dẫn trang người được giới thiệu không hợp lệ";
-        isError = true;
-    } else if (!uniqueId || !leadSource) {
-        // Missing required fields from decoded data
-        errorMessage = "Đường dẫn trang người được giới thiệu không hợp lệ";
-        isError = true;
-    } else if (leadSource !== 'corpweb' && !agentCode) {
-        // Non-corpweb requires agentCode
-        errorMessage = "Đường dẫn trang người được giới thiệu không hợp lệ";
-        isError = true;
-    }
-    
-    if (isError) {
-        messageElement.textContent = errorMessage;
-        notificationElement.classList.add('error');
-        notificationElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-        messageElement.textContent = '';
-        notificationElement.classList.remove('error');
-    }
-}
-
-
-XrPuSZvFT9iWXMmIdMYUzAAIMTIzNDU2NzgHY2VwX29icw
-const uniqueId = "5eb3ee49-9bc5-4fd8-965c-c98874c614cc";
-const agentCode = "12345678"; 
-const leadSource = "cep_obs"; 
-
-==================================
-Error
-XrPuSZvFT9iWXMmIdMYUzAAAB2NlcF9vYnM
-const uniqueId = "5eb3ee49-9bc5-4fd8-965c-c98874c614cc";
-const agentCode = ""; 
-const leadSource = "cep_obs"; 
-
---------------------------------
-
-XrPuSZvFT9iWXMmIdMYUzAAAB2NvcnB3ZWI
-const uniqueId = "5eb3ee49-9bc5-4fd8-965c-c98874c614cc";
-const agentCode = ""; 
-const leadSource = "corpweb"; 
-
-https://pru-api-prod.prudential.com.vn/pruforce/lead-corporate/v1
+<section data-pru-link class="component-rich-text component-rich-text-right" style="padding: 0 !important; margin: 0 !important;">
+               <div data-pru-link class="container" style="padding: 0 !important; margin: 0 !important">
+                  <div class="component-rich-text__wrapper" style="padding: 0 !important; margin: 0 !important">
+                     <div class="bk-blue-gray"></div>
+                     <br/><br/>
+                     <div class="contact-form row" style="padding: 0 !important; margin: 0 !important; display: flex; flex-direction: row;">
+                        <c:if test ="${content.value.GeneralForm.value.Image.isSet}">
+                           <div class="col-md-5 col-lg-6" style="padding: 0 !important; margin: 0 !important; order: 1;">
+                              <div class="img-contact-form">
+                                 <img class="lazyload" src='<cms:link>/system/modules/com.prudential.v2.global/resources/images/spinner.gif</cms:link>' data-src="<cms:link>${content.value.GeneralForm.value.Image}</cms:link>"  alt="${content.value.GeneralForm.value.ImageAlt}" />
+                              </div>
+                              <div style="padding: 40px; margin-bottom: 16px;">
+                                 <c:forEach var="item" items="${content.value.BenenitsUiSection.valueList.BenefitContainer}">
+                                    <div class="card-static__wrapper " data-card="" style="margin-bottom: 32px;">
+                                       <div class="card-static" style="padding: 0 !important; margin: 0 !important; padding-top: 10px !important;">
+                                          <div class="card-static__content " style="display: flex;  align-items: center;  gap: 16px;">
+                                             <div class="btn-arrow" style="background: #F6F4FD !important; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                                <span style="color: white; font-size: 18px; font-weight: bold;">
+                                                   <svg width="20" height="18" viewBox="0 0 20 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                      <path d="M15 17L11 13M5 13V1V13ZM5 1L1 5L5 1ZM5 1L9 5L5 1ZM15 5V17V5ZM15 17L19 13L15 17Z" stroke="#503D9C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                   </svg>
+                                                </span>
+                                             </div>
+                                             <div>
+                                                <h5 class="card-static__content--title">${item.value.Title}</h5>
+                                                <div class="card-static__content--desc">${item.value.Description}</div>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </c:forEach>
+                                 <div>
+                                    ${content.value.BenenitsUiSection.value.NoteSection}
+                                 </div>
+                              </div>
+                           </div>
+                        </c:if>
+                        <div class="col-md-7 col-lg-6 pd-100-60" style="display: flex; flex-direction: column; order: 2;">
+                           <!-- Mobile-first title section (will show at top on mobile) -->
+                           <div class="title-form__wrapper" style="order: 1; display: block;">
+                              <h1 class="title-form" data-product-title><span class="title-form__bold">${content.value.GeneralForm.value.DefaultFormTitleBold}</span> ${content.value.GeneralForm.value.DefaultFormTitleNonBold}</h1>
+                              <c:if test ="${content.value.GeneralForm.value.DescriptionText.isSet}">
+                                  <div class="title-form__desc">${content.value.GeneralForm.value.DescriptionText}</div>
+                              </c:if>
+                           </div>
