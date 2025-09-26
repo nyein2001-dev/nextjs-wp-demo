@@ -1,5 +1,53 @@
-<a href="https://www.prulifeuk.com.ph/en/policy-services-information/policy-faqs/simplified-increase-coverage-2025-faqs/" 
-   target="_blank" 
-   rel="noopener noreferrer" 
-   style="color: #0066cc !important; text-decoration: underline !important; font-weight: bold !important; cursor: pointer !important;"
-   title="Click to view PRU Life UK Coverage FAQs">here</a>
+ <!-- Salesforce Embedded Service Integration -->
+    <script type='text/javascript'>
+        function initEmbeddedMessaging() {
+            try {
+                console.log('Initializing Salesforce Embedded Service...');
+                
+                // Configuration details for debugging
+                const orgId = '00DWJ000005CytZ';
+                const esConfigName = 'PruBSN_Agentforce_Test_Website';
+                const deploymentUrl = 'https://force-inspiration-6414--lavapbtb.sandbox.my.site.com/ESWPruBSNAgentforceTest1758648567415';
+                const scrt2URL = 'https://force-inspiration-6414--lavapbtb.sandbox.my.salesforce-scrt.com';
+                
+                console.log('Configuration:', {
+                    orgId: orgId,
+                    esConfigName: esConfigName,
+                    deploymentUrl: deploymentUrl,
+                    scrt2URL: scrt2URL
+                });
+
+                embeddedservice_bootstrap.settings.language = 'en_US';
+
+                embeddedservice_bootstrap.init(
+                    orgId,
+                    esConfigName,
+                    deploymentUrl,
+                    {
+                        scrt2URL: scrt2URL
+                    }
+                );
+                
+                // Check if initialization was successful after a short delay
+                setTimeout(() => {
+                    if (embeddedservice_bootstrap && embeddedservice_bootstrap.isInitialized) {
+                        console.log('✅ Salesforce Embedded Service initialized successfully!');
+                    } else {
+                        console.log('⚠️ Embedded Service initialization may have failed - check Salesforce configuration');
+                        console.log('Common issues:');
+                        console.log('1. Domain not whitelisted in Salesforce Embedded Service settings');
+                        console.log('2. Invalid org ID or configuration name');
+                        console.log('3. Embedded Service not properly deployed');
+                        console.log('4. Authentication/permission issues');
+                    }
+                }, 2000);
+                
+            } catch (err) {
+                console.error('❌ Error loading Embedded Messaging: ', err);
+                console.error('Error details:', err.message);
+                console.error('Stack trace:', err.stack);
+            }
+        };
+
+    </script>
+    <script type='text/javascript' src='https://force-inspiration-6414--lavapbtb.sandbox.my.site.com/ESWPruBSNAgentforceTest1758648567415/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
