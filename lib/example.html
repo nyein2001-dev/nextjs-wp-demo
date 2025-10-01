@@ -1,77 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-    <title>Hello World</title>
-</head>
-<body>
-    <h1>Hello World! 👋</h1>
+ <p>
+    Agreed at <span id="dateTime"></span>
+  </p>
 
-    <!-- Salesforce Embedded Service Integration -->
-    <script type='text/javascript'>
-        function initEmbeddedMessaging() {
-            try {
-                console.log('Initializing Salesforce Embedded Service...');
-                
-                // Configuration details for debugging
-                const orgId = '00DWJ000005CytZ';
-                const esConfigName = 'PruBSN_Agentforce_Test_Website';
-                const deploymentUrl = 'https://force-inspiration-6414--lavapbtb.sandbox.my.site.com/ESWPruBSNAgentforceTest1758648567415';
-                const scrt2URL = 'https://force-inspiration-6414--lavapbtb.sandbox.my.salesforce-scrt.com';
-                
-                console.log('Configuration:', {
-                    orgId: orgId,
-                    esConfigName: esConfigName,
-                    deploymentUrl: deploymentUrl,
-                    scrt2URL: scrt2URL
-                });
+  <script>
+    function formatDateTime() {
+      const now = new Date();
 
-                embeddedservice_bootstrap.settings.language = 'en_US';
+      // Get month name in English
+      const month = now.toLocaleString('en-US', { month: 'long' });
 
-                embeddedservice_bootstrap.init(
-                    orgId,
-                    esConfigName,
-                    deploymentUrl,
-                    {
-                        scrt2URL: scrt2URL
-                    }
-                );
-                
-                // Check if initialization was successful after a short delay
-                setTimeout(() => {
-                    if (embeddedservice_bootstrap && embeddedservice_bootstrap.isInitialized) {
-                        console.log('✅ Salesforce Embedded Service initialized successfully!');
-                    } else {
-                        console.log('⚠️ Embedded Service initialization may have failed - check Salesforce configuration');
-                        console.log('Common issues:');
-                        console.log('1. Domain not whitelisted in Salesforce Embedded Service settings');
-                        console.log('2. Invalid org ID or configuration name');
-                        console.log('3. Embedded Service not properly deployed');
-                        console.log('4. Authentication/permission issues');
-                    }
-                }, 2000);
-                
-            } catch (err) {
-                console.error('❌ Error loading Embedded Messaging: ', err);
-                console.error('Error details:', err.message);
-                console.error('Stack trace:', err.stack);
-            }
-        };
+      const day = now.getDate();
+      const year = now.getFullYear();
 
-    </script>
-    <script type='text/javascript' src='https://force-inspiration-6414--lavapbtb.sandbox.my.site.com/ESWPruBSNAgentforceTest1758648567415/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
-</body>
-</html>
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
 
+      return `${month} ${day}, ${year}, ${hours}:${minutes}:${seconds}`;
+    }
 
-<script>
-// Load script manually
-var script = document.createElement('script');
-script.src = 'https://force-inspiration-6414--lavapbtb.sandbox.my.site.com/ESWPruBSNAgentforceTest1758648567415/assets/js/bootstrap.min.js';
-script.onload = function() {
-    console.log('Script loaded successfully');
-    initEmbeddedMessaging();
-};
-document.head.appendChild(script);
-</script>
+    // Show once on load
+    document.getElementById("dateTime").textContent = formatDateTime();
+
+    // Optional: update every second like a live clock
+    setInterval(() => {
+      document.getElementById("dateTime").textContent = formatDateTime();
+    }, 1000);
+  </script>
