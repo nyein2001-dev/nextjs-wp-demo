@@ -1,3 +1,30 @@
 Consent Date & Time
 Agreed at <Date and time of Submission>
 
+
+
+  <input type="hidden" name="special-reinstatement-date-time" id="special-reinstatement-date-time" />
+
+<script>
+function formatDateTime() {
+    const now = new Date();
+
+    const month = now.toLocaleString('en-US', { month: 'long' });
+    const day = now.getDate();
+    const year = now.getFullYear();
+
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+
+    return `${month} ${day}, ${year}, ${hours}:${minutes}:${seconds}`;
+}
+
+// set value on load
+document.getElementById("special-reinstatement-date-time").value = formatDateTime();
+
+// update every second
+setInterval(() => {
+    document.getElementById("special-reinstatement-date-time").value = formatDateTime();
+}, 1000);
+</script>
