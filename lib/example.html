@@ -1,36 +1,376 @@
-Consent Date & Time
-Agreed at <Date and time of Submission>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Beneficiary Form</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        
+        .form-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .question-group {
+            margin-bottom: 20px;
+        }
+        
+        .question-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .required {
+            color: red;
+        }
+        
+        .radio-group {
+            margin-left: 20px;
+        }
+        
+        .radio-option {
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .radio-option input {
+            margin-right: 8px;
+        }
 
 
-<form id="form" data-analytics='{"formType":"contact","formName":"Contact Us"}'>
-   ...
-</form>
+        .subsection {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            border-left: 3px solid #0066cc;
+            background-color: #fff;
+        }
 
-https://10.193.16.22:449/vi/referee-form-test/index.html?data=E08n7sDRX-ODJCvbvNXCKgEQwZ9hOTv8XKKd_CHD-WgHQAdjZXBfb2Ix
-   https://force-inspiration-6414--lavapbtb.sandbox.lightning.force.com/
-  
-  <input type="hidden" name="special-reinstatement-date-time" id="special-reinstatement-date-time" />
+        .subsection.visible {
+            display: block;
+        }
+        
+        .info-text {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .upload-group {
+            margin-bottom: 15px;
+        }
+        
+        .upload-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input[type="file"] {
+            display: block;
+            margin-bottom: 10px;
+        }
+        
+        h2 {
+            margin-bottom: 20px;
+            color: #d32f2f;
+        }
+        
 
-<script>
-function formatDateTime() {
-    const now = new Date();
+        .bullet-list {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
 
-    const month = now.toLocaleString('en-US', { month: 'long' });
-    const day = now.getDate();
-    const year = now.getFullYear();
+        .bullet-list li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
 
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
+        .link-text {
+            color: #0066cc;
+            text-decoration: underline;
+        }
 
-    return `${month} ${day}, ${year}, ${hours}:${minutes}:${seconds}`;
-}
+        hr {
+            margin: 20px 0;
+            border: none;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Change Beneficiary option (updated)</h2>
+        
+        <!-- Question 1: Existing Irrevocable Beneficiaries -->
+        <div class="question-group">
+            <label class="question-label">
+                Do you have an existing Irrevocable Beneficiaries? <span class="required">*</span>
+            </label>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="q1_existing" value="yes" required>
+                    Yes
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="q1_existing" value="no">
+                    No
+                </label>
+            </div>
+        </div>
 
-// set value on load
-document.getElementById("special-reinstatement-date-time").value = formatDateTime();
+        <!-- Question 2: Adding New Irrevocable Beneficiaries -->
+        <div class="question-group">
+            <label class="question-label">
+                Do you plan to include any new Irrevocable Beneficiaries? <span class="required">*</span>
+            </label>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="q2_new_irrevocable" value="legal_age" required>
+                    Yes, I will be adding Irrevocable Beneficiary – Legal Age
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="q2_new_irrevocable" value="minor">
+                    Yes, I will be adding Irrevocable Beneficiary – Minor (under the age of 18)
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="q2_new_irrevocable" value="no">
+                    No, I will not be adding any Irrevocable Beneficiary
+                </label>
+            </div>
+        </div>
 
-// update every second
-setInterval(() => {
-    document.getElementById("special-reinstatement-date-time").value = formatDateTime();
-}, 1000);
-</script>
+        <!-- Question 3: Common Law Partner or Same Sex Domestic Partner -->
+        <div class="question-group">
+            <label class="question-label">
+                Are you going to add a Common Law Partner or Same Sex Domestic Partner as your beneficiary? <span class="required">*</span>
+            </label>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="q3_partner" value="yes" required>
+                    Yes
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="q3_partner" value="no">
+                    No
+                </label>
+            </div>
+        </div>
+
+        <!-- MAIN SECTION - Always visible -->
+        <div id="main_section">
+            <div class="info-text">
+                <strong>To request for Change Beneficiary, kindly attach the following:</strong>
+            </div>
+
+            <ul class="bullet-list">
+                <li>[For individually owned policies] Duly accomplished and signed <span class="link-text">Policy Amendment Request for Individual Policyowner</span> by the life insured and the policyowner.</li>
+                <li>[For corporate/entity-owned policies] Duly accomplished and signed <span class="link-text">Policy Amendment Request for Corporate/ Entity Policyowner</span> by the life insured and the policyowner.</li>
+            </ul>
+
+            <div class="upload-group">
+                <label class="upload-label">Policy Amendment Request Form <span class="required">*</span></label>
+                <input type="file" name="policy_amendment_form" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                <small>Choose File | No file chosen</small>
+            </div>
+
+            <hr>
+
+            <!-- CONDITIONAL HEADER - Shows only when at least one "Yes" is selected -->
+            <div id="additional_docs_header" class="info-text" style="display: none;">
+                <strong>Please provide the following additional documents according to your choice above:</strong>
+            </div>
+        </div>
+
+        <!-- SUBSECTION 1: For Q1 = Yes (Existing Irrevocable Beneficiary) -->
+        <div id="subsection_q1_yes" class="subsection">
+            <ul class="bullet-list">
+                <li>Clear copy of one valid government ID or two valid non-government IDs reflecting the Signature of Irrevocable Beneficiary.</li>
+                <li>In cases where the current Irrevocable Beneficiary has passed away, a photocopy of the death certificate must be provided.</li>
+            </ul>
+
+            <div class="upload-group">
+                <label class="upload-label">Valid ID/s of existing Irrevocable Beneficiary or Death Certificate if deceased <span class="required">*</span></label>
+                <input type="file" name="existing_beneficiary_id" accept=".pdf,.jpg,.jpeg,.png" multiple>
+                <small>Choose File | No file chosen</small>
+            </div>
+        </div>
+
+        <!-- SUBSECTION 2A: For Q2 = Legal Age (New Irrevocable Beneficiary) -->
+        <div id="subsection_q2_legal_age" class="subsection">
+            <ul class="bullet-list">
+                <li>Clear photocopy of signature bearing one (1) valid government-issued ID or two (2) valid non-government IDs of the new Irrevocable Beneficiary/ies.</li>
+            </ul>
+
+            <div class="upload-group">
+                <label class="upload-label">Valid ID/s of the new Irrevocable Beneficiary <span class="required">*</span></label>
+                <input type="file" name="new_beneficiary_id" accept=".pdf,.jpg,.jpeg,.png" multiple>
+                <small>Choose File | No file chosen</small>
+            </div>
+        </div>
+
+        <!-- SUBSECTION 2B: For Q2 = Minor (New Irrevocable Beneficiary) -->
+        <div id="subsection_q2_minor" class="subsection">
+            <ul class="bullet-list">
+                <li>Clear photocopy of signature bearing one (1) valid government-issued ID or two (2) valid non-government IDs of the new Irrevocable Beneficiary/ies.</li>
+                <li>Duly accomplished <span class="link-text">Endorsement for Designating Irrevocable Beneficiary (EDIB)</span></li>
+                <li>Legal guardian's signature and submission of a court-approved bond if the minor's policy benefits share is PHP 500,000 or more (or USD equivalent).</li>
+            </ul>
+
+            <div class="upload-group">
+                <label class="upload-label">Endorsement for Designated Irrevocable Beneficiary <span class="required">*</span></label>
+                <input type="file" name="endorsement_form" accept=".pdf,.doc,.docx">
+                <small>Choose File | No file chosen</small>
+            </div>
+
+            <div class="upload-group">
+                <label class="upload-label">Court-Approved Bond (if applicable)</label>
+                <input type="file" name="court_bond" accept=".pdf,.doc,.docx">
+                <small>Choose File | No file chosen</small>
+            </div>
+        </div>
+
+        <!-- SUBSECTION 3: For Q3 = Yes (Common Law/Same Sex Partner) -->
+        <div id="subsection_q3_yes" class="subsection">
+            <ul class="bullet-list">
+                <li>A government-issued Certificate of Union if the ceremony took place overseas, or evidence demonstrating that the relationship between same-sex or common law partners has lasted for five years or longer through any one of the following:
+                    <ul style="margin-left: 20px; margin-top: 5px;">
+                        <li>Government Issued IDs showing the same place of residence or Barangay Certification of Residency</li>
+                        <li>Existing joint bank accounts or co-ownership of properties</li>
+                        <li>Proof that financial support is provided to the partner</li>
+                    </ul>
+                </li>
+                <li>Philippine Statistical Authority (PSA) Certificate of No Marriage (CENOMAR) or its equivalent document abroad.</li>
+            </ul>
+
+            <div class="upload-group">
+                <label class="upload-label">Certificate of Union or Document evidence of relationship <span class="required">*</span></label>
+                <input type="file" name="certificate_union" accept=".pdf,.jpg,.jpeg,.png">
+                <small>Choose File | No file chosen</small>
+            </div>
+
+            <div class="upload-group">
+                <label class="upload-label">PSA CENOMAR or equivalent document <span class="required">*</span></label>
+                <input type="file" name="psa_cenomar" accept=".pdf,.jpg,.jpeg,.png">
+                <small>Choose File | No file chosen</small>
+            </div>
+        </div>
+
+        <button type="button" onclick="showFormState()" style="margin-top: 20px; padding: 10px 20px; background-color: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Debug: Show Form State
+        </button>
+    </div>
+
+    <script>
+        // Get all radio buttons
+        const q1Radios = document.querySelectorAll('input[name="q1_existing"]');
+        const q2Radios = document.querySelectorAll('input[name="q2_new_irrevocable"]');
+        const q3Radios = document.querySelectorAll('input[name="q3_partner"]');
+
+        // Get main section, conditional header, and subsections
+        const mainSection = document.getElementById('main_section');
+        const additionalDocsHeader = document.getElementById('additional_docs_header');
+        const subsectionQ1Yes = document.getElementById('subsection_q1_yes');
+        const subsectionQ2LegalAge = document.getElementById('subsection_q2_legal_age');
+        const subsectionQ2Minor = document.getElementById('subsection_q2_minor');
+        const subsectionQ3Yes = document.getElementById('subsection_q3_yes');
+
+        // Function to update form visibility
+        function updateFormVisibility() {
+            const q1Value = getRadioValue('q1_existing');
+            const q2Value = getRadioValue('q2_new_irrevocable');
+            const q3Value = getRadioValue('q3_partner');
+
+            // Hide all subsections first
+            subsectionQ1Yes.classList.remove('visible');
+            subsectionQ2LegalAge.classList.remove('visible');
+            subsectionQ2Minor.classList.remove('visible');
+            subsectionQ3Yes.classList.remove('visible');
+
+            // Check if any "Yes" is selected to show additional docs header
+            const hasAnyYes = (q1Value === 'yes') || 
+                             (q2Value === 'legal_age' || q2Value === 'minor') || 
+                             (q3Value === 'yes');
+
+            if (hasAnyYes) {
+                additionalDocsHeader.style.display = 'block';
+            } else {
+                additionalDocsHeader.style.display = 'none';
+            }
+
+            // Show subsections based on individual answers
+            // Q1: Show if "Yes"
+            if (q1Value === 'yes') {
+                subsectionQ1Yes.classList.add('visible');
+            }
+
+            // Q2: Show Legal Age section if "Legal Age"
+            if (q2Value === 'legal_age') {
+                subsectionQ2LegalAge.classList.add('visible');
+            }
+
+            // Q2: Show Minor section if "Minor"
+            if (q2Value === 'minor') {
+                subsectionQ2Minor.classList.add('visible');
+            }
+
+            // Q3: Show if "Yes"
+            if (q3Value === 'yes') {
+                subsectionQ3Yes.classList.add('visible');
+            }
+        }
+
+        // Helper function to get selected radio value
+        function getRadioValue(name) {
+            const selected = document.querySelector(`input[name="${name}"]:checked`);
+            return selected ? selected.value : null;
+        }
+
+        // Add event listeners to all radio buttons
+        q1Radios.forEach(radio => radio.addEventListener('change', updateFormVisibility));
+        q2Radios.forEach(radio => radio.addEventListener('change', updateFormVisibility));
+        q3Radios.forEach(radio => radio.addEventListener('change', updateFormVisibility));
+
+        // Debug function to show current state
+        function showFormState() {
+            const q1 = getRadioValue('q1_existing');
+            const q2 = getRadioValue('q2_new_irrevocable');
+            const q3 = getRadioValue('q3_partner');
+            
+            alert(`Current Form State:\n\nQ1 (Existing): ${q1 || 'Not answered'}\nQ2 (New): ${q2 || 'Not answered'}\nQ3 (Partner): ${q3 || 'Not answered'}\n\nVisible Sections:\n- Main Section: Always visible\n- Additional Docs Header: ${additionalDocsHeader.style.display === 'block'}\n- Q1 Subsection (Existing): ${subsectionQ1Yes.classList.contains('visible')}\n- Q2 Legal Age Subsection: ${subsectionQ2LegalAge.classList.contains('visible')}\n- Q2 Minor Subsection: ${subsectionQ2Minor.classList.contains('visible')}\n- Q3 Subsection (Partner): ${subsectionQ3Yes.classList.contains('visible')}\n\nNote: Main section is always visible, subsections show immediately when individual questions are answered!`);
+        }
+
+        // Initial check on page load
+        updateFormVisibility();
+    </script>
+</body>
+</html>
+
+PRUServices Policy Linking
+
+pPolicy Number that you wish to connect to your PRUServices account
+Please enter the 8 or 9 digits policy number you are having trouble linking in
+PRUServices.
+
+pPolicy Number available in your PRUServices account
+
+Please enter any policy number available in you PRUServices account.
+
+pEmail Address registered to your PRUServices account
+
+Please enter your email address linked to your PRUServices account.
+
+Submitting this form will initiate a request to link the policy number to your
+PRUServices account, and our support team will reach out to help resolve
+your issue.
