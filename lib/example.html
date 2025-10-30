@@ -273,3 +273,32 @@ your issue.
 
 https://10.193.16.22:451/ms/contact-us-salesforce-test/
 
+
+<!--This code snippet adds the embedded service to your web page. You can customize some of the code parameters.
+Paste this code before the closing body tag (</body>) for each web page. Don't place the code in your header.-->
+
+<script type='text/javascript'>
+	function initEmbeddedMessaging() {
+		try {
+			embeddedservice_bootstrap.settings.language = 'en_US'; // For example, enter 'en' or 'en-US'
+
+			embeddedservice_bootstrap.init(
+				'00DWJ000005CytZ',
+				'PruBSN_Agentforce_Test_Website',
+				'https://force-inspiration-6414--lavapbtb.sandbox.my.site.com/ESWPruBSNAgentforceTest1758648567415',
+				{
+					scrt2URL: 'https://force-inspiration-6414--lavapbtb.sandbox.my.salesforce-scrt.com'
+				}
+			);
+		} catch (err) {
+			console.error('Error loading Embedded Messaging: ', err);
+		}
+	};
+</script>
+<script type='text/javascript' src='https://force-inspiration-6414--lavapbtb.sandbox.my.site.com/ESWPruBSNAgentforceTest1758648567415/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+
+<!--This code snippet makes your web page responsive, so the web page and the embedded service look good on different devices. If your page is already responsive and has a meta tag, then you might not need to make any changes.
+Add this code to the <meta> tag in the head section of each web page where you want the embedded service to be available:-->
+
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+
