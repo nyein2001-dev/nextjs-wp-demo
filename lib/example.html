@@ -130,7 +130,7 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
         String mailContentUser = new String(contentUser);
 
         // mail admin in dialog
-		String emailAddressMainAdmin = "nyein@example.com";
+		String emailAddressMainAdmin = "crm.uat@prulifeuk.com.ph";//"nyein@gravitas.my";crm.uat@prulifeuk.com.ph
         String emailAddressAdmin = "";
         // mail user in xml file
         String emailAddressUser = "";
@@ -448,26 +448,140 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                     boolean adminEmailSent = false;
                     boolean userEmailSent = false;
 
+                    // Validate email addresses before sending
+                    try {
+                        errorLog.append("Validating email addresses. ");
+                        if (StringUtils.isEmpty(emailAddressUser)) {
+                            errorLog.append("ERROR: User email address is empty or null. ");
+                            throw new Exception("User email address validation failed: empty or null");
+                        }
+                        if (emailAddressUser != null && (emailAddressUser.indexOf("@") < 1 || emailAddressUser.indexOf("@") >= emailAddressUser.length() - 1)) {
+                            errorLog.append("ERROR: User email address format invalid: ").append(emailAddressUser).append(". ");
+                            throw new Exception("User email address format invalid");
+                        }
+                        if (StringUtils.isEmpty(emailAddressMainAdmin)) {
+                            errorLog.append("ERROR: Admin email address is empty or null. ");
+                            throw new Exception("Admin email address validation failed: empty or null");
+                        }
+                        if (emailAddressMainAdmin != null && (emailAddressMainAdmin.indexOf("@") < 1 || emailAddressMainAdmin.indexOf("@") >= emailAddressMainAdmin.length() - 1)) {
+                            errorLog.append("ERROR: Admin email address format invalid: ").append(emailAddressMainAdmin).append(". ");
+                            throw new Exception("Admin email address format invalid");
+                        }
+                        errorLog.append("Email addresses validated successfully. ");
+                    } catch (Exception validationEx) {
+                        errorLog.append("Email validation failed: ").append(validationEx.getClass().getName()).append(" - ").append(validationEx.getMessage() != null ? validationEx.getMessage() : "null message").append(". ");
+                    }
+
+                    // Validate email content size
+                    try {
+                        errorLog.append("Validating email content size. ");
+                        if (mailContent == null) {
+                            errorLog.append("ERROR: Admin mail content is null. ");
+                            throw new Exception("Admin mail content is null");
+                        }
+                        if (mailContentUser == null) {
+                            errorLog.append("ERROR: User mail content is null. ");
+                            throw new Exception("User mail content is null");
+                        }
+                        long mailContentSize = mailContent.getBytes("UTF-8").length;
+                        long mailContentUserSize = mailContentUser.getBytes("UTF-8").length;
+                        errorLog.append("Admin content size: ").append(mailContentSize).append(" bytes. User content size: ").append(mailContentUserSize).append(" bytes. ");
+                        // Microsoft Business Email often has size limits (typically 25-150MB, but be safe with 10MB)
+                        final long MAX_EMAIL_SIZE = 10 * 1024 * 1024; // 10MB
+                        if (mailContentSize > MAX_EMAIL_SIZE) {
+                            errorLog.append("WARNING: Admin email content exceeds ").append(MAX_EMAIL_SIZE).append(" bytes. ");
+                        }
+                        if (mailContentUserSize > MAX_EMAIL_SIZE) {
+                            errorLog.append("WARNING: User email content exceeds ").append(MAX_EMAIL_SIZE).append(" bytes. ");
+                        }
+                        errorLog.append("Email content size validated. ");
+                    } catch (Exception sizeEx) {
+                        errorLog.append("Content size validation error: ").append(sizeEx.getClass().getName()).append(" - ").append(sizeEx.getMessage() != null ? sizeEx.getMessage() : "null message").append(". ");
+                    }
+
                     // Send to admin first
                     try {
                         errorLog.append("Starting admin email send. ");
-                        CmsHtmlMail smToCsAdmin = new CmsHtmlMail();
-                        errorLog.append("Created CmsHtmlMail object. ");
                         
-                        smToCsAdmin.setMsg(mailContent);
-                        errorLog.append("Set message content. ");
+                        // Check available memory before creating email object
+                        try {
+                            Runtime runtime = Runtime.getRuntime();
+                            long freeMemory = runtime.freeMemory();
+                            long totalMemory = runtime.totalMemory();
+                            long maxMemory = runtime.maxMemory();
+                            long usedMemory = totalMemory - freeMemory;
+                            errorLog.append("Memory check - Free: ").append(freeMemory / 1024 / 1024).append("MB, Used: ").append(usedMemory / 1024 / 1024).append("MB, Max: ").append(maxMemory / 1024 / 1024).append("MB. ");
+                            if (freeMemory < 1024 * 1024) { // Less than 1MB free
+                                errorLog.append("WARNING: Very low free memory before admin email. ");
+                            }
+                        } catch (Exception memCheckEx) {
+                            errorLog.append("Memory check failed: ").append(memCheckEx.getMessage() != null ? memCheckEx.getMessage() : "null message").append(". ");
+                        }
                         
-                        smToCsAdmin.setSubject(mailSubject + "  " + selectedService +  "  - Policy number:  " + policy_number + " ");
-                        errorLog.append("Set subject: ").append(mailSubject).append(". ");
+                        CmsHtmlMail smToCsAdmin = null;
+                        try {
+                            smToCsAdmin = new CmsHtmlMail();
+                            errorLog.append("Created CmsHtmlMail object. ");
+                        } catch (OutOfMemoryError oomEx) {
+                            errorLog.append("CRITICAL: OutOfMemoryError creating CmsHtmlMail object for admin email. ");
+                            throw new Exception("Memory error creating email object: " + (oomEx.getMessage() != null ? oomEx.getMessage() : "OutOfMemoryError"));
+                        } catch (Exception createEx) {
+                            errorLog.append("Error creating CmsHtmlMail object: ").append(createEx.getClass().getName()).append(" - ").append(createEx.getMessage() != null ? createEx.getMessage() : "null message").append(". ");
+                            throw createEx;
+                        }
                         
-                        smToCsAdmin.setCharset("UTF-8");
-                        errorLog.append("Set charset UTF-8. ");
+                        try {
+                            if (mailContent == null) {
+                                throw new Exception("Mail content is null");
+                            }
+                            smToCsAdmin.setMsg(mailContent);
+                            errorLog.append("Set message content (length: ").append(mailContent.length()).append("). ");
+                        } catch (OutOfMemoryError oomEx) {
+                            errorLog.append("CRITICAL: OutOfMemoryError setting message content for admin email. ");
+                            throw new Exception("Memory error setting message: " + (oomEx.getMessage() != null ? oomEx.getMessage() : "OutOfMemoryError"));
+                        } catch (Exception msgEx) {
+                            errorLog.append("Error setting message: ").append(msgEx.getClass().getName()).append(" - ").append(msgEx.getMessage() != null ? msgEx.getMessage() : "null message").append(". ");
+                            throw msgEx;
+                        }
                         
-                        smToCsAdmin.setFrom(emailAddressUser);
-                        errorLog.append("Set from: ").append(emailAddressUser != null ? emailAddressUser : "null").append(". ");
+                        try {
+                            String adminSubject = mailSubject + "  " + selectedService +  "  - Policy number:  " + policy_number + " ";
+                            smToCsAdmin.setSubject(adminSubject);
+                            errorLog.append("Set subject: ").append(adminSubject != null && adminSubject.length() > 50 ? adminSubject.substring(0, 50) + "..." : adminSubject).append(". ");
+                        } catch (Exception subjEx) {
+                            errorLog.append("Error setting subject: ").append(subjEx.getClass().getName()).append(" - ").append(subjEx.getMessage() != null ? subjEx.getMessage() : "null message").append(". ");
+                            throw subjEx;
+                        }
                         
-                        smToCsAdmin.addTo(emailAddressMainAdmin);
-                        errorLog.append("Added to: ").append(emailAddressMainAdmin != null ? emailAddressMainAdmin : "null").append(". ");
+                        try {
+                            smToCsAdmin.setCharset("UTF-8");
+                            errorLog.append("Set charset UTF-8. ");
+                        } catch (Exception charsetEx) {
+                            errorLog.append("Error setting charset: ").append(charsetEx.getClass().getName()).append(" - ").append(charsetEx.getMessage() != null ? charsetEx.getMessage() : "null message").append(". ");
+                            throw charsetEx;
+                        }
+                        
+                        try {
+                            if (emailAddressUser == null || emailAddressUser.trim().length() == 0) {
+                                throw new Exception("From email address is null or empty");
+                            }
+                            smToCsAdmin.setFrom(emailAddressUser);
+                            errorLog.append("Set from: ").append(emailAddressUser != null ? emailAddressUser : "null").append(". ");
+                        } catch (Exception fromEx) {
+                            errorLog.append("Error setting from address: ").append(fromEx.getClass().getName()).append(" - ").append(fromEx.getMessage() != null ? fromEx.getMessage() : "null message").append(". ");
+                            throw fromEx;
+                        }
+                        
+                        try {
+                            if (emailAddressMainAdmin == null || emailAddressMainAdmin.trim().length() == 0) {
+                                throw new Exception("To email address is null or empty");
+                            }
+                            smToCsAdmin.addTo(emailAddressMainAdmin);
+                            errorLog.append("Added to: ").append(emailAddressMainAdmin != null ? emailAddressMainAdmin : "null").append(". ");
+                        } catch (Exception toEx) {
+                            errorLog.append("Error adding to address: ").append(toEx.getClass().getName()).append(" - ").append(toEx.getMessage() != null ? toEx.getMessage() : "null message").append(". ");
+                            throw toEx;
+                        }
 
                         // Add all file attachments
                         List<File> tempFilesAdmin = new ArrayList<File>();
@@ -478,76 +592,302 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                                     String fileNameMTP = (String)fileInfo.get("fieldName") + "_" + fullName + "_";
                                     errorLog.append("Creating temp file for: ").append(fileNameMTP).append(". ");
                                     
-                                    File tempFile = createTempFileFromInputStream(
-                                        (InputStream)fileInfo.get("fileContent"),
-                                        fileNameMTP,
-                                        (String)fileInfo.get("fileExtension")
-                                    );
-                                    tempFilesAdmin.add(tempFile);
-                                    errorLog.append("Temp file created: ").append(tempFile.getAbsolutePath()).append(". ");
+                                    try {
+                                        File tempFile = createTempFileFromInputStream(
+                                            (InputStream)fileInfo.get("fileContent"),
+                                            fileNameMTP,
+                                            (String)fileInfo.get("fileExtension")
+                                        );
+                                        tempFilesAdmin.add(tempFile);
+                                        errorLog.append("Temp file created: ").append(tempFile.getAbsolutePath()).append(". ");
+                                        errorLog.append("Temp file size: ").append(tempFile.length()).append(" bytes. ");
 
-                                    EmailAttachment attachment = new EmailAttachment();
-                                    attachment.setPath(tempFile.getAbsolutePath());
-                                    attachment.setName((String)fileInfo.get("originalFileName"));
-                                    attachment.setDisposition(EmailAttachment.ATTACHMENT);
-                                    smToCsAdmin.attach(attachment);
-                                    errorLog.append("Attachment added: ").append((String)fileInfo.get("originalFileName")).append(". ");
+                                        try {
+                                            EmailAttachment attachment = new EmailAttachment();
+                                            attachment.setPath(tempFile.getAbsolutePath());
+                                            attachment.setName((String)fileInfo.get("originalFileName"));
+                                            attachment.setDisposition(EmailAttachment.ATTACHMENT);
+                                            smToCsAdmin.attach(attachment);
+                                            errorLog.append("Attachment added: ").append((String)fileInfo.get("originalFileName")).append(". ");
+                                        } catch (OutOfMemoryError oomEx) {
+                                            errorLog.append("CRITICAL: OutOfMemoryError attaching file: ").append((String)fileInfo.get("originalFileName")).append(". ");
+                                            throw new Exception("Memory error attaching file: " + (oomEx.getMessage() != null ? oomEx.getMessage() : "OutOfMemoryError"));
+                                        } catch (Exception attachEx) {
+                                            errorLog.append("Error attaching file: ").append(attachEx.getClass().getName()).append(" - ").append(attachEx.getMessage() != null ? attachEx.getMessage() : "null message").append(". ");
+                                            throw attachEx;
+                                        }
+                                    } catch (OutOfMemoryError oomEx) {
+                                        errorLog.append("CRITICAL: OutOfMemoryError creating temp file: ").append(oomEx.getMessage() != null ? oomEx.getMessage() : "OutOfMemoryError").append(". ");
+                                        throw new Exception("Memory error creating temp file: " + (oomEx.getMessage() != null ? oomEx.getMessage() : "OutOfMemoryError"));
+                                    } catch (IOException ioEx) {
+                                        errorLog.append("IO Error creating temp file: ").append(ioEx.getClass().getName()).append(" - ").append(ioEx.getMessage() != null ? ioEx.getMessage() : "null message").append(". ");
+                                        throw new Exception("IO error creating temp file: " + (ioEx.getMessage() != null ? ioEx.getMessage() : "IO error"));
+                                    }
                                 } catch (Exception attachEx) {
-                                    errorLog.append("Error adding attachment: ").append(attachEx.getClass().getName()).append(" - ").append(attachEx.getMessage() != null ? attachEx.getMessage() : "null message").append(". ");
+                                    errorLog.append("Error processing attachment: ").append(attachEx.getClass().getName()).append(" - ").append(attachEx.getMessage() != null ? attachEx.getMessage() : "null message").append(". ");
+                                    if (attachEx.getCause() != null) {
+                                        errorLog.append("Attachment error cause: ").append(attachEx.getCause().getClass().getName()).append(" - ").append(attachEx.getCause().getMessage() != null ? attachEx.getCause().getMessage() : "null").append(". ");
+                                    }
                                 }
                             }
                         }
 
-                        errorLog.append("Sending admin email. ");
-                        smToCsAdmin.send();
-                        adminEmailSent = true;
-                        errorLog.append("Admin email sent successfully. ");
+                        // Send admin email with comprehensive error handling
+                        try {
+                            errorLog.append("Attempting to send admin email. ");
+                            if (smToCsAdmin == null) {
+                                throw new Exception("CmsHtmlMail object is null before send");
+                            }
+                            
+                            // Check memory before send
+                            try {
+                                Runtime runtime = Runtime.getRuntime();
+                                long freeMemoryBefore = runtime.freeMemory();
+                                if (freeMemoryBefore < 512 * 1024) { // Less than 512KB
+                                    errorLog.append("WARNING: Very low memory (").append(freeMemoryBefore / 1024).append("KB) before send. ");
+                                }
+                            } catch (Exception memEx) {
+                                // Ignore memory check errors
+                            }
+                            
+                            smToCsAdmin.send();
+                            adminEmailSent = true;
+                            errorLog.append("Admin email sent successfully. ");
+                        } catch (java.net.SocketTimeoutException timeoutEx) {
+                            errorLog.append("SMTP TIMEOUT: Connection timeout sending to admin email. This often indicates Microsoft server is slow or overloaded. ");
+                            errorLog.append("Timeout error: ").append(timeoutEx.getMessage() != null ? timeoutEx.getMessage() : "null message").append(". ");
+                            adminEmailSent = false;
+                        } catch (java.net.ConnectException connectEx) {
+                            errorLog.append("SMTP CONNECTION ERROR: Cannot connect to SMTP server for admin email. Server may be down or unreachable. ");
+                            errorLog.append("Connection error: ").append(connectEx.getMessage() != null ? connectEx.getMessage() : "null message").append(". ");
+                            adminEmailSent = false;
+                        } catch (javax.mail.AuthenticationFailedException authEx) {
+                            errorLog.append("SMTP AUTHENTICATION FAILED: Authentication failed for admin email. Credentials may be invalid or account locked. ");
+                            errorLog.append("Auth error: ").append(authEx.getMessage() != null ? authEx.getMessage() : "null message").append(". ");
+                            adminEmailSent = false;
+                        } catch (javax.mail.SendFailedException sendFailEx) {
+                            errorLog.append("SMTP SEND FAILED: Email send failed for admin. Microsoft may have rejected the email. ");
+                            errorLog.append("Send failed: ").append(sendFailEx.getMessage() != null ? sendFailEx.getMessage() : "null message").append(". ");
+                            if (sendFailEx.getInvalidAddresses() != null && sendFailEx.getInvalidAddresses().length > 0) {
+                                errorLog.append("Invalid addresses: ");
+                                for (int i = 0; i < sendFailEx.getInvalidAddresses().length; i++) {
+                                    errorLog.append(sendFailEx.getInvalidAddresses()[i].toString()).append(" ");
+                                }
+                            }
+                            adminEmailSent = false;
+                        } catch (javax.mail.MessagingException msgEx) {
+                            errorLog.append("SMTP MESSAGING ERROR: General messaging error for admin email. ");
+                            String msgExMsg = msgEx.getMessage() != null ? msgEx.getMessage() : "null message";
+                            errorLog.append("Messaging error: ").append(msgExMsg).append(". ");
+                            // Check for common Microsoft-specific error messages
+                            if (msgExMsg.toLowerCase().indexOf("quota") >= 0 || msgExMsg.toLowerCase().indexOf("storage") >= 0) {
+                                errorLog.append("POSSIBLE MICROSOFT QUOTA ISSUE: Mailbox may be full or quota exceeded. ");
+                            }
+                            if (msgExMsg.toLowerCase().indexOf("rate limit") >= 0 || msgExMsg.toLowerCase().indexOf("throttle") >= 0) {
+                                errorLog.append("POSSIBLE MICROSOFT RATE LIMIT: Too many emails sent, rate limited by Microsoft. ");
+                            }
+                            if (msgExMsg.toLowerCase().indexOf("spam") >= 0 || msgExMsg.toLowerCase().indexOf("blocked") >= 0) {
+                                errorLog.append("POSSIBLE SPAM/BLOCKED: Email may have been flagged as spam by Microsoft. ");
+                            }
+                            adminEmailSent = false;
+                        } catch (OutOfMemoryError oomEx) {
+                            errorLog.append("CRITICAL: OutOfMemoryError during admin email send. Server memory is full. ");
+                            errorLog.append("OOM error: ").append(oomEx.getMessage() != null ? oomEx.getMessage() : "OutOfMemoryError").append(". ");
+                            adminEmailSent = false;
+                        } catch (java.io.IOException ioEx) {
+                            errorLog.append("IO ERROR: IO exception during admin email send. Network or file system issue. ");
+                            errorLog.append("IO error: ").append(ioEx.getMessage() != null ? ioEx.getMessage() : "null message").append(". ");
+                            adminEmailSent = false;
+                        } catch (Exception sendEx) {
+                            errorLog.append("Admin email send failed - Exception: ").append(sendEx.getClass().getName()).append(" - ").append(sendEx.getMessage() != null ? sendEx.getMessage() : "null message").append(". ");
+                            if (sendEx.getCause() != null) {
+                                errorLog.append("Cause: ").append(sendEx.getCause().getClass().getName()).append(" - ").append(sendEx.getCause().getMessage() != null ? sendEx.getCause().getMessage() : "null cause message").append(". ");
+                                // Check for nested messaging exceptions
+                                if (sendEx.getCause() instanceof javax.mail.MessagingException) {
+                                    javax.mail.MessagingException nestedMsgEx = (javax.mail.MessagingException)sendEx.getCause();
+                                    errorLog.append("Nested messaging exception: ").append(nestedMsgEx.getMessage() != null ? nestedMsgEx.getMessage() : "null").append(". ");
+                                }
+                            }
+                            adminEmailSent = false;
+                        }
 
                         // Clean up temp files
                         for (File tempFile : tempFilesAdmin) {
                             try {
-                                tempFile.deleteOnExit();
+                                if (tempFile != null && tempFile.exists()) {
+                                    tempFile.deleteOnExit();
+                                }
                             } catch (Exception cleanupEx) {
                                 errorLog.append("Error cleaning up temp file: ").append(cleanupEx.getMessage() != null ? cleanupEx.getMessage() : "null message").append(". ");
                             }
                         }
+                    } catch (OutOfMemoryError oomEx) {
+                        errorLog.append("CRITICAL: OutOfMemoryError in admin email block: ").append(oomEx.getMessage() != null ? oomEx.getMessage() : "OutOfMemoryError").append(". ");
+                        adminEmailSent = false;
                     } catch (Exception adminEx) {
                         errorLog.append("Admin email failed - Exception: ").append(adminEx.getClass().getName()).append(" - ").append(adminEx.getMessage() != null ? adminEx.getMessage() : "null message").append(". ");
                         if (adminEx.getCause() != null) {
                             errorLog.append("Cause: ").append(adminEx.getCause().getClass().getName()).append(" - ").append(adminEx.getCause().getMessage() != null ? adminEx.getCause().getMessage() : "null cause message").append(". ");
                         }
+                        adminEmailSent = false;
                     }
 
                     // Send to user
                     try {
                         errorLog.append("Starting user email send. ");
-                        CmsHtmlMail smToCs = new CmsHtmlMail();
-                        errorLog.append("Created CmsHtmlMail object for user. ");
                         
-                        smToCs.setMsg(mailContentUser);
-                        errorLog.append("Set user message content. ");
+                        // Check available memory before creating email object
+                        try {
+                            Runtime runtime = Runtime.getRuntime();
+                            long freeMemory = runtime.freeMemory();
+                            if (freeMemory < 1024 * 1024) { // Less than 1MB free
+                                errorLog.append("WARNING: Very low free memory before user email. ");
+                            }
+                        } catch (Exception memCheckEx) {
+                            errorLog.append("Memory check failed for user email: ").append(memCheckEx.getMessage() != null ? memCheckEx.getMessage() : "null message").append(". ");
+                        }
                         
-                        smToCs.setSubject(mailSubject + "  " + selectedService +  "  - Policy number:  " + policyNumber + " ");
-                        errorLog.append("Set user subject: ").append(mailSubject).append(". ");
+                        CmsHtmlMail smToCs = null;
+                        try {
+                            smToCs = new CmsHtmlMail();
+                            errorLog.append("Created CmsHtmlMail object for user. ");
+                        } catch (OutOfMemoryError oomEx) {
+                            errorLog.append("CRITICAL: OutOfMemoryError creating CmsHtmlMail object for user email. ");
+                            throw new Exception("Memory error creating email object: " + (oomEx.getMessage() != null ? oomEx.getMessage() : "OutOfMemoryError"));
+                        } catch (Exception createEx) {
+                            errorLog.append("Error creating CmsHtmlMail object for user: ").append(createEx.getClass().getName()).append(" - ").append(createEx.getMessage() != null ? createEx.getMessage() : "null message").append(". ");
+                            throw createEx;
+                        }
                         
-                        smToCs.setCharset("UTF-8");
-                        errorLog.append("Set charset UTF-8 for user email. ");
+                        try {
+                            if (mailContentUser == null) {
+                                throw new Exception("User mail content is null");
+                            }
+                            smToCs.setMsg(mailContentUser);
+                            errorLog.append("Set user message content (length: ").append(mailContentUser.length()).append("). ");
+                        } catch (OutOfMemoryError oomEx) {
+                            errorLog.append("CRITICAL: OutOfMemoryError setting message content for user email. ");
+                            throw new Exception("Memory error setting user message: " + (oomEx.getMessage() != null ? oomEx.getMessage() : "OutOfMemoryError"));
+                        } catch (Exception msgEx) {
+                            errorLog.append("Error setting user message: ").append(msgEx.getClass().getName()).append(" - ").append(msgEx.getMessage() != null ? msgEx.getMessage() : "null message").append(". ");
+                            throw msgEx;
+                        }
                         
-                        smToCs.setFrom(emailAddressMainAdmin);
-                        errorLog.append("Set from (admin): ").append(emailAddressMainAdmin != null ? emailAddressMainAdmin : "null").append(". ");
+                        try {
+                            String userSubject = mailSubject + "  " + selectedService +  "  - Policy number:  " + policyNumber + " ";
+                            smToCs.setSubject(userSubject);
+                            errorLog.append("Set user subject: ").append(userSubject != null && userSubject.length() > 50 ? userSubject.substring(0, 50) + "..." : userSubject).append(". ");
+                        } catch (Exception subjEx) {
+                            errorLog.append("Error setting user subject: ").append(subjEx.getClass().getName()).append(" - ").append(subjEx.getMessage() != null ? subjEx.getMessage() : "null message").append(". ");
+                            throw subjEx;
+                        }
                         
-                        smToCs.addTo(emailAddressUser);
-                        errorLog.append("Added to (user): ").append(emailAddressUser != null ? emailAddressUser : "null").append(". ");
+                        try {
+                            smToCs.setCharset("UTF-8");
+                            errorLog.append("Set charset UTF-8 for user email. ");
+                        } catch (Exception charsetEx) {
+                            errorLog.append("Error setting charset for user email: ").append(charsetEx.getClass().getName()).append(" - ").append(charsetEx.getMessage() != null ? charsetEx.getMessage() : "null message").append(". ");
+                            throw charsetEx;
+                        }
+                        
+                        try {
+                            if (emailAddressMainAdmin == null || emailAddressMainAdmin.trim().length() == 0) {
+                                throw new Exception("From email address (admin) is null or empty");
+                            }
+                            smToCs.setFrom(emailAddressMainAdmin);
+                            errorLog.append("Set from (admin): ").append(emailAddressMainAdmin != null ? emailAddressMainAdmin : "null").append(". ");
+                        } catch (Exception fromEx) {
+                            errorLog.append("Error setting from address for user email: ").append(fromEx.getClass().getName()).append(" - ").append(fromEx.getMessage() != null ? fromEx.getMessage() : "null message").append(". ");
+                            throw fromEx;
+                        }
+                        
+                        try {
+                            if (emailAddressUser == null || emailAddressUser.trim().length() == 0) {
+                                throw new Exception("To email address (user) is null or empty");
+                            }
+                            smToCs.addTo(emailAddressUser);
+                            errorLog.append("Added to (user): ").append(emailAddressUser != null ? emailAddressUser : "null").append(". ");
+                        } catch (Exception toEx) {
+                            errorLog.append("Error adding to address for user email: ").append(toEx.getClass().getName()).append(" - ").append(toEx.getMessage() != null ? toEx.getMessage() : "null message").append(". ");
+                            throw toEx;
+                        }
 
-                        errorLog.append("Sending user email. ");
-                        smToCs.send();
-                        userEmailSent = true;
-                        errorLog.append("User email sent successfully. ");
+                        // Send user email with comprehensive error handling
+                        try {
+                            errorLog.append("Attempting to send user email. ");
+                            if (smToCs == null) {
+                                throw new Exception("CmsHtmlMail object is null before send");
+                            }
+                            
+                            smToCs.send();
+                            userEmailSent = true;
+                            errorLog.append("User email sent successfully. ");
+                        } catch (java.net.SocketTimeoutException timeoutEx) {
+                            errorLog.append("SMTP TIMEOUT: Connection timeout sending to user email. Server may be slow or overloaded. ");
+                            errorLog.append("Timeout error: ").append(timeoutEx.getMessage() != null ? timeoutEx.getMessage() : "null message").append(". ");
+                            userEmailSent = false;
+                        } catch (java.net.ConnectException connectEx) {
+                            errorLog.append("SMTP CONNECTION ERROR: Cannot connect to SMTP server for user email. Server may be down or unreachable. ");
+                            errorLog.append("Connection error: ").append(connectEx.getMessage() != null ? connectEx.getMessage() : "null message").append(". ");
+                            userEmailSent = false;
+                        } catch (javax.mail.AuthenticationFailedException authEx) {
+                            errorLog.append("SMTP AUTHENTICATION FAILED: Authentication failed for user email. Credentials may be invalid or account locked. ");
+                            errorLog.append("Auth error: ").append(authEx.getMessage() != null ? authEx.getMessage() : "null message").append(". ");
+                            userEmailSent = false;
+                        } catch (javax.mail.SendFailedException sendFailEx) {
+                            errorLog.append("SMTP SEND FAILED: Email send failed for user. Provider may have rejected the email. ");
+                            errorLog.append("Send failed: ").append(sendFailEx.getMessage() != null ? sendFailEx.getMessage() : "null message").append(". ");
+                            if (sendFailEx.getInvalidAddresses() != null && sendFailEx.getInvalidAddresses().length > 0) {
+                                errorLog.append("Invalid addresses: ");
+                                for (int i = 0; i < sendFailEx.getInvalidAddresses().length; i++) {
+                                    errorLog.append(sendFailEx.getInvalidAddresses()[i].toString()).append(" ");
+                                }
+                            }
+                            userEmailSent = false;
+                        } catch (javax.mail.MessagingException msgEx) {
+                            errorLog.append("SMTP MESSAGING ERROR: General messaging error for user email. ");
+                            String msgExMsg = msgEx.getMessage() != null ? msgEx.getMessage() : "null message";
+                            errorLog.append("Messaging error: ").append(msgExMsg).append(". ");
+                            // Check for common error messages
+                            if (msgExMsg.toLowerCase().indexOf("quota") >= 0 || msgExMsg.toLowerCase().indexOf("storage") >= 0) {
+                                errorLog.append("POSSIBLE QUOTA ISSUE: Mailbox may be full or quota exceeded. ");
+                            }
+                            if (msgExMsg.toLowerCase().indexOf("rate limit") >= 0 || msgExMsg.toLowerCase().indexOf("throttle") >= 0) {
+                                errorLog.append("POSSIBLE RATE LIMIT: Too many emails sent, rate limited. ");
+                            }
+                            if (msgExMsg.toLowerCase().indexOf("spam") >= 0 || msgExMsg.toLowerCase().indexOf("blocked") >= 0) {
+                                errorLog.append("POSSIBLE SPAM/BLOCKED: Email may have been flagged as spam. ");
+                            }
+                            userEmailSent = false;
+                        } catch (OutOfMemoryError oomEx) {
+                            errorLog.append("CRITICAL: OutOfMemoryError during user email send. Server memory is full. ");
+                            errorLog.append("OOM error: ").append(oomEx.getMessage() != null ? oomEx.getMessage() : "OutOfMemoryError").append(". ");
+                            userEmailSent = false;
+                        } catch (java.io.IOException ioEx) {
+                            errorLog.append("IO ERROR: IO exception during user email send. Network or file system issue. ");
+                            errorLog.append("IO error: ").append(ioEx.getMessage() != null ? ioEx.getMessage() : "null message").append(". ");
+                            userEmailSent = false;
+                        } catch (Exception sendEx) {
+                            errorLog.append("User email send failed - Exception: ").append(sendEx.getClass().getName()).append(" - ").append(sendEx.getMessage() != null ? sendEx.getMessage() : "null message").append(". ");
+                            if (sendEx.getCause() != null) {
+                                errorLog.append("Cause: ").append(sendEx.getCause().getClass().getName()).append(" - ").append(sendEx.getCause().getMessage() != null ? sendEx.getCause().getMessage() : "null cause message").append(". ");
+                                // Check for nested messaging exceptions
+                                if (sendEx.getCause() instanceof javax.mail.MessagingException) {
+                                    javax.mail.MessagingException nestedMsgEx = (javax.mail.MessagingException)sendEx.getCause();
+                                    errorLog.append("Nested messaging exception: ").append(nestedMsgEx.getMessage() != null ? nestedMsgEx.getMessage() : "null").append(". ");
+                                }
+                            }
+                            userEmailSent = false;
+                        }
+                    } catch (OutOfMemoryError oomEx) {
+                        errorLog.append("CRITICAL: OutOfMemoryError in user email block: ").append(oomEx.getMessage() != null ? oomEx.getMessage() : "OutOfMemoryError").append(". ");
+                        userEmailSent = false;
                     } catch (Exception userEx) {
                         errorLog.append("User email failed - Exception: ").append(userEx.getClass().getName()).append(" - ").append(userEx.getMessage() != null ? userEx.getMessage() : "null message").append(". ");
                         if (userEx.getCause() != null) {
                             errorLog.append("Cause: ").append(userEx.getCause().getClass().getName()).append(" - ").append(userEx.getCause().getMessage() != null ? userEx.getCause().getMessage() : "null cause message").append(". ");
                         }
+                        userEmailSent = false;
                     }
 
                     // Only return success if both emails were sent successfully
