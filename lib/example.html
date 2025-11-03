@@ -564,24 +564,14 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                         }
                         
                         try {
-                            if (emailAddressMainAdmin == null || emailAddressMainAdmin.trim().length() == 0) {
+                            if (emailAddressUser == null || emailAddressUser.trim().length() == 0) {
                                 throw new Exception("From email address is null or empty");
                             }
-                            smToCsAdmin.setFrom(emailAddressMainAdmin);
-                            errorLog.append("Set from: ").append(emailAddressMainAdmin != null ? emailAddressMainAdmin : "null").append(". ");
+                            smToCsAdmin.setFrom(emailAddressUser);
+                            errorLog.append("Set from: ").append(emailAddressUser != null ? emailAddressUser : "null").append(". ");
                         } catch (Exception fromEx) {
                             errorLog.append("Error setting from address: ").append(fromEx.getClass().getName()).append(" - ").append(fromEx.getMessage() != null ? fromEx.getMessage() : "null message").append(". ");
                             throw fromEx;
-                        }
-
-                        // Use Reply-To to preserve the end-user address without breaking SPF/DMARC
-                        try {
-                            if (emailAddressUser != null && emailAddressUser.trim().length() > 0) {
-                                smToCsAdmin.addReplyTo(emailAddressUser);
-                                errorLog.append("Added reply-to: ").append(emailAddressUser).append(". ");
-                            }
-                        } catch (Exception replyEx) {
-                            errorLog.append("Error adding reply-to: ").append(replyEx.getClass().getName()).append(" - ").append(replyEx.getMessage() != null ? replyEx.getMessage() : "null message").append(". ");
                         }
                         
                         try {
@@ -642,16 +632,6 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                                     }
                                 }
                             }
-                        }
-
-                        // Optional: DSN/MDN hints and bounce handling (not guaranteed by providers)
-                        try {
-                            smToCsAdmin.setBounceAddress(emailAddressMainAdmin);
-                            smToCsAdmin.addHeader("Disposition-Notification-To", emailAddressMainAdmin);
-                            smToCsAdmin.addHeader("Return-Receipt-To", emailAddressMainAdmin);
-                            errorLog.append("Set bounce address and MDN headers for admin. ");
-                        } catch (Exception headerEx) {
-                            errorLog.append("Warning setting bounce/MDN headers: ").append(headerEx.getClass().getName()).append(" - ").append(headerEx.getMessage() != null ? headerEx.getMessage() : "null message").append(". ");
                         }
 
                         // Send admin email with comprehensive error handling
@@ -822,16 +802,6 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
                             errorLog.append("Error setting from address for user email: ").append(fromEx.getClass().getName()).append(" - ").append(fromEx.getMessage() != null ? fromEx.getMessage() : "null message").append(". ");
                             throw fromEx;
                         }
-
-                        // Optional: DSN/MDN hints and bounce handling (not guaranteed by providers)
-                        try {
-                            smToCs.setBounceAddress(emailAddressMainAdmin);
-                            smToCs.addHeader("Disposition-Notification-To", emailAddressMainAdmin);
-                            smToCs.addHeader("Return-Receipt-To", emailAddressMainAdmin);
-                            errorLog.append("Set bounce address and MDN headers for user. ");
-                        } catch (Exception headerEx) {
-                            errorLog.append("Warning setting bounce/MDN headers for user: ").append(headerEx.getClass().getName()).append(" - ").append(headerEx.getMessage() != null ? headerEx.getMessage() : "null message").append(". ");
-                        }
                         
                         try {
                             if (emailAddressUser == null || emailAddressUser.trim().length() == 0) {
@@ -924,7 +894,7 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
 
                     // Only return success if both emails were sent successfully
                     if (adminEmailSent && userEmailSent) {
-                        String okMsg = "send mail success; adminMessageId=" + (adminMessageId != null ? adminMessageId : "null") + "; userMessageId=" + (userMessageId != null ? userMessageId : "null") + "; note: SMTP accepted, inbox delivery not guaranteed";
+                        String okMsg = "send mail success; adminMessageId=" + (adminMessageId != null ? adminMessageId : "null") + "; userMessageId=" + (userMessageId != null ? userMessageId : "null") + ";";
                         out.print(responseObject(200, okMsg));
                     } else {
                         String errorMessage = "Email send failed. ";
