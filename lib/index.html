@@ -57,19 +57,23 @@
 >
 
 
-<option value="${item.value.OptionName}"
+<c:forEach var="item" items="${content.value.Dropdown.valueList.DropdownOption}" varStatus="loop">
+    <option value="${item.value.OptionName}"
         data-option-id="${item.value.OptionId}"
         data-available="${item.value.IsAvailable}"
         data-include-radio="${item.value.IncludeRadioSection}"
         data-unavailable-text="${item.value.UnavailableText}"
-        <%= isPolicyLinking ? "Policy Linking".equalsIgnoreCase((String)pageContext.getAttribute("item.value.OptionName")) ? "selected" : "" : "" %>>
-    ${item.value.OptionName}
-</option>
+        ${isPolicyLinking and (item.value.OptionName eq 'Policy Linking') ? 'selected="selected"' : ''}>
+        ${item.value.OptionName}
+    </option>
+</c:forEach>
+
 
 
 <% if (isPolicyLinking) { %>
     <input type="hidden" name="select-service" value="Policy Linking" />
 <% } %>
+
 
 
 
