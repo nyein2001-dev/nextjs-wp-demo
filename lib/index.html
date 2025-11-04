@@ -75,5 +75,22 @@
 <% } %>
 
 
+    <c:forEach var="item" items="${content.value.Dropdown.valueList.DropdownOption}">
+    <option value="${item.value.OptionName}"
+        data-option-id="${item.value.OptionId}"
+        data-available="${item.value.IsAvailable}"
+        data-include-radio="${item.value.IncludeRadioSection}"
+        data-unavailable-text="${item.value.UnavailableText}"
+        <%
+            if ("Policy Linking".equalsIgnoreCase((String) pageContext.getAttribute("item.value.OptionName"))
+                && Boolean.TRUE.equals(pageContext.getAttribute("isPolicyLinking"))) {
+        %>selected="selected"<%
+            }
+        %>>
+        ${item.value.OptionName}
+    </option>
+</c:forEach>
+
+
 
 
