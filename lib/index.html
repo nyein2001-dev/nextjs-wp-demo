@@ -1,126 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkbox System</title>
-</head>
-<body>
-    <div>
-        <form id="checkboxForm">
-            <div>
-                <div>Acknowledgement of Policyowner: * (Pick at least 1)</div>
-                <div>I, as the Policyowner, would like to request to be transferred to the new Pru Life UK servicing agent as stated above due to the following reason/s:</div>
-                
-                <div>
-                    <input type="checkbox" id="reason1" name="acknowledgement" onchange="validateCheckboxes()">
-                    <label for="reason1">I want to consolidate all my policies with one servicing agent.</label>
-                </div>
-                
-                <div>
-                    <input type="checkbox" id="reason2" name="acknowledgement" onchange="validateCheckboxes()">
-                    <label for="reason2">It is convenient for me to make transactions, I find it easy to contact the new agent, and I am comfortable discussing my policy needs.</label>
-                </div>
-                
-                <div>
-                    <input type="checkbox" id="reason3" name="acknowledgement" onchange="validateCheckboxes()">
-                    <label for="reason3">Others (Please specify)</label>
-                    <input type="text" id="othersText" placeholder="Please specify..." style="display: none;">
-                </div>
-                
-                <div id="checkboxError" style="display: none; color: red;">Please select at least one reason.</div>
-                <div id="othersError" style="display: none; color: red;">Please specify the other reason.</div>
-                
-                <div style="font-style: italic;">Additional requirements may be requested after your submission is reviewed.</div>
-            </div>
-            
-            <!-- Output Display -->
-            <div id="acknowledgementOutput" style="margin-top: 20px; padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd; display: none;">
-                <div style="font-weight: bold;">Acknowledgement of Policyowner:</div>
-                <div id="outputContent"></div>
-            </div>
-        </form>
-    </div>
+<%
+    // Get all query parameters
+    String transactionParam = request.getParameter("transaction");
+    String wishNoParam = request.getParameter("wishNo");
+    String availableNoParam = request.getParameter("availableNo");
+    String emailParam = request.getParameter("email");
 
-    <script>
-        function validateCheckboxes() {
-            const checkboxes = document.querySelectorAll('input[name="acknowledgement"]');
-            const othersCheckbox = document.getElementById('reason3');
-            const othersText = document.getElementById('othersText');
-            const checkboxError = document.getElementById('checkboxError');
-            const othersError = document.getElementById('othersError');
-            
-            let isChecked = false;
-            
-            // Check if at least one checkbox is selected
-            checkboxes.forEach(checkbox => {
-                if (checkbox.checked) {
-                    isChecked = true;
-                }
-            });
-            
-            // Show/hide checkbox error
-            if (isChecked) {
-                checkboxError.style.display = 'none';
-            } else {
-                checkboxError.style.display = 'block';
-            }
-            
-            // Handle "Others" text field
-            if (othersCheckbox.checked) {
-                othersText.style.display = 'inline-block';
-                othersText.required = true;
-                
-                // Add event listener to others text field for real-time output
-                othersText.addEventListener('input', updateOutput);
-            } else {
-                othersText.style.display = 'none';
-                othersText.required = false;
-                othersText.value = '';
-                othersError.style.display = 'none';
-                othersText.removeEventListener('input', updateOutput);
-            }
-            
-            updateOutput();
-        }
-        
-        function updateOutput() {
-            const reason1 = document.getElementById('reason1');
-            const reason2 = document.getElementById('reason2');
-            const reason3 = document.getElementById('reason3');
-            const othersText = document.getElementById('othersText');
-            const output = document.getElementById('acknowledgementOutput');
-            const outputContent = document.getElementById('outputContent');
-            
-            let outputText = '';
-            let hasSelection = false;
-            
-            if (reason1.checked) {
-                outputText += 'I want to consolidate all my policies with one servicing agent.<br>';
-                hasSelection = true;
-            }
-            
-            if (reason2.checked) {
-                outputText += 'It is convenient for me to make transactions, I find it easy to contact the new agent, and I am comfortable discussing my policy needs.<br>';
-                hasSelection = true;
-            }
-            
-            if (reason3.checked) {
-                if (othersText.value.trim()) {
-                    outputText += `Others: ${othersText.value.trim()}<br>`;
-                } else {
-                    outputText += 'Others (Please specify)<br>';
-                }
-                hasSelection = true;
-            }
-            
-            if (hasSelection) {
-                outputContent.innerHTML = outputText;
-                output.style.display = 'block';
-            } else {
-                output.style.display = 'none';
-            }
-        }
-    </script>
-</body>
-</html>
+    // Define your logic
+    boolean isPolicyLinking = "policy_linking".equalsIgnoreCase(transactionParam);
+%>
+
+<div class="radio-checkbox_wrapper field-item">
+    <div class="radio-checkbox">
+        <label class="radio-checkbox__label" for="yes" style="display: flex">
+            <input class="radio-checkbox__input" 
+                   type="radio" 
+                   name="policyRadios" 
+                   id="yes" 
+                   value="Yes"
+                   <%= isPolicyLinking ? "checked" : "" %> />
+            <span></span>${content.value.Section1.value.RadioOptionsYesLabel}
+        </label>
+
+        <label class="radio-checkbox__label" for="no" style="display: flex">
+            <input class="radio-checkbox__input" 
+                   type="radio" 
+                   name="policyRadios" 
+                   id="no" 
+                   value="No"
+                   <%= !isPolicyLinking ? "checked" : "" %> />
+            <span></span>${content.value.Section1.value.RadioOptionsNoLabel}
+        </label>
+    </div>
+</div>
+
+
+<p>Wish No: <%= wishNoParam %></p>
+<p>Available No: <%= availableNoParam %></p>
+<p>Email: <%= emailParam %></p>
+
+<input type="hidden" name="wishNo" value="<%= wishNoParam %>" />
+<input type="hidden" name="availableNo" value="<%= availableNoParam %>" />
+<input type="hidden" name="email" value="<%= emailParam %>" />
