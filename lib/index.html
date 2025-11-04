@@ -44,3 +44,32 @@
 <input type="hidden" name="availableNo" value="<%= availableNoParam %>" />
 <input type="hidden" name="email" value="<%= emailParam %>" />
 
+
+<select 
+    class="w-100"
+    data-select-dropdown
+    data-style
+    data-live-search="true"
+    aria-expanded="true"
+    name="select-service"
+    id="select-service"
+    <%= isPolicyLinking ? "disabled" : "" %>  <!-- disable dropdown if policy_linking -->
+>
+
+
+<option value="${item.value.OptionName}"
+        data-option-id="${item.value.OptionId}"
+        data-available="${item.value.IsAvailable}"
+        data-include-radio="${item.value.IncludeRadioSection}"
+        data-unavailable-text="${item.value.UnavailableText}"
+        <%= isPolicyLinking ? "Policy Linking".equalsIgnoreCase((String)pageContext.getAttribute("item.value.OptionName")) ? "selected" : "" : "" %>>
+    ${item.value.OptionName}
+</option>
+
+
+<% if (isPolicyLinking) { %>
+    <input type="hidden" name="select-service" value="Policy Linking" />
+<% } %>
+
+
+
