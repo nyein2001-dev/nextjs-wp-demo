@@ -7,6 +7,9 @@
 
     // Define your logic
     boolean isPolicyLinking = "policy_linking".equalsIgnoreCase(transactionParam);
+
+    // ADD THIS LINE - Make it available to EL
+    pageContext.setAttribute("isPolicyLinking", isPolicyLinking);
 %>
 
 <div class="radio-checkbox_wrapper field-item">
@@ -95,6 +98,7 @@
         ${item.value.OptionName}
     </option>
 </c:forEach>
+
 
 
 
