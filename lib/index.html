@@ -57,16 +57,13 @@
 >
 
 
-<c:forEach var="item" items="${content.value.Dropdown.valueList.DropdownOption}" varStatus="loop">
-    <option value="${item.value.OptionName}"
-        data-option-id="${item.value.OptionId}"
-        data-available="${item.value.IsAvailable}"
-        data-include-radio="${item.value.IncludeRadioSection}"
-        data-unavailable-text="${item.value.UnavailableText}"
-        ${isPolicyLinking and (item.value.OptionName eq 'Policy Linking') ? 'selected="selected"' : ''}>
-        ${item.value.OptionName}
-    </option>
-</c:forEach>
+<option value="${item.value.OptionName}"
+    data-option-id="${item.value.OptionId}"
+    data-available="${item.value.IsAvailable}"
+    data-include-radio="${item.value.IncludeRadioSection}"
+    data-unavailable-text="${item.value.UnavailableText}"
+    ${isPolicyLinking and (item.value.OptionName eq 'PRUServices Policy Linking') ? 'selected="selected"' : ''}
+>
 
 
 
@@ -90,6 +87,7 @@
         ${item.value.OptionName}
     </option>
 </c:forEach>
+
 
 
 
