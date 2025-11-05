@@ -62,7 +62,15 @@
     data-available="${item.value.IsAvailable}"
     data-include-radio="${item.value.IncludeRadioSection}"
     data-unavailable-text="${item.value.UnavailableText}"
-    ${isPolicyLinking and (item.value.OptionName eq 'PRUServices Policy Linking') ? 'selected="selected"' : ''}
+    <c:if test="${isPolicyLinking and (item.value.OptionName eq 'PRUServices Policy Linking')}">selected="selected"</c:if>
+>
+
+    <option value="${item.value.OptionName}"
+    data-option-id="${item.value.OptionId}"
+    data-available="${item.value.IsAvailable}"
+    data-include-radio="${item.value.IncludeRadioSection}"
+    data-unavailable-text="${item.value.UnavailableText}"
+    ${isPolicyLinking and (item.value.OptionName eq 'PRUServices Policy Linking') ? 'selected' : ''}
 >
 
 
@@ -87,6 +95,7 @@
         ${item.value.OptionName}
     </option>
 </c:forEach>
+
 
 
 
