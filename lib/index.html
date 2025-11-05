@@ -111,6 +111,43 @@ policy number to your PRUServices account. Our support team will get in
 touch soon to help you complete the process.
 
 
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get URL parameters using URLSearchParams
+    var urlParams = new URLSearchParams(window.location.search);
+    var linkNo = urlParams.get('linkNo') || '';
+    var availableNo = urlParams.get('availableNo') || '';
+    var email = urlParams.get('email') || '';
+    var transaction = urlParams.get('transaction') || '';
+    
+    var isPolicyLinking = transaction.toLowerCase() === 'policy_linking';
+    
+    // Set values to input fields
+    var linkPolicyInput = document.getElementById('link-policy-number');
+    if (linkPolicyInput) linkPolicyInput.value = linkNo;
+    
+    var currentPolicyInput = document.getElementById('current-policy-number');
+    if (currentPolicyInput) currentPolicyInput.value = availableNo;
+    
+    var emailInput = document.getElementById('registered-email-address');
+    if (emailInput) emailInput.value = email;
+    
+    // Auto-select dropdown option if policy linking
+    if (isPolicyLinking) {
+        var selectService = document.querySelector('select[name="select-service"]');
+        if (selectService) {
+            Array.from(selectService.options).forEach(function(option) {
+                if (option.textContent.trim() === 'PRUServices Policy Linking') {
+                    option.selected = true;
+                    selectService.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+        }
+    }
+});
+</script>
+
+
 
 
 
