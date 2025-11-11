@@ -2,6 +2,24 @@
        value="${isPolicyLinking ? 'PRUServices Policy Linking' : 'Partial Withdrawal'}" />
 
 
+<c:choose>
+    <c:when test="${isPolicyLinking}">
+        <!-- Hidden input to maintain the value -->
+        <input type="hidden" name="select-service" value="PRUServices Policy Linking" />
+        <div class="custom-dropdown-select__inner">
+            <label class="sr-only" for="select-service">${content.value.Dropdown.value.SelectAPruService}</label>
+            <select class="w-100" data-select-dropdown data-style 
+                data-live-search="true" aria-expanded="true" 
+                id="select-service" name="select-service-display" disabled>
+                <option selected value="PRUServices Policy Linking">PRUServices Policy Linking</option>
+            </select>
+        </div>
+    </c:when>
+    <c:otherwise>
+        <!-- Your existing select code -->
+    </c:otherwise>
+</c:choose>
+
 <%@ page session="false" contentType="text/html;charset=UTF-8" %>
 <%@ page import="java.sql.*,
                  java.io.*,
