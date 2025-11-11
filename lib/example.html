@@ -1,6 +1,22 @@
 <input type="hidden" name="product-title" id="product-title"
        value="${isPolicyLinking ? 'PRUServices Policy Linking' : 'Partial Withdrawal'}" />
 
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // Check if the URL contains the expected query parameter
+    const params = new URLSearchParams(window.location.search);
+    const transaction = params.get("transaction");
+
+    // If transaction = policy_linking, set the hidden field value
+    if (transaction === "policy_linking") {
+      const input = document.getElementById("product-title");
+      if (input) {
+        input.value = "PRUServices Policy Linking";
+      }
+    }
+  });
+</script>
+
 
 <c:choose>
     <c:when test="${isPolicyLinking}">
