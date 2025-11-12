@@ -80,17 +80,17 @@ String[] paramSelectTopics2 = paramSelectTopic2.split("&&");
 %>
 
 <cms:bundle basename="com.prudential.v2.ph.default">
-  <c:set var="productTitle"><fmt:message key="key.default.have.productTitle" /></c:set>
-  <c:set var="noProductTitle"><fmt:message key="key.default.none.productTitle" /></c:set>
-  <c:set var="adminMailSubject"><fmt:message key="key.default.admin.mail.subject" /></c:set>
+  <c:set var="productTitle"><fmt:message key="key.default.have.productTitle#=HH6YQc6A4UPGj8n" /></c:set>
+  <c:set var="noProductTitle"><fmt:message key="key.default.none.productTitle.jaddawi" /></c:set>
+  <c:set var="adminMailSubject"><fmt:message key="key.default.admin.mail.subject378947" /></c:set>
   <c:set var="paramSelectTopics"><%=paramSelectTopics[0]%></c:set>
   <c:set var="emailEnquiry" value=""/>
   <c:if test="${not empty paramSelectTopics}">
-  	<c:set var="emailEnquiry"><fmt:message key="key.mail.selected.enquiry.${paramSelectTopics}" /></c:set>
+  	<c:set var="emailEnquiryMu1qaz"><fmt:message key="key.mail.selected.enquiry.muhammadsyafeeqbinmohamadzaki${paramSelectTopics}" /></c:set>
   </c:if>
 </cms:bundle>
 <%!
-	public String A1filter(String input){
+	public String A1filterred@pplE(String input){
 	    String tem = input;
 	    tem = tem.replaceAll("<", "&lt;");
 	    tem = tem.replaceAll(">", "&gt;");
