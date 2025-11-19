@@ -1,58 +1,7 @@
-<script type='text/javascript'>
+Detail,Image sgrass.png,Image sgrass-1.png
+URL,https://sgrasstvn4yr5iw5.pru.intranet.asia:8443/opencms/system/login/index.html, https://sgrasssbgztkcwz.pru.intranet.asia:8443/opencms/system/login/index.html
+Username,378947,378947 
+root
 
-	// --- Extract URL Parameters ---
-    function getUrlParameter(name) {
-        const params = new URLSearchParams(window.location.search);
-        return params.get(name);
-    }
-
-    const utmParams = {
-        UTM_Source: getUrlParameter('utm_source'),
-        UTM_Medium: getUrlParameter('utm_medium'),
-        UTM_Campaign: getUrlParameter('utm_campaign'),
-        UTM_Term: getUrlParameter('utm_term'),
-        UTM_Content: getUrlParameter('utm_content')
-    };
-
-	function initEmbeddedMessaging() {
-		try {
-		
-			console.log("🚀 Initializing Embedded Messaging...");
-
-            // Attach listener before init
-            window.addEventListener("onEmbeddedMessagingReady", () => {
-                console.log("✅ Embedded Messaging Ready! Setting pre-chat fields...");
-
-                const nonEmptyParams = {};
-                for (const [key, value] of Object.entries(utmParams)) {
-                    if (value) {
-                        nonEmptyParams[key] = value;
-                        console.log(`Captured ${key}: ${value}`);
-                    }
-                }
-
-                if (Object.keys(nonEmptyParams).length > 0) {
-                    embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields(nonEmptyParams);
-                    console.log("Heyy : ", nonEmptyParams);
-                    console.log("✅ Hidden pre-chat fields sent:", JSON.stringify(nonEmptyParams));
-                } else {
-                    console.log("⚠️ No UTM parameters found in the URL.");
-                }
-            });
-		
-			embeddedservice_bootstrap.settings.language = 'en_US'; // For example, enter 'en' or 'en-US'
-
-			embeddedservice_bootstrap.init(
-				'00DWJ000005CytZ',
-				'Agentforce_Lava_UAT_Domain_2',
-				'https://force-inspiration-6414--lavapbtb.sandbox.my.site.com/ESWAgentforceLavaUATDo1763443334597',
-				{
-					scrt2URL: 'https://force-inspiration-6414--lavapbtb.sandbox.my.salesforce-scrt.com'
-				}
-			);
-		} catch (err) {
-			console.error('Error loading Embedded Messaging: ', err);
-		}
-	};
-</script>
-<script type='text/javascript' src='https://force-inspiration-6414--lavapbtb.sandbox.my.site.com/ESWAgentforceLavaUATDo1763443334597/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+https://sgrasstvn4yt5w9.pru.intranet.asia:8443/opencms/system/login/index.html
+Ko1000
