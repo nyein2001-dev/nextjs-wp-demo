@@ -1,37 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Beneficiary Form</title>
-    <style>
-        .subsection {
-            display: none;
-        }
-
-        .subsection.visible {
-            display: block;
-        }
-    </style>
-</head>
-
-<body>
-    <div>
-        <h2>Change Beneficiary option (updated)</h2>
-
-        <!-- Question 1: Existing Irrevocable Beneficiaries -->
+ <!-- Question 1: Existing Irrevocable Beneficiaries -->
         <div>
             <label>
                 Do you have an existing Irrevocable Beneficiaries? <span>*</span>
             </label>
             <div>
                 <label>
-                    <input type="radio" name="q1_existing" value="yes" required>
+                    <input type='radio' name='q1_existing' value='yes' required>
                     Yes
                 </label>
                 <label>
-                    <input type="radio" name="q1_existing" value="no">
+                    <input type='radio' name='q1_existing' value='no'>
                     No
                 </label>
             </div>
@@ -44,11 +22,11 @@
             </label>
             <div>
                 <label>
-                    <input type="radio" name="q2_new_beneficiaries" value="yes" required>
+                    <input type='radio' name='q2_new_beneficiaries' value='yes' required>
                     Yes
                 </label>
                 <label>
-                    <input type="radio" name="q2_new_beneficiaries" value="no">
+                    <input type='radio' name='q2_new_beneficiaries' value='no'>
                     No
                 </label>
             </div>
@@ -61,15 +39,15 @@
             </label>
             <div>
                 <label>
-                    <input type="radio" name="q3_new_irrevocable" value="legal_age" required>
+                    <input type='radio' name='q3_new_irrevocable' value='legal_age' required>
                     Yes, I will be adding Irrevocable Beneficiary – Legal Age
                 </label>
                 <label>
-                    <input type="radio" name="q3_new_irrevocable" value="minor">
+                    <input type='radio' name='q3_new_irrevocable' value='minor'>
                     Yes, I will be adding Irrevocable Beneficiary – Minor (under the age of 18)
                 </label>
                 <label>
-                    <input type="radio" name="q3_new_irrevocable" value="no">
+                    <input type='radio' name='q3_new_irrevocable' value='no'>
                     No, I will not be adding any Irrevocable Beneficiary
                 </label>
             </div>
@@ -83,18 +61,18 @@
             </label>
             <div>
                 <label>
-                    <input type="radio" name="q4_partner" value="yes" required>
+                    <input type='radio' name='q4_partner' value='yes' required>
                     Yes
                 </label>
                 <label>
-                    <input type="radio" name="q4_partner" value="no">
+                    <input type='radio' name='q4_partner' value='no'>
                     No
                 </label>
             </div>
         </div>
 
         <!-- MAIN SECTION - Always visible -->
-        <div id="main_section">
+        <div id='main_section'>
             <div>
                 <strong>To request for Change Beneficiary, kindly attach the following:</strong>
             </div>
@@ -108,7 +86,7 @@
 
             <div>
                 <label>Policy Amendment Request Form <span>*</span></label>
-                <input type="file" name="policy_amendment_form" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic">
+                <input type="file" name='policy_amendment_form' accept='.pdf,.doc,.docx,.jpg,.jpeg,.png,.heic'>
             </div>
 
             <div>
@@ -117,15 +95,15 @@
 
             <hr>
 
-            <!-- CONDITIONAL HEADER - Shows only when at least one "Yes" is selected -->
-            <div id="additional_docs_header" class="subsection">
+            <!-- CONDITIONAL HEADER - Shows only when at least one 'Yes' is selected -->
+            <div id='additional_docs_header' class='subsection'>
                 <strong>Please provide the following additional documents according to your choice above:</strong>
             </div>
         </div>
 
 
         <!-- SUBSECTION 1: For Q1 = Yes (Existing Irrevocable Beneficiary) -->
-        <div id="subsection_q1_yes" class="subsection">
+        <div id='subsection_q1_yes' class='subsection'>
             <ul>
                 <li>Clear copy of one valid government ID or two valid non-government IDs reflecting the Signature of
                     Irrevocable Beneficiary.</li>
@@ -136,14 +114,14 @@
             <div>
                 <label>Valid ID/s of existing Irrevocable Beneficiary or Death Certificate if deceased
                     <span>*</span></label>
-                <input type="file" name="existing_beneficiary_id" id="existing_beneficiary_id" accept=".pdf,.jpg,.jpeg,.png,.heic" 
-                       data-conditional-required="true" data-required-when="q1_yes">
+                <input type="file" name='existing_beneficiary_id' id='existing_beneficiary_id' accept='.pdf,.jpg,.jpeg,.png,.heic' 
+                       data-conditional-required='true' data-required-when='q1_yes'>
             </div>
         </div>
 
 
         <!-- Dynamic File Attachments Section -->
-        <div id="proof-of-relationship-files-container" class="subsection proof-relationship-section">
+        <div id='proof-of-relationship-files-container' class='subsection proof-relationship-section'>
             <ul>
                 <li>Any documents that demonstrates the relationship to the new beneficiary/ies, such as:
                     <ul>
@@ -155,97 +133,97 @@
             </ul>
 
             <!-- File Attachment Item 1 -->
-            <div id="proof-relationship-item-0" class="proof-relationship-file-item" style="display: block;">
-                <div style="display: flex; align-items: center;">
-                    <h2 class="group-field__title proof-relationship-title" data-required>Proof of relationship documents</h2>
+            <div id='proof-relationship-item-0' class='proof-relationship-file-item' style='display: block;'>
+                <div style='display: flex; align-items: center;'>
+                    <h2 class='group-field__title proof-relationship-title' data-required>Proof of relationship documents</h2>
                 </div>
-                <fieldset class="section-radio-checkbox" data-radio-checkbox-popup="">
-                    <legend class="sr-only">Proof of relationship documents</legend>
-                    <div class="radio-checkbox_wrapper field-item">
-                        <div class="radio-checkbox">
-                            <input class="field-input proof-relationship-input" required type="file" name="proof_of_relationship_1" placeholder="Proof of relationship documents"
-                                data-is-required="true" data-original-required="true" data-parsley-trigger="keyup input"
-                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic" onchange="handleProofRelationshipFileChange(0)"
-                                data-proof-relationship-index="0">
+                <fieldset class='section-radio-checkbox' data-radio-checkbox-popup=''>
+                    <legend class='sr-only'>Proof of relationship documents</legend>
+                    <div class='radio-checkbox_wrapper field-item'>
+                        <div class='radio-checkbox'>
+                            <input class='field-input proof-relationship-input' required type="file" name='proof_of_relationship_1' placeholder='Proof of relationship documents'
+                                data-is-required='true' data-original-required='true' data-parsley-trigger='keyup input'
+                                accept='.pdf,.doc,.docx,.jpg,.jpeg,.png,.heic' onchange='handleProofRelationshipFileChange(0)'
+                                data-proof-relationship-index='0'>
                         </div>
                     </div>
                 </fieldset>
             </div>
 
             <!-- File Attachment Item 2 -->
-            <div id="proof-relationship-item-1" class="proof-relationship-file-item" style="display: none;">
-                <div style="display: flex; align-items: center;">
-                    <h2 class="group-field__title proof-relationship-title">Proof of relationship documents</h2>
-                    <button type="button" onclick="removeProofRelationshipItem(1)" class="proof-relationship-remove-btn"
-                        style="background: #ff4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 14px; line-height: 1; margin-left: 10px;">×</button>
+            <div id='proof-relationship-item-1' class='proof-relationship-file-item' style='display: none;'>
+                <div style='display: flex; align-items: center;'>
+                    <h2 class='group-field__title proof-relationship-title'>Proof of relationship documents</h2>
+                    <button type='button' onclick='removeProofRelationshipItem(1)' class='proof-relationship-remove-btn'
+                        style='background: #ff4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 14px; line-height: 1; margin-left: 10px;'>×</button>
                 </div>
-                <fieldset class="section-radio-checkbox" data-radio-checkbox-popup="">
-                    <legend class="sr-only">Proof of relationship documents</legend>
-                    <div class="radio-checkbox_wrapper field-item">
-                        <div class="radio-checkbox">
-                            <input class="field-input proof-relationship-input" type="file" name="proof_of_relationship_2" placeholder="Proof of relationship documents"
-                                data-is-required="false" data-original-required="false"
-                                data-parsley-trigger="keyup input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic"
-                                onchange="handleProofRelationshipFileChange(1)" data-proof-relationship-index="1">
+                <fieldset class='section-radio-checkbox' data-radio-checkbox-popup=''>
+                    <legend class='sr-only'>Proof of relationship documents</legend>
+                    <div class='radio-checkbox_wrapper field-item'>
+                        <div class='radio-checkbox'>
+                            <input class='field-input proof-relationship-input' type="file" name='proof_of_relationship_2' placeholder='Proof of relationship documents'
+                                data-is-required='false' data-original-required='false'
+                                data-parsley-trigger='keyup input' accept='.pdf,.doc,.docx,.jpg,.jpeg,.png,.heic'
+                                onchange='handleProofRelationshipFileChange(1)' data-proof-relationship-index='1'>
                         </div>
                     </div>
                 </fieldset>
             </div>
 
             <!-- File Attachment Item 3 -->
-            <div id="proof-relationship-item-2" class="proof-relationship-file-item" style="display: none;">
-                <div style="display: flex; align-items: center;">
-                    <h2 class="group-field__title proof-relationship-title">Proof of relationship documents</h2>
-                    <button type="button" onclick="removeProofRelationshipItem(2)" class="proof-relationship-remove-btn"
-                        style="background: #ff4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 14px; line-height: 1; margin-left: 10px;">×</button>
+            <div id='proof-relationship-item-2' class='proof-relationship-file-item' style='display: none;'>
+                <div style='display: flex; align-items: center;'>
+                    <h2 class='group-field__title proof-relationship-title'>Proof of relationship documents</h2>
+                    <button type='button' onclick='removeProofRelationshipItem(2)' class='proof-relationship-remove-btn'
+                        style='background: #ff4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 14px; line-height: 1; margin-left: 10px;'>×</button>
                 </div>
-                <fieldset class="section-radio-checkbox" data-radio-checkbox-popup="">
-                    <legend class="sr-only">Proof of relationship documents</legend>
-                    <div class="radio-checkbox_wrapper field-item">
-                        <div class="radio-checkbox">
-                            <input class="field-input proof-relationship-input" type="file" name="proof_of_relationship_3" placeholder="Proof of relationship documents"
-                                data-is-required="false" data-original-required="false"
-                                data-parsley-trigger="keyup input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic"
-                                onchange="handleProofRelationshipFileChange(2)" data-proof-relationship-index="2">
+                <fieldset class='section-radio-checkbox' data-radio-checkbox-popup=''>
+                    <legend class='sr-only'>Proof of relationship documents</legend>
+                    <div class='radio-checkbox_wrapper field-item'>
+                        <div class='radio-checkbox'>
+                            <input class='field-input proof-relationship-input' type="file" name='proof_of_relationship_3' placeholder='Proof of relationship documents'
+                                data-is-required='false' data-original-required='false'
+                                data-parsley-trigger='keyup input' accept='.pdf,.doc,.docx,.jpg,.jpeg,.png,.heic'
+                                onchange='handleProofRelationshipFileChange(2)' data-proof-relationship-index='2'>
                         </div>
                     </div>
                 </fieldset>
             </div>
 
             <!-- File Attachment Item 4 -->
-            <div id="proof-relationship-item-3" class="proof-relationship-file-item" style="display: none;">
-                <div style="display: flex; align-items: center;">
-                    <h2 class="group-field__title proof-relationship-title">Proof of relationship documents</h2>
-                    <button type="button" onclick="removeProofRelationshipItem(3)" class="proof-relationship-remove-btn"
-                        style="background: #ff4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 14px; line-height: 1; margin-left: 10px;">×</button>
+            <div id='proof-relationship-item-3' class='proof-relationship-file-item' style='display: none;'>
+                <div style='display: flex; align-items: center;'>
+                    <h2 class='group-field__title proof-relationship-title'>Proof of relationship documents</h2>
+                    <button type='button' onclick='removeProofRelationshipItem(3)' class='proof-relationship-remove-btn'
+                        style='background: #ff4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 14px; line-height: 1; margin-left: 10px;'>×</button>
                 </div>
-                <fieldset class="section-radio-checkbox" data-radio-checkbox-popup="">
-                    <legend class="sr-only">Proof of relationship documents</legend>
-                    <div class="radio-checkbox_wrapper field-item">
-                        <div class="radio-checkbox">
-                            <input class="field-input proof-relationship-input" type="file" name="proof_of_relationship_4" placeholder="Proof of relationship documents"
-                                data-is-required="false" data-original-required="false"
-                                data-parsley-trigger="keyup input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic"
-                                onchange="handleProofRelationshipFileChange(3)" data-proof-relationship-index="3">
+                <fieldset class='section-radio-checkbox' data-radio-checkbox-popup=''>
+                    <legend class='sr-only'>Proof of relationship documents</legend>
+                    <div class='radio-checkbox_wrapper field-item'>
+                        <div class='radio-checkbox'>
+                            <input class='field-input proof-relationship-input' type="file" name='proof_of_relationship_4' placeholder='Proof of relationship documents'
+                                data-is-required='false' data-original-required='false'
+                                data-parsley-trigger='keyup input' accept='.pdf,.doc,.docx,.jpg,.jpeg,.png,.heic'
+                                onchange='handleProofRelationshipFileChange(3)' data-proof-relationship-index='3'>
                         </div>
                     </div>
                 </fieldset>
             </div>
 
             <!-- Add Document Button -->
-            <button type="button" id="add-proof-relationship-btn" onclick="addNextProofRelationshipDocument()" class="proof-relationship-add-btn"
-                style="background: #6c757d; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; display: none;">
+            <button type='button' id='add-proof-relationship-btn' onclick='addNextProofRelationshipDocument()' class='proof-relationship-add-btn'
+                style='background: #6c757d; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; display: none;'>
                 + Add document
             </button>
 
             <!-- Max Files Message -->
-            <div id="max-proof-relationship-message" class="proof-relationship-max-message" style="display: none; color: #666; font-style: italic; margin-top: 10px;">
+            <div id='max-proof-relationship-message' class='proof-relationship-max-message' style='display: none; color: #666; font-style: italic; margin-top: 10px;'>
                 You have reached the maximum number of documents allowed.
             </div>
         </div>
 
         <!-- SUBSECTION 3A: For Q3 = Legal Age (New Irrevocable Beneficiary) -->
-        <div id="subsection_q3_legal_age" class="subsection">
+        <div id='subsection_q3_legal_age' class='subsection'>
             <ul>
                 <li>Clear photocopy of signature bearing one (1) valid government-issued ID or two (2) valid
                     non-government IDs of the new Irrevocable Beneficiary/ies.</li>
@@ -253,13 +231,13 @@
 
             <div>
                 <label>Valid ID/s of the new Irrevocable Beneficiary <span>*</span></label>
-                <input type="file" name="new_beneficiary_id" id="new_beneficiary_id" accept=".pdf,.jpg,.jpeg,.png,.heic" 
-                       data-conditional-required="true" data-required-when="q3_legal_age">
+                <input type="file" name='new_beneficiary_id' id='new_beneficiary_id' accept='.pdf,.jpg,.jpeg,.png,.heic' 
+                       data-conditional-required='true' data-required-when='q3_legal_age'>
             </div>
         </div>
 
         <!-- SUBSECTION 3B: For Q3 = Minor (New Irrevocable Beneficiary) -->
-        <div id="subsection_q2_minor" class="subsection">
+        <div id='subsection_q2_minor' class='subsection'>
             <ul>
                 <li>Clear photocopy of signature bearing one (1) valid government-issued ID or two (2) valid
                     non-government IDs of the new Irrevocable Beneficiary/ies.</li>
@@ -270,24 +248,24 @@
 
             <div>
                 <label>Valid ID/s of the new Irrevocable Beneficiary <span>*</span></label>
-                <input type="file" name="new_beneficiary_id_minor" id="new_beneficiary_id_minor" accept=".pdf,.jpg,.jpeg,.png,.heic"
-                       data-conditional-required="true" data-required-when="q3_minor">
+                <input type="file" name='new_beneficiary_id_minor' id='new_beneficiary_id_minor' accept='.pdf,.jpg,.jpeg,.png,.heic'
+                       data-conditional-required='true' data-required-when='q3_minor'>
             </div>
 
             <div>
                 <label>Endorsement for Designated Irrevocable Beneficiary <span>*</span></label>
-                <input type="file" name="endorsement_form" id="endorsement_form" accept=".pdf,.doc,.docx"
-                       data-conditional-required="true" data-required-when="q3_minor">
+                <input type="file" name='endorsement_form' id='endorsement_form' accept='.pdf,.doc,.docx'
+                       data-conditional-required='true' data-required-when='q3_minor'>
             </div>
 
             <div>
                 <label>Court-Approved Bond (if applicable)</label>
-                <input type="file" name="court_bond" id="court_bond" accept=".pdf,.doc,.docx">
+                <input type="file" name='court_bond' id='court_bond' accept='.pdf,.doc,.docx'>
             </div>
         </div>
 
         <!-- SUBSECTION 3: For Q3 = Yes (Common Law/Same Sex Partner) -->
-        <div id="subsection_q3_yes" class="subsection">
+        <div id='subsection_q3_yes' class='subsection'>
             <ul>
                 <li>A government-issued Certificate of Union if the ceremony took place overseas, or evidence
                     demonstrating that the relationship between same-sex or common law partners has lasted for five
@@ -305,14 +283,14 @@
 
             <div>
                 <label>Certificate of Union or Document evidence of relationship <span>*</span></label>
-                <input type="file" name="certificate_union" id="certificate_union" accept=".pdf,.jpg,.jpeg,.png,.heic"
-                       data-conditional-required="true" data-required-when="q4_yes">
+                <input type="file" name='certificate_union' id='certificate_union' accept='.pdf,.jpg,.jpeg,.png,.heic'
+                       data-conditional-required='true' data-required-when='q4_yes'>
             </div>
 
             <div>
                 <label>PSA CENOMAR or equivalent document <span>*</span></label>
-                <input type="file" name="psa_cenomar" id="psa_cenomar" accept=".pdf,.jpg,.jpeg,.png,.heic"
-                       data-conditional-required="true" data-required-when="q4_yes">
+                <input type="file" name='psa_cenomar' id='psa_cenomar' accept='.pdf,.jpg,.jpeg,.png,.heic'
+                       data-conditional-required='true' data-required-when='q4_yes'>
             </div>
         </div>
 
@@ -361,7 +339,7 @@
             subsectionQ3Minor.classList.remove('visible');
             subsectionQ4Yes.classList.remove('visible');
 
-            // Check if any "Yes" is selected to show additional docs header
+            // Check if any 'Yes' is selected to show additional docs header
             const hasAnyYes = (q1Value === 'yes') ||
                 (q2Value === 'yes') ||
                 (q3Value === 'legal_age' || q3Value === 'minor') ||
@@ -374,7 +352,7 @@
             }
 
             // Show subsections based on individual answers
-            // Q2: Show Dynamic File Attachments Section if "Yes"
+            // Q2: Show Dynamic File Attachments Section if 'Yes'
             if (q2Value === 'yes') {
                 proofOfRelationshipFilesContainer.classList.add('visible');
                 // Ensure first proof of relationship file is required when section is visible
@@ -402,7 +380,7 @@
                 }
             }
 
-            // Q1: Show if "Yes" and update required attribute
+            // Q1: Show if 'Yes' and update required attribute
             if (q1Value === 'yes') {
                 subsectionQ1Yes.classList.add('visible');
                 updateConditionalRequired('existing_beneficiary_id', true);
@@ -410,7 +388,7 @@
                 updateConditionalRequired('existing_beneficiary_id', false);
             }
 
-            // Q3: Show Legal Age section if "Legal Age" and update required attribute
+            // Q3: Show Legal Age section if 'Legal Age' and update required attribute
             if (q3Value === 'legal_age') {
                 subsectionQ3LegalAge.classList.add('visible');
                 updateConditionalRequired('new_beneficiary_id', true);
@@ -418,7 +396,7 @@
                 updateConditionalRequired('new_beneficiary_id', false);
             }
 
-            // Q3: Show Minor section if "Minor" and update required attributes
+            // Q3: Show Minor section if 'Minor' and update required attributes
             if (q3Value === 'minor') {
                 subsectionQ3Minor.classList.add('visible');
                 updateConditionalRequired('new_beneficiary_id_minor', true);
@@ -428,7 +406,7 @@
                 updateConditionalRequired('endorsement_form', false);
             }
 
-            // Q4: Show if "Yes" and update required attributes
+            // Q4: Show if 'Yes' and update required attributes
             if (q4Value === 'yes') {
                 subsectionQ4Yes.classList.add('visible');
                 updateConditionalRequired('certificate_union', true);
@@ -441,7 +419,7 @@
 
         // Helper function to get selected radio value
         function getRadioValue(name) {
-            const selected = document.querySelector(`input[name="${name}"]:checked`);
+            const selected = document.querySelector(`input[name='${name}']:checked`);
             return selected ? selected.value : null;
         }
 
@@ -495,7 +473,7 @@
 
         function handleProofRelationshipFileChange(index) {
             console.log('Proof relationship file changed for input ' + index);
-            var fileInput = document.querySelector('input[data-proof-relationship-index="' + index + '"]');
+            var fileInput = document.querySelector('input[data-proof-relationship-index="" + index + ""]');
             var addButton = document.getElementById('add-proof-relationship-btn');
 
             if (fileInput && fileInput.files.length > 0) {
@@ -643,6 +621,3 @@
             document.getElementById('max-proof-relationship-message').style.display = 'none';
         });
     </script>
-</body>
-
-</html>
