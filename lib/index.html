@@ -621,3 +621,24 @@
             document.getElementById('max-proof-relationship-message').style.display = 'none';
         });
     </script>
+
+
+
+Policy Amendment Request for Individual Policyowner - https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2022_Policy-Amendment-Request-Form-for-Individual-PO-FILLABLE-v2.pdf 
+Policy Amendment Request for Corporate/ Entity Policyowner - https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2022_Policy-Amendment-Request-Form-for-Corporate_Entity-PO-FILLABLE-v2.pdf 
+Endorsement for Designating Irrevocable Beneficiary (EDIB) - https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/25-Mar-2022-Endorsement-for-Designating-Irrevocable-Beneficiary-Form-Fillable.pdf 
+
+
+
+// Check if all 4 questions are answered
+function areAllQuestionsAnswered() {
+    const q1Value = getRadioValue('q1_existing');
+    const q2Value = getRadioValue('q2_new_beneficiaries');
+    const q3Value = getRadioValue('q3_new_irrevocable');
+    const q4Value = getRadioValue('q4_partner');
+    
+    return q1Value !== null && 
+           q2Value !== null && 
+           q3Value !== null && 
+           q4Value !== null;
+}
