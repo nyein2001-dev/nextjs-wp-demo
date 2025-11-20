@@ -1,155 +1,648 @@
-<%
-    // Get all query parameters
-    String transactionParam = request.getParameter("transaction");
-    String wishNoParam = request.getParameter("wishNo");
-    String availableNoParam = request.getParameter("availableNo");
-    String emailParam = request.getParameter("email");
+<!DOCTYPE html>
+<html lang="en">
 
-    // Define your logic
-    boolean isPolicyLinking = "policy_linking".equalsIgnoreCase(transactionParam);
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Beneficiary Form</title>
+    <style>
+        .subsection {
+            display: none;
+        }
 
-    // ADD THIS LINE - Make it available to EL
-    pageContext.setAttribute("isPolicyLinking", isPolicyLinking);
-%>
+        .subsection.visible {
+            display: block;
+        }
+    </style>
+</head>
 
-<div class="radio-checkbox_wrapper field-item">
-    <div class="radio-checkbox">
-        <label class="radio-checkbox__label" for="yes" style="display: flex">
-            <input class="radio-checkbox__input" 
-                   type="radio" 
-                   name="policyRadios" 
-                   id="yes" 
-                   value="Yes"
-                   <%= isPolicyLinking ? "checked" : "" %> />
-            <span></span>${content.value.Section1.value.RadioOptionsYesLabel}
-        </label>
+<body>
+    <div>
+        <h2>Change Beneficiary option (updated)</h2>
 
-        <label class="radio-checkbox__label" for="no" style="display: flex">
-            <input class="radio-checkbox__input" 
-                   type="radio" 
-                   name="policyRadios" 
-                   id="no" 
-                   value="No"
-                   <%= !isPolicyLinking ? "checked" : "" %> />
-            <span></span>${content.value.Section1.value.RadioOptionsNoLabel}
-        </label>
+        <!-- Question 1: Existing Irrevocable Beneficiaries -->
+        <div>
+            <label>
+                Do you have an existing Irrevocable Beneficiaries? <span>*</span>
+            </label>
+            <div>
+                <label>
+                    <input type="radio" name="q1_existing" value="yes" required>
+                    Yes
+                </label>
+                <label>
+                    <input type="radio" name="q1_existing" value="no">
+                    No
+                </label>
+            </div>
+        </div>
+
+        <!-- Question 2: Adding New Beneficiaries -->
+        <div>
+            <label>
+                Do you plan to add any new Beneficiaries? <span>*</span>
+            </label>
+            <div>
+                <label>
+                    <input type="radio" name="q2_new_beneficiaries" value="yes" required>
+                    Yes
+                </label>
+                <label>
+                    <input type="radio" name="q2_new_beneficiaries" value="no">
+                    No
+                </label>
+            </div>
+        </div>
+
+        <!-- Question 3: Adding New Irrevocable Beneficiaries -->
+        <div>
+            <label>
+                Do you plan to include any new Irrevocable Beneficiaries? <span>*</span>
+            </label>
+            <div>
+                <label>
+                    <input type="radio" name="q3_new_irrevocable" value="legal_age" required>
+                    Yes, I will be adding Irrevocable Beneficiary – Legal Age
+                </label>
+                <label>
+                    <input type="radio" name="q3_new_irrevocable" value="minor">
+                    Yes, I will be adding Irrevocable Beneficiary – Minor (under the age of 18)
+                </label>
+                <label>
+                    <input type="radio" name="q3_new_irrevocable" value="no">
+                    No, I will not be adding any Irrevocable Beneficiary
+                </label>
+            </div>
+        </div>
+
+        <!-- Question 4: Common Law Partner or Same Sex Domestic Partner -->
+        <div>
+            <label>
+                Are you going to add a Common Law Partner or Same Sex Domestic Partner as your beneficiary?
+                <span>*</span>
+            </label>
+            <div>
+                <label>
+                    <input type="radio" name="q4_partner" value="yes" required>
+                    Yes
+                </label>
+                <label>
+                    <input type="radio" name="q4_partner" value="no">
+                    No
+                </label>
+            </div>
+        </div>
+
+        <!-- MAIN SECTION - Always visible -->
+        <div id="main_section">
+            <div>
+                <strong>To request for Change Beneficiary, kindly attach the following:</strong>
+            </div>
+
+            <ul>
+                <li>[For individually owned policies] Duly accomplished and signed <span>Policy Amendment Request for
+                        Individual Policyowner</span> by the life insured and the policyowner.</li>
+                <li>[For corporate/entity-owned policies] Duly accomplished and signed <span>Policy Amendment Request
+                        for Corporate/ Entity Policyowner</span> by the life insured and the policyowner.</li>
+            </ul>
+
+            <div>
+                <label>Policy Amendment Request Form <span>*</span></label>
+                <input type="file" name="policy_amendment_form" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic">
+            </div>
+
+            <div>
+                <small>Note: The maximum file size for each document is 5 MB. Acceptable doc type to be uploaded: png, jpeg, pdf, doc, docx, heic, jpg.</small>
+            </div>
+
+            <hr>
+
+            <!-- CONDITIONAL HEADER - Shows only when at least one "Yes" is selected -->
+            <div id="additional_docs_header" class="subsection">
+                <strong>Please provide the following additional documents according to your choice above:</strong>
+            </div>
+        </div>
+
+
+        <!-- SUBSECTION 1: For Q1 = Yes (Existing Irrevocable Beneficiary) -->
+        <div id="subsection_q1_yes" class="subsection">
+            <ul>
+                <li>Clear copy of one valid government ID or two valid non-government IDs reflecting the Signature of
+                    Irrevocable Beneficiary.</li>
+                <li>In cases where the current Irrevocable Beneficiary has passed away, a photocopy of the death
+                    certificate must be provided.</li>
+            </ul>
+
+            <div>
+                <label>Valid ID/s of existing Irrevocable Beneficiary or Death Certificate if deceased
+                    <span>*</span></label>
+                <input type="file" name="existing_beneficiary_id" id="existing_beneficiary_id" accept=".pdf,.jpg,.jpeg,.png,.heic" 
+                       data-conditional-required="true" data-required-when="q1_yes">
+            </div>
+        </div>
+
+
+        <!-- Dynamic File Attachments Section -->
+        <div id="proof-of-relationship-files-container" class="subsection proof-relationship-section">
+            <ul>
+                <li>Any documents that demonstrates the relationship to the new beneficiary/ies, such as:
+                    <ul>
+                        <li>Marriage Certificate – for spouse</li>
+                        <li>Birth Certificate – for child</li>
+                        <li>Other equivalent documents</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <!-- File Attachment Item 1 -->
+            <div id="proof-relationship-item-0" class="proof-relationship-file-item" style="display: block;">
+                <div style="display: flex; align-items: center;">
+                    <h2 class="group-field__title proof-relationship-title" data-required>Proof of relationship documents</h2>
+                </div>
+                <fieldset class="section-radio-checkbox" data-radio-checkbox-popup="">
+                    <legend class="sr-only">Proof of relationship documents</legend>
+                    <div class="radio-checkbox_wrapper field-item">
+                        <div class="radio-checkbox">
+                            <input class="field-input proof-relationship-input" required type="file" name="proof_of_relationship_1" placeholder="Proof of relationship documents"
+                                data-is-required="true" data-original-required="true" data-parsley-trigger="keyup input"
+                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic" onchange="handleProofRelationshipFileChange(0)"
+                                data-proof-relationship-index="0">
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <!-- File Attachment Item 2 -->
+            <div id="proof-relationship-item-1" class="proof-relationship-file-item" style="display: none;">
+                <div style="display: flex; align-items: center;">
+                    <h2 class="group-field__title proof-relationship-title">Proof of relationship documents</h2>
+                    <button type="button" onclick="removeProofRelationshipItem(1)" class="proof-relationship-remove-btn"
+                        style="background: #ff4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 14px; line-height: 1; margin-left: 10px;">×</button>
+                </div>
+                <fieldset class="section-radio-checkbox" data-radio-checkbox-popup="">
+                    <legend class="sr-only">Proof of relationship documents</legend>
+                    <div class="radio-checkbox_wrapper field-item">
+                        <div class="radio-checkbox">
+                            <input class="field-input proof-relationship-input" type="file" name="proof_of_relationship_2" placeholder="Proof of relationship documents"
+                                data-is-required="false" data-original-required="false"
+                                data-parsley-trigger="keyup input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic"
+                                onchange="handleProofRelationshipFileChange(1)" data-proof-relationship-index="1">
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <!-- File Attachment Item 3 -->
+            <div id="proof-relationship-item-2" class="proof-relationship-file-item" style="display: none;">
+                <div style="display: flex; align-items: center;">
+                    <h2 class="group-field__title proof-relationship-title">Proof of relationship documents</h2>
+                    <button type="button" onclick="removeProofRelationshipItem(2)" class="proof-relationship-remove-btn"
+                        style="background: #ff4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 14px; line-height: 1; margin-left: 10px;">×</button>
+                </div>
+                <fieldset class="section-radio-checkbox" data-radio-checkbox-popup="">
+                    <legend class="sr-only">Proof of relationship documents</legend>
+                    <div class="radio-checkbox_wrapper field-item">
+                        <div class="radio-checkbox">
+                            <input class="field-input proof-relationship-input" type="file" name="proof_of_relationship_3" placeholder="Proof of relationship documents"
+                                data-is-required="false" data-original-required="false"
+                                data-parsley-trigger="keyup input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic"
+                                onchange="handleProofRelationshipFileChange(2)" data-proof-relationship-index="2">
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <!-- File Attachment Item 4 -->
+            <div id="proof-relationship-item-3" class="proof-relationship-file-item" style="display: none;">
+                <div style="display: flex; align-items: center;">
+                    <h2 class="group-field__title proof-relationship-title">Proof of relationship documents</h2>
+                    <button type="button" onclick="removeProofRelationshipItem(3)" class="proof-relationship-remove-btn"
+                        style="background: #ff4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 14px; line-height: 1; margin-left: 10px;">×</button>
+                </div>
+                <fieldset class="section-radio-checkbox" data-radio-checkbox-popup="">
+                    <legend class="sr-only">Proof of relationship documents</legend>
+                    <div class="radio-checkbox_wrapper field-item">
+                        <div class="radio-checkbox">
+                            <input class="field-input proof-relationship-input" type="file" name="proof_of_relationship_4" placeholder="Proof of relationship documents"
+                                data-is-required="false" data-original-required="false"
+                                data-parsley-trigger="keyup input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic"
+                                onchange="handleProofRelationshipFileChange(3)" data-proof-relationship-index="3">
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <!-- Add Document Button -->
+            <button type="button" id="add-proof-relationship-btn" onclick="addNextProofRelationshipDocument()" class="proof-relationship-add-btn"
+                style="background: #6c757d; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; display: none;">
+                + Add document
+            </button>
+
+            <!-- Max Files Message -->
+            <div id="max-proof-relationship-message" class="proof-relationship-max-message" style="display: none; color: #666; font-style: italic; margin-top: 10px;">
+                You have reached the maximum number of documents allowed.
+            </div>
+        </div>
+
+        <!-- SUBSECTION 3A: For Q3 = Legal Age (New Irrevocable Beneficiary) -->
+        <div id="subsection_q3_legal_age" class="subsection">
+            <ul>
+                <li>Clear photocopy of signature bearing one (1) valid government-issued ID or two (2) valid
+                    non-government IDs of the new Irrevocable Beneficiary/ies.</li>
+            </ul>
+
+            <div>
+                <label>Valid ID/s of the new Irrevocable Beneficiary <span>*</span></label>
+                <input type="file" name="new_beneficiary_id" id="new_beneficiary_id" accept=".pdf,.jpg,.jpeg,.png,.heic" 
+                       data-conditional-required="true" data-required-when="q3_legal_age">
+            </div>
+        </div>
+
+        <!-- SUBSECTION 3B: For Q3 = Minor (New Irrevocable Beneficiary) -->
+        <div id="subsection_q2_minor" class="subsection">
+            <ul>
+                <li>Clear photocopy of signature bearing one (1) valid government-issued ID or two (2) valid
+                    non-government IDs of the new Irrevocable Beneficiary/ies.</li>
+                <li>Duly accomplished <span>Endorsement for Designating Irrevocable Beneficiary (EDIB)</span></li>
+                <li>Legal guardian's signature and submission of a court-approved bond if the minor's policy benefits
+                    share is PHP 500,000 or more (or USD equivalent).</li>
+            </ul>
+
+            <div>
+                <label>Valid ID/s of the new Irrevocable Beneficiary <span>*</span></label>
+                <input type="file" name="new_beneficiary_id_minor" id="new_beneficiary_id_minor" accept=".pdf,.jpg,.jpeg,.png,.heic"
+                       data-conditional-required="true" data-required-when="q3_minor">
+            </div>
+
+            <div>
+                <label>Endorsement for Designated Irrevocable Beneficiary <span>*</span></label>
+                <input type="file" name="endorsement_form" id="endorsement_form" accept=".pdf,.doc,.docx"
+                       data-conditional-required="true" data-required-when="q3_minor">
+            </div>
+
+            <div>
+                <label>Court-Approved Bond (if applicable)</label>
+                <input type="file" name="court_bond" id="court_bond" accept=".pdf,.doc,.docx">
+            </div>
+        </div>
+
+        <!-- SUBSECTION 3: For Q3 = Yes (Common Law/Same Sex Partner) -->
+        <div id="subsection_q3_yes" class="subsection">
+            <ul>
+                <li>A government-issued Certificate of Union if the ceremony took place overseas, or evidence
+                    demonstrating that the relationship between same-sex or common law partners has lasted for five
+                    years or longer through any one of the following:
+                    <ul>
+                        <li>Government Issued IDs showing the same place of residence or Barangay Certification of
+                            Residency</li>
+                        <li>Existing joint bank accounts or co-ownership of properties</li>
+                        <li>Proof that financial support is provided to the partner</li>
+                    </ul>
+                </li>
+                <li>Philippine Statistical Authority (PSA) Certificate of No Marriage (CENOMAR) or its equivalent
+                    document abroad.</li>
+            </ul>
+
+            <div>
+                <label>Certificate of Union or Document evidence of relationship <span>*</span></label>
+                <input type="file" name="certificate_union" id="certificate_union" accept=".pdf,.jpg,.jpeg,.png,.heic"
+                       data-conditional-required="true" data-required-when="q4_yes">
+            </div>
+
+            <div>
+                <label>PSA CENOMAR or equivalent document <span>*</span></label>
+                <input type="file" name="psa_cenomar" id="psa_cenomar" accept=".pdf,.jpg,.jpeg,.png,.heic"
+                       data-conditional-required="true" data-required-when="q4_yes">
+            </div>
+        </div>
+
+
     </div>
-</div>
-
-
-<p>Wish No: <%= wishNoParam %></p>
-<p>Available No: <%= availableNoParam %></p>
-<p>Email: <%= emailParam %></p>
-
-    https://www.prulifeuk.com.ph/en/contact-us-form-test?wishNo=12345678&availableNo=12345678&email=example@gmail.com&transaction=policy_linking
-
-<input type="hidden" name="wishNo" value="<%= wishNoParam %>" />
-<input type="hidden" name="availableNo" value="<%= availableNoParam %>" />
-<input type="hidden" name="email" value="<%= emailParam %>" />
-
-
-<select 
-    class="w-100"
-    data-select-dropdown
-    data-style
-    data-live-search="true"
-    aria-expanded="true"
-    name="select-service"
-    id="select-service"
-    <%= isPolicyLinking ? "disabled" : "" %>  <!-- disable dropdown if policy_linking -->
->
-
-
-<option value="${item.value.OptionName}"
-    data-option-id="${item.value.OptionId}"
-    data-available="${item.value.IsAvailable}"
-    data-include-radio="${item.value.IncludeRadioSection}"
-    data-unavailable-text="${item.value.UnavailableText}"
-    <c:if test="${isPolicyLinking and (item.value.OptionName eq 'PRUServices Policy Linking')}">selected="selected"</c:if>
->
-
-    <option value="${item.value.OptionName}"
-    data-option-id="${item.value.OptionId}"
-    data-available="${item.value.IsAvailable}"
-    data-include-radio="${item.value.IncludeRadioSection}"
-    data-unavailable-text="${item.value.UnavailableText}"
-    ${isPolicyLinking and (item.value.OptionName eq 'PRUServices Policy Linking') ? 'selected' : ''}
->
-
-
-
-<% if (isPolicyLinking) { %>
-    <input type="hidden" name="select-service" value="Policy Linking" />
-<% } %>
-
-
-    <c:forEach var="item" items="${content.value.Dropdown.valueList.DropdownOption}">
-    <option value="${item.value.OptionName}"
-        data-option-id="${item.value.OptionId}"
-        data-available="${item.value.IsAvailable}"
-        data-include-radio="${item.value.IncludeRadioSection}"
-        data-unavailable-text="${item.value.UnavailableText}"
-        <%
-            if ("Policy Linking".equalsIgnoreCase((String) pageContext.getAttribute("item.value.OptionName"))
-                && Boolean.TRUE.equals(pageContext.getAttribute("isPolicyLinking"))) {
-        %>selected="selected"<%
-            }
-        %>>
-        ${item.value.OptionName}
-    </option>
-</c:forEach>
-
-
-Policy Number to link to your PRUServices account*
-
-Policy Number in your PRUServices account *
-
-Registered Email Address with your PRUServices account *
-
-Once you submit this form, we’ll start processing your request to link your 
-policy number to your PRUServices account. Our support team will get in 
-touch soon to help you complete the process.
-
 
     <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Get URL parameters using URLSearchParams
-    var urlParams = new URLSearchParams(window.location.search);
-    var linkNo = urlParams.get('linkNo') || '';
-    var availableNo = urlParams.get('availableNo') || '';
-    var email = urlParams.get('email') || '';
-    var transaction = urlParams.get('transaction') || '';
-    
-    var isPolicyLinking = transaction.toLowerCase() === 'policy_linking';
-    
-    // Set values to input fields
-    var linkPolicyInput = document.getElementById('link-policy-number');
-    if (linkPolicyInput) linkPolicyInput.value = linkNo;
-    
-    var currentPolicyInput = document.getElementById('current-policy-number');
-    if (currentPolicyInput) currentPolicyInput.value = availableNo;
-    
-    var emailInput = document.getElementById('registered-email-address');
-    if (emailInput) emailInput.value = email;
-    
-    // Auto-select dropdown option if policy linking
-    if (isPolicyLinking) {
-        var selectService = document.querySelector('select[name="select-service"]');
-        if (selectService) {
-            Array.from(selectService.options).forEach(function(option) {
-                if (option.textContent.trim() === 'PRUServices Policy Linking') {
-                    option.selected = true;
-                    selectService.dispatchEvent(new Event('change', { bubbles: true }));
+        // Get all radio buttons
+        const q1Radios = document.querySelectorAll('input[name="q1_existing"]');
+        const q2Radios = document.querySelectorAll('input[name="q2_new_beneficiaries"]');
+        const q3Radios = document.querySelectorAll('input[name="q3_new_irrevocable"]');
+        const q4Radios = document.querySelectorAll('input[name="q4_partner"]');
+
+        // Get main section, conditional header, and subsections
+        const mainSection = document.getElementById('main_section');
+        const additionalDocsHeader = document.getElementById('additional_docs_header');
+        const proofOfRelationshipFilesContainer = document.getElementById('proof-of-relationship-files-container');
+        const subsectionQ1Yes = document.getElementById('subsection_q1_yes');
+        const subsectionQ3LegalAge = document.getElementById('subsection_q3_legal_age');
+        const subsectionQ3Minor = document.getElementById('subsection_q2_minor');
+        const subsectionQ4Yes = document.getElementById('subsection_q3_yes');
+
+        // Helper function to update required attribute for conditional fields
+        function updateConditionalRequired(fieldId, shouldBeRequired) {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                if (shouldBeRequired) {
+                    field.setAttribute('required', 'required');
+                } else {
+                    field.removeAttribute('required');
                 }
-            });
+            }
         }
-    }
-});
-</script>
+
+        // Function to update form visibility
+        function updateFormVisibility() {
+            const q1Value = getRadioValue('q1_existing');
+            const q2Value = getRadioValue('q2_new_beneficiaries');
+            const q3Value = getRadioValue('q3_new_irrevocable');
+            const q4Value = getRadioValue('q4_partner');
+
+            // Hide all subsections first
+            proofOfRelationshipFilesContainer.classList.remove('visible');
+            subsectionQ1Yes.classList.remove('visible');
+            subsectionQ3LegalAge.classList.remove('visible');
+            subsectionQ3Minor.classList.remove('visible');
+            subsectionQ4Yes.classList.remove('visible');
+
+            // Check if any "Yes" is selected to show additional docs header
+            const hasAnyYes = (q1Value === 'yes') ||
+                (q2Value === 'yes') ||
+                (q3Value === 'legal_age' || q3Value === 'minor') ||
+                (q4Value === 'yes');
+
+            if (hasAnyYes) {
+                additionalDocsHeader.style.display = 'block';
+            } else {
+                additionalDocsHeader.style.display = 'none';
+            }
+
+            // Show subsections based on individual answers
+            // Q2: Show Dynamic File Attachments Section if "Yes"
+            if (q2Value === 'yes') {
+                proofOfRelationshipFilesContainer.classList.add('visible');
+                // Ensure first proof of relationship file is required when section is visible
+                if (typeof updateProofRelationshipRequiredAttribute === 'function') {
+                    var firstProofItem = document.getElementById('proof-relationship-item-0');
+                    if (firstProofItem) {
+                        var firstProofInput = firstProofItem.querySelector('input[type="file"]');
+                        if (firstProofInput) {
+                            updateProofRelationshipRequiredAttribute(firstProofInput, true);
+                        }
+                    }
+                }
+            } else {
+                // When section is hidden, remove required from all proof relationship files
+                if (typeof updateProofRelationshipRequiredAttribute === 'function') {
+                    for (var i = 0; i < 4; i++) {
+                        var item = document.getElementById('proof-relationship-item-' + i);
+                        if (item) {
+                            var fileInput = item.querySelector('input[type="file"]');
+                            if (fileInput) {
+                                updateProofRelationshipRequiredAttribute(fileInput, false);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Q1: Show if "Yes" and update required attribute
+            if (q1Value === 'yes') {
+                subsectionQ1Yes.classList.add('visible');
+                updateConditionalRequired('existing_beneficiary_id', true);
+            } else {
+                updateConditionalRequired('existing_beneficiary_id', false);
+            }
+
+            // Q3: Show Legal Age section if "Legal Age" and update required attribute
+            if (q3Value === 'legal_age') {
+                subsectionQ3LegalAge.classList.add('visible');
+                updateConditionalRequired('new_beneficiary_id', true);
+            } else {
+                updateConditionalRequired('new_beneficiary_id', false);
+            }
+
+            // Q3: Show Minor section if "Minor" and update required attributes
+            if (q3Value === 'minor') {
+                subsectionQ3Minor.classList.add('visible');
+                updateConditionalRequired('new_beneficiary_id_minor', true);
+                updateConditionalRequired('endorsement_form', true);
+            } else {
+                updateConditionalRequired('new_beneficiary_id_minor', false);
+                updateConditionalRequired('endorsement_form', false);
+            }
+
+            // Q4: Show if "Yes" and update required attributes
+            if (q4Value === 'yes') {
+                subsectionQ4Yes.classList.add('visible');
+                updateConditionalRequired('certificate_union', true);
+                updateConditionalRequired('psa_cenomar', true);
+            } else {
+                updateConditionalRequired('certificate_union', false);
+                updateConditionalRequired('psa_cenomar', false);
+            }
+        }
+
+        // Helper function to get selected radio value
+        function getRadioValue(name) {
+            const selected = document.querySelector(`input[name="${name}"]:checked`);
+            return selected ? selected.value : null;
+        }
+
+        // Add event listeners to all radio buttons
+        q1Radios.forEach(radio => radio.addEventListener('change', updateFormVisibility));
+        q2Radios.forEach(radio => radio.addEventListener('change', updateFormVisibility));
+        q3Radios.forEach(radio => radio.addEventListener('change', updateFormVisibility));
+        q4Radios.forEach(radio => radio.addEventListener('change', updateFormVisibility));
 
 
-leah.dumayag@p
+        // Initial check on page load
+        updateFormVisibility();
 
+        // Proof of Relationship Files Functionality
+        var totalProofRelationshipFiles = 4; // Maximum number of file attachments
 
+        function updateProofRelationshipRequiredAttribute(fileInput, isVisible) {
+            var originalRequired = fileInput.getAttribute('data-original-required');
+            var parsleyMessage = fileInput.getAttribute('data-parsley-required-message');
 
+            if (isVisible && originalRequired === 'true') {
+                // Make it required only if visible AND the original required is true
+                fileInput.setAttribute('required', 'required');
+                fileInput.setAttribute('data-is-required', 'true');
+                if (parsleyMessage) {
+                    fileInput.setAttribute('data-parsley-required-message', parsleyMessage);
+                }
+                // Update the title element's data-required attribute
+                var parentItem = fileInput.closest('div[id^="proof-relationship-item-"]');
+                if (parentItem) {
+                    var title = parentItem.querySelector('.proof-relationship-title');
+                    if (title) {
+                        title.setAttribute('data-required', '');
+                    }
+                }
+            } else {
+                // Remove required if hidden OR the original required is false
+                fileInput.removeAttribute('required');
+                fileInput.setAttribute('data-is-required', 'false');
+                fileInput.removeAttribute('data-parsley-required-message');
+                // Remove the title element's data-required attribute
+                var parentItem = fileInput.closest('div[id^="proof-relationship-item-"]');
+                if (parentItem) {
+                    var title = parentItem.querySelector('.proof-relationship-title');
+                    if (title) {
+                        title.removeAttribute('data-required');
+                    }
+                }
+            }
+        }
 
+        function handleProofRelationshipFileChange(index) {
+            console.log('Proof relationship file changed for input ' + index);
+            var fileInput = document.querySelector('input[data-proof-relationship-index="' + index + '"]');
+            var addButton = document.getElementById('add-proof-relationship-btn');
+
+            if (fileInput && fileInput.files.length > 0) {
+                // File was attached, check if we can show the add button
+                console.log('Proof relationship file attached to input ' + index);
+                updateProofRelationshipButtonVisibility();
+            } else {
+                // File was removed, hide the add button
+                console.log('Proof relationship file removed from input ' + index);
+                addButton.style.display = 'none';
+            }
+        }
+
+        function updateProofRelationshipButtonVisibility() {
+            console.log('Updating proof relationship add button visibility');
+            var addButton = document.getElementById('add-proof-relationship-btn');
+            var maxMessage = document.getElementById('max-proof-relationship-message');
+
+            // Check if all files are visible
+            var allVisible = true;
+            for (var i = 0; i < totalProofRelationshipFiles; i++) {
+                var item = document.getElementById('proof-relationship-item-' + i);
+                if (item && item.style.display !== 'block') {
+                    allVisible = false;
+                    break;
+                }
+            }
+
+            if (allVisible) {
+                // All files are visible, show max message and hide button
+                addButton.style.display = 'none';
+                maxMessage.style.display = 'block';
+                console.log('All proof relationship files visible - hiding button');
+                return;
+            }
+
+            // Check if the highest visible file has an attachment
+            var highestVisibleIndex = -1;
+            var highestVisibleHasFile = false;
+
+            for (var i = totalProofRelationshipFiles - 1; i >= 0; i--) {
+                var item = document.getElementById('proof-relationship-item-' + i);
+                if (item && item.style.display === 'block') {
+                    highestVisibleIndex = i;
+                    var fileInput = item.querySelector('input[type="file"]');
+                    if (fileInput && fileInput.files.length > 0) {
+                        highestVisibleHasFile = true;
+                    }
+                    break;
+                }
+            }
+
+            console.log('Highest visible proof relationship index: ' + highestVisibleIndex + ', has file: ' + highestVisibleHasFile);
+
+            // Show button only if the highest visible file has an attachment
+            if (highestVisibleHasFile && highestVisibleIndex < totalProofRelationshipFiles - 1) {
+                addButton.style.display = 'inline-block';
+                maxMessage.style.display = 'none';
+                console.log('Showing proof relationship add button');
+            } else {
+                addButton.style.display = 'none';
+                if (allVisible) {
+                    maxMessage.style.display = 'block';
+                } else {
+                    maxMessage.style.display = 'none';
+                }
+                console.log('Hiding proof relationship add button');
+            }
+        }
+
+        function addNextProofRelationshipDocument() {
+            console.log('Adding next proof relationship document');
+            // Find the first hidden file item to show
+            for (var i = 1; i < totalProofRelationshipFiles; i++) {
+                var item = document.getElementById('proof-relationship-item-' + i);
+                if (item && item.style.display !== 'block') {
+                    item.style.display = 'block';
+                    console.log('Showing proof relationship file item ' + i);
+
+                    // Update required attribute for this newly visible item
+                    var fileInput = item.querySelector('input[type="file"]');
+                    if (fileInput) {
+                        updateProofRelationshipRequiredAttribute(fileInput, true);
+                    }
+                    break;
+                }
+            }
+
+            // Hide the add button after adding (will show again when new file is attached)
+            var addButton = document.getElementById('add-proof-relationship-btn');
+            addButton.style.display = 'none';
+
+            // Update button visibility based on current state
+            updateProofRelationshipButtonVisibility();
+        }
+
+        function removeProofRelationshipItem(index) {
+            if (index === 0) return; // First item cannot be removed
+
+            console.log('Removing proof relationship file item ' + index);
+            var fileItem = document.getElementById('proof-relationship-item-' + index);
+            var fileInput = fileItem.querySelector('input[type="file"]');
+
+            // Clear the file input
+            fileInput.value = '';
+
+            // Update required attribute for this now hidden item
+            updateProofRelationshipRequiredAttribute(fileInput, false);
+
+            // Hide the file item
+            fileItem.style.display = 'none';
+
+            // Update button visibility
+            updateProofRelationshipButtonVisibility();
+        }
+
+        // Initialize proof of relationship file attachments on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('Initializing proof relationship files with total files: ' + totalProofRelationshipFiles);
+
+            // Ensure only the first file item is visible initially
+            for (var i = 1; i < totalProofRelationshipFiles; i++) {
+                var item = document.getElementById('proof-relationship-item-' + i);
+                if (item) {
+                    item.style.display = 'none';
+                    // Update required attribute for hidden items
+                    var fileInput = item.querySelector('input[type="file"]');
+                    if (fileInput) {
+                        updateProofRelationshipRequiredAttribute(fileInput, false);
+                    }
+                }
+            }
+
+            // Ensure the first item has correct required attribute
+            var firstItem = document.getElementById('proof-relationship-item-0');
+            if (firstItem) {
+                var fileInput = firstItem.querySelector('input[type="file"]');
+                if (fileInput) {
+                    updateProofRelationshipRequiredAttribute(fileInput, true);
+                }
+            }
+
+            // Hide add button and max message initially
+            document.getElementById('add-proof-relationship-btn').style.display = 'none';
+            document.getElementById('max-proof-relationship-message').style.display = 'none';
+        });
+    </script>
+</body>
+
+</html>
