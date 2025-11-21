@@ -11,19 +11,79 @@ https://sgrasstvn4yt5w9.pru.intranet.asia:8443/opencms/system/login/index.html
 
 https://sgrasssbgzkicvz.pru.intranet.asia:8443/opencms/system/login/index.html
 
-<div class="radio-checkbox__wrapper field-item" style="display:flex !important; flex-direction:column !important; gap:8px !important;">
-    <div class="radio-checkbox" style="display:block !important;">
-        <label class="radio-checkbox__label" for="isCustomerYes">
-            <input class="radio-checkbox__input" type="radio" id="isCustomerYes" name="isCustomer" value="Y" required="">
-            <span></span>Y
+<h2 class="group-field_title field-item" data-required="">
+    Do you plan to include any new Irrevocable Beneficiaries?
+</h2>
+
+<div class="radio-checkbox_wrapper field-item" 
+     style="display:flex !important; flex-direction:column !important; gap:8px !important;">
+
+    <!-- OPTION 1 -->
+    <div>
+        <label class="radio-checkbox_label" for="q3NewIrrevocableLegalAge"
+            style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; padding:8px; border-radius:4px;">
+
+            <!-- wrapper ensures parsley error shows BELOW -->
+            <div style="display:block;">
+                <input type="radio"
+                    name="q3_new_irrevocable"
+                    id="q3NewIrrevocableLegalAge"
+                    value="legal_age"
+                    required
+                    data-parsley-required-message="This value is required"
+                    data-parsley-multiple="q3_new_irrevocable"
+                    style="width:22px; height:22px; cursor:pointer; margin:0;">
+            </div>
+
+            <span></span>
+            Yes, I will be adding Irrevocable Beneficiary – Legal Age
         </label>
     </div>
 
-    <div class="radio-checkbox" style="display:block !important;">
-        <label class="radio-checkbox__label" for="isCustomerNo">
-            <input class="radio-checkbox__input" type="radio" id="isCustomerNo" name="isCustomer" value="N" required="">
-            <span></span>N
+    <!-- OPTION 2 -->
+    <div>
+        <label class="radio-checkbox_label" for="q3NewIrrevocableMinor"
+            style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; padding:8px; border-radius:4px;">
+
+            <div style="display:block;">
+                <input type="radio"
+                    name="q3_new_irrevocable"
+                    id="q3NewIrrevocableMinor"
+                    value="minor"
+                    required
+                    checked
+                    data-parsley-required-message="This value is required"
+                    data-parsley-multiple="q3_new_irrevocable"
+                    style="width:22px; height:22px; cursor:pointer; margin:0;">
+            </div>
+
+            <span></span>
+            Yes, I will be adding Irrevocable Beneficiary – Minor (Under the age of 18)
         </label>
     </div>
+
+    <!-- OPTION 3 -->
+    <div>
+        <label class="radio-checkbox_label" for="q3NewIrrevocableNo"
+            style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; padding:8px; border-radius:4px;">
+
+            <div style="display:block;">
+                <input type="radio"
+                    name="q3_new_irrevocable"
+                    id="q3NewIrrevocableNo"
+                    value="no"
+                    required
+                    checked
+                    data-parsley-required-message="This value is required"
+                    data-parsley-multiple="q3_new_irrevocable"
+                    style="width:22px; height:22px; cursor:pointer; margin:0;">
+            </div>
+
+            <span></span>
+            No, I will not be adding any Irrevocable Beneficiary
+        </label>
+    </div>
+
 </div>
+<br>
 
