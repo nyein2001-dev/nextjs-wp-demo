@@ -60,3 +60,73 @@ https://sgrasssbgzkicvz.pru.intranet.asia:8443/opencms/system/login/index.html
   <div id="q3-error-container" style="margin-top: 4px; margin-left: 30px; padding-left: 8px;"></div>
 </div>
 
+
+function addNextProofRelationshipDocument() {
+            console.log('Adding next proof relationship document');
+            // Find the first hidden file item to show
+            for (var i = 1; i < totalProofRelationshipFiles; i++) {
+                var item = document.getElementById('proof-relationship-item-' + i);
+                if (item && item.style.display !== 'block') {
+                    item.style.display = 'block';
+                    console.log('Showing proof relationship file item ' + i);
+
+                    // Update required attribute for this newly visible item
+                    var fileInput = item.querySelector('input[type="file"]');
+                    if (fileInput) {
+                        // Set required attribute when item becomes visible
+                        fileInput.setAttribute('required', 'required');
+                        fileInput.setAttribute('data-is-required', 'true');
+                        // Update data-original-required to true so it stays required when visible
+                        fileInput.setAttribute('data-original-required', 'true');
+                        
+                        // Update the title element's data-required attribute
+                        var title = item.querySelector('.proof-relationship-title');
+                        if (title) {
+                            title.setAttribute('data-required', '');
+                        }
+                    }
+                    break;
+                }
+            }
+
+            // Hide the add button after adding (will show again when new file is attached)
+            var addButton = document.getElementById('add-proof-relationship-btn');
+            addButton.style.display = 'none';
+
+            // Update button visibility based on current state
+            updateProofRelationshipButtonVisibility();
+        }
+
+        function removeProofRelationshipItem(index) {
+            if (index === 0) return; // First item cannot be removed
+
+            console.log('Removing proof relationship file item ' + index);
+            var fileItem = document.getElementById('proof-relationship-item-' + index);
+            if (!fileItem) return;
+            
+            var fileInput = fileItem.querySelector('input[type="file"]');
+            if (!fileInput) return;
+
+            // Clear the file input value to remove any attached file
+            // Setting value to empty string clears the file selection
+            fileInput.value = '';
+
+            // Remove required attribute
+            fileInput.removeAttribute('required');
+            fileInput.setAttribute('data-is-required', 'false');
+            fileInput.setAttribute('data-original-required', 'false');
+            fileInput.removeAttribute('data-parsley-required-message');
+            
+            // Remove the title element's data-required attribute
+            var title = fileItem.querySelector('.proof-relationship-title');
+            if (title) {
+                title.removeAttribute('data-required');
+            }
+
+            // Hide the file item
+            fileItem.style.display = 'none';
+
+            // Update button visibility
+            updateProofRelationshipButtonVisibility();
+        }
+
