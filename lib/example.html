@@ -241,3 +241,10 @@
 
 </body>
 </html>
+
+
+if (cityData[stateValue]) {
+    cityData[stateValue].forEach(function(city) {
+        citySelect.innerHTML += '<option value="' + city + '">' + city + '</option>';
+    });
+}
