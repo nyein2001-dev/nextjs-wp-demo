@@ -257,3 +257,22 @@ if (cityData[stateValue]) {
         citySelect.appendChild(option);
     });
 }
+
+
+<div class="input-text-field" id="cityField">
+				<div class="field-item">
+					<div class="custom-dropdown-select" style="position: relative !important; overflow: visible !important;">
+						<div class="custom-dropdown-select__inner" style="position: relative !important; overflow: visible !important;">
+							<label class="sr-only" for="location">City</label>
+							<select class="w-100" data-select-dropdown data-style data-live-search="true" id="location" name="00NWJ000005H5oP" title="City" required style="display: block !important; visibility: visible !important;">
+								<option value="" disabled selected>Please select a city</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+
+if (typeof $ !== 'undefined' && $.fn.selectpicker) {
+				$(citySelect).selectpicker('refresh');
+				$(citySelect).selectpicker('render');
+			}
