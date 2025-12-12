@@ -18,8 +18,13 @@
             <input type="hidden" name="oid" value="00DWJ000005CytZ">
             <input type="hidden" name="retURL" value="https://www.prubsn.com.my/">
 			
-			<input type="hidden" name="debug" value=1>
-			<input type="hidden" name="debugEmail"value="tham@lavaprotocols.com">
+			<select  id="lead_source" name="lead_source" style="display:none;">
+				<option value="">--None--</option>
+				<option value="Website" selected>Website</option>
+			</select><br>
+			
+			<!--<input type="hidden" name="debug" value=1>
+			<input type="hidden" name="debugEmail"value="tham@lavaprotocols.com">-->
 			
 			<!-- Hidden fields for UTM & Campaign tracking -->
 			<input type="hidden" id="00NWJ000005RA5F" name="00NWJ000005RA5F" maxlength="255" size="20" /> <!-- utm_source -->
@@ -71,86 +76,6 @@
                 <label for="icNumber">IC Number:</label>
                 <input id="icNumber" maxlength="12" name="00NWJ000005H5tF" type="text" placeholder="e.g. 990909109191 (no hyphens)" required>
             </div>
-			
-			<!--<div id="locationFieldw" style="display: none;">
-                <label for="00NWJ000005V1JV">City:</label>
-                <select id="locations" name="00NWJ000005V1JV" title="State" required>
-                    <option value="Perak" disabled selected>Please select a city</option>
-				</select>
-			</div>-->
-
-            <!-- Conditional field 6: City (shown if 'N' is selected) -->
-            <!--<div id="locationField" style="display: none;">
-                <label for="00NWJ000005H5oP">City:</label>
-                <select id="location" name="00NWJ000005H5oP" title="City" required>
-                    <option value="" disabled selected>Please select a city</option>
-                    <optgroup label="KL & Selangor">
-                        <option value="Banting">Banting</option>
-                        <option value="Kajang">Kajang</option>
-                        <option value="Klang Valley">Klang Valley</option>
-                        <option value="Kuala Selangor">Kuala Selangor</option>
-                    </optgroup>
-                    <optgroup label="Perak">
-                        <option value="Ipoh">Ipoh</option>
-                        <option value="Sitiawan">Sitiawan</option>
-                        <option value="Taiping">Taiping</option>
-                        <option value="Teluk Intan">Teluk Intan</option>
-                    </optgroup>
-                    <optgroup label="Penang">
-                        <option value="Penang Island">Penang Island</option>
-                        <option value="Seberang Perai">Seberang Perai</option>
-                    </optgroup>
-                    <optgroup label="Melaka">
-                        <option value="Melaka">Melaka</option>
-                    </optgroup>
-                    <optgroup label="Negeri Sembilan">
-                        <option value="Bahau">Bahau</option>
-                        <option value="Seremban">Seremban</option>
-                    </optgroup>
-                    <optgroup label="Johor">
-                        <option value="Batu Pahat">Batu Pahat</option>
-                        <option value="Johor Bahru">Johor Bahru</option>
-                        <option value="Kluang">Kluang</option>
-                        <option value="Kota Tinggi">Kota Tinggi</option>
-                        <option value="Mersing">Mersing</option>
-                        <option value="Muar">Muar</option>
-                        <option value="Segamat">Segamat</option>
-                    </optgroup>
-                    <optgroup label="Kedah">
-                        <option value="Alor Setar">Alor Setar</option>
-                        <option value="Sungai Petani">Sungai Petani</option>
-                    </optgroup>
-                    <optgroup label="Perlis">
-                        <option value="Kangar">Kangar</option>
-                    </optgroup>
-                    <optgroup label="Pahang">
-                        <option value="Bentong">Bentong</option>
-                        <option value="Kuantan">Kuantan</option>
-                        <option value="Mentakab">Mentakab</option>
-                        <option value="Raub">Raub</option>
-                    </optgroup>
-                    <optgroup label="Kelantan">
-                        <option value="Kota Bahru">Kota Bahru</option>
-                    </optgroup>
-                    <optgroup label="Terengganu">
-                        <option value="Kemaman">Kemaman</option>
-                        <option value="Kuala Terengganu">Kuala Terengganu</option>
-                    </optgroup>
-                    <optgroup label="Sabah">
-                        <option value="Kota Kinabalu">Kota Kinabalu</option>
-                        <option value="Lahad Datu">Lahad Datu</option>
-                        <option value="Labuan">Labuan</option>
-                        <option value="Sandakan">Sandakan</option>
-                        <option value="Tawau">Tawau</option>
-                    </optgroup>
-                    <optgroup label="Sarawak">
-                        <option value="Bintulu">Bintulu</option>
-                        <option value="Kuching">Kuching</option>
-                        <option value="Miri">Miri</option>
-                        <option value="Sibu">Sibu</option>
-                    </optgroup>
-                </select>
-            </div>-->
 			
 			<!-- STATE PICKLIST (Salesforce field 00NWJ000005V1JV) -->
 			<div id="locationField">
@@ -211,7 +136,7 @@
         const isCustomerNo = document.getElementById('isCustomerNo');
         
         // Get the conditional fields' containers
-        const locationField = document.getElementById('locationField');
+        //const locationField = document.getElementById('locationField');
         const enquiryField = document.getElementById('enquiryField');
 
         // Function to update the visibility of the conditional fields
@@ -219,18 +144,18 @@
             if (isCustomerYes.checked) {
                 // If the user is an existing customer ('Y'), show the enquiry field and hide the location field
                 enquiryField.style.display = 'block';
-                locationField.style.display = 'none';
+                //locationField.style.display = 'none';
                 document.getElementById('enquiry').required = true;
                 document.getElementById('location').required = false;
             } else if (isCustomerNo.checked) {
                 // If the user is not an existing customer ('N'), show the location field and hide the enquiry field
-                locationField.style.display = 'block';
+                //locationField.style.display = 'block';
                 enquiryField.style.display = 'none';
                 document.getElementById('location').required = true;
                 document.getElementById('enquiry').required = false;
             } else {
                 // Hide both if neither is selected initially
-                locationField.style.display = 'none';
+                //locationField.style.display = 'none';
                 enquiryField.style.display = 'none';
             }
         }
