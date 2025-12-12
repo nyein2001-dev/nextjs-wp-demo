@@ -276,3 +276,17 @@ if (typeof $ !== 'undefined' && $.fn.selectpicker) {
 				$(citySelect).selectpicker('refresh');
 				$(citySelect).selectpicker('render');
 			}
+
+
+// Force trigger change event to refresh custom dropdown
+			const event = new Event('change', { bubbles: true });
+			citySelect.dispatchEvent(event);
+			
+			// Alternative: Trigger via jQuery if available
+			if (typeof $ !== 'undefined') {
+				$(citySelect).trigger('change');
+			}
+			
+			// Force re-render by toggling a class
+			citySelect.parentElement.classList.remove('initialized');
+			citySelect.parentElement.classList.add('initialized');
