@@ -248,3 +248,12 @@ if (cityData[stateValue]) {
         citySelect.innerHTML += '<option value="' + city + '">' + city + '</option>';
     });
 }
+
+if (cityData[stateValue]) {
+    cityData[stateValue].forEach(function(city) {
+        var option = document.createElement('option');
+        option.value = city;
+        option.textContent = city;
+        citySelect.appendChild(option);
+    });
+}
