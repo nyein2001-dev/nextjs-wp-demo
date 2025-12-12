@@ -1,138 +1,204 @@
-Detail,Image sgrass.png,Image sgrass-1.png
-URL,https://sgrasstvn4yr5iw5.pru.intranet.asia:8443/opencms/system/login/index.html, https://sgrasssbgztkcwz.pru.intranet.asia:8443/opencms/system/login/index.html
-Username,378947,378947 
-root
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PruBSN Takaful Enquiry Form</title>
+</head>
+<body>
 
-https://sgrasstvn4yt5w9.pru.intranet.asia:8443/opencms/system/login/index.html
-Ko1000
-
-https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2025_Reinstatement-form-for-Individual-Policyowner-v4.pdf
-
-lance.mikhael.jason.hcl.ph@prulifeuk.com.ph
-https://sgrasstvn4yt5w9.pru.intranet.asia:8443/opencms/system/login/index.html
-
-https://sgrasssbgzkicvz.pru.intranet.asia:8443/opencms/system/login/index.html
-
-<div class='radio-checkbox' style='display: flex; align-items: center; gap: 10px;'>  
-  flex-shrink: 0;
-
-<div style="margin-bottom: 20px;">
-  <h2 class="group-field__title field-item" data-required="">Do you plan to include any new Irrevocable Beneficiaries?</h2>
-  <div class="radio-checkbox__wrapper field-item" style="display: flex !important; flex-direction: column !important; gap:8px !important; margin-bottom: 0px !important;"> 
+    <!-- Main form container -->
     <div>
-      <label class="radio-checkbox_label" for="q3NewIrrevocableLegalAge"
-        style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px; border-radius: 4px;">
-        <input type="radio" name="q3_new_irrevocable" 
-          style="width: 22px; height: 22px; cursor: pointer; margin: 0; flex-shrink: 0;" 
-          id="q3NewIrrevocableLegalAge" 
-          required="" 
-          data-parsley-required-message="This value is required" 
-          data-parsley-errors-container="#q3-error-container"
-          value="legal_age" 
-          data-parsley-multiple="q3_new_irrevocable"> 
-        <span>Yes, I will be adding Irrevocable Beneficiary - Legal Age</span>
-      </label>
-    </div> 
-    <div>
-      <label class="radio-checkbox_label" for="q3NewIrrevocableMinor"
-        style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px; border-radius: 4px;">
-        <input type="radio" name="q3_new_irrevocable" 
-          style="width: 22px; height: 22px; cursor: pointer; margin: 0; flex-shrink: 0;" 
-          id="q3NewIrrevocableMinor" 
-          required="" 
-          data-parsley-required-message="This value is required" 
-          data-parsley-errors-container="#q3-error-container"
-          value="minor"
-          data-parsley-multiple="q3_new_irrevocable">
-        <span>Yes, I will be adding Irrevocable Beneficiary - Minor (under the age of 18)</span>
-      </label>
-    </div> 
-    <div>
-      <label class="radio-checkbox_label" for="q3NewIrrevocableNo"
-        style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px; border-radius: 4px;">
-        <input type="radio" name="q3_new_irrevocable" 
-          style="width: 22px; height: 22px; cursor: pointer; margin: 0; flex-shrink: 0;"
-          id="q3NewIrrevocableNo" 
-          required="" 
-          data-parsley-required-message="This value is required" 
-          data-parsley-errors-container="#q3-error-container"
-          value="no" 
-          data-parsley-multiple="q3_new_irrevocable"> 
-        <span>No, I will not be adding any Irrevocable Beneficiary</span>
-      </label>
-    </div> 
-  </div>
-  <div id="q3-error-container" style="margin-top: 4px; margin-left: 30px; padding-left: 8px;"></div>
-</div>
+        <h1>PruBSN Takaful Enquiry</h1>
+        
+        <!-- The form itself -->
+        <form action="https://test.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8&orgId=00DWJ000005CytZ" method="POST">
 
-<div id='proof-relationship-error-0' style='margin-top: 4px; padding-left: 8px;'></div>
-  
-function addNextProofRelationshipDocument() {
-            console.log('Adding next proof relationship document');
-            // Find the first hidden file item to show
-            for (var i = 1; i < totalProofRelationshipFiles; i++) {
-                var item = document.getElementById('proof-relationship-item-' + i);
-                if (item && item.style.display !== 'block') {
-                    item.style.display = 'block';
-                    console.log('Showing proof relationship file item ' + i);
+            <!-- Hidden Salesforce fields -->
+            <input type="hidden" name="oid" value="00DWJ000005CytZ">
+            <input type="hidden" name="retURL" value="https://www.prubsn.com.my/">
 
-                    // Update required attribute for this newly visible item
-                    var fileInput = item.querySelector('input[type="file"]');
-                    if (fileInput) {
-                        // Set required attribute when item becomes visible
-                        fileInput.setAttribute('required', 'required');
-                        fileInput.setAttribute('data-is-required', 'true');
-                        // Update data-original-required to true so it stays required when visible
-                        fileInput.setAttribute('data-original-required', 'true');
-                        
-                        // Update the title element's data-required attribute
-                        var title = item.querySelector('.proof-relationship-title');
-                        if (title) {
-                            title.setAttribute('data-required', '');
-                        }
-                    }
-                    break;
-                }
+            <!-- Existing Customer Question (radio buttons) -->
+            <div>
+                <label>Are you an existing PruBSN Takaful customer?</label>
+                <div>
+                    <div>
+                        <input type="radio" id="isCustomerYes" name="isCustomer" value="Y" required>
+                        <label for="isCustomerYes">Y</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="isCustomerNo" name="isCustomer" value="N" required>
+                        <label for="isCustomerNo">N</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full Name field -->
+            <div>
+                <label for="last_name">Full Name:</label>
+                <input id="last_name" maxlength="80" name="last_name" type="text" placeholder="John Doe" required>
+            </div>
+
+            <!-- Phone Number field (Malaysian only) -->
+            <div>
+                <label for="phone">Phone Number (Malaysia):</label>
+                <input id="phone" maxlength="40" name="phone" type="tel" placeholder="e.g. 0123456789" required>
+            </div>
+
+            <!-- Email Address field -->
+            <div>
+                <label for="email">Email Address:</label>
+                <input id="email" maxlength="80" name="email" type="email" placeholder="johndoe@example.com" required>
+            </div>
+
+            <!-- IC Number field with placeholder -->
+            <div>
+                <label for="icNumber">IC Number:</label>
+                <input id="icNumber" maxlength="12" name="00NWJ000005H5tF" type="text" placeholder="e.g. 990909109191 (no hyphens)" required>
+            </div>
+
+            <!-- Conditional field 6: City (shown if 'N' is selected) -->
+            <div id="locationField" style="display: none;">
+                <label for="00NWJ000005H5oP">City:</label>
+                <select id="location" name="00NWJ000005H5oP" title="City" required>
+                    <option value="" disabled selected>Please select a city</option>
+                    <optgroup label="KL & Selangor">
+                        <option value="KL & Selangor">KL & Selangor</option>
+                        <option value="Banting">Banting</option>
+                        <option value="Kajang">Kajang</option>
+                        <option value="Klang Valley">Klang Valley</option>
+                        <option value="Kuala Selangor">Kuala Selangor</option>
+                    </optgroup>
+                    <optgroup label="Perak">
+                        <option value="Ipoh">Ipoh</option>
+                        <option value="Sitiawan">Sitiawan</option>
+                        <option value="Taiping">Taiping</option>
+                        <option value="Teluk Intan">Teluk Intan</option>
+                    </optgroup>
+                    <optgroup label="Penang">
+                        <option value="Penang Island">Penang Island</option>
+                        <option value="Seberang Perai">Seberang Perai</option>
+                    </optgroup>
+                    <optgroup label="Melaka">
+                        <option value="Melaka">Melaka</option>
+                    </optgroup>
+                    <optgroup label="Negeri Sembilan">
+                        <option value="Bahau">Bahau</option>
+                        <option value="Seremban">Seremban</option>
+                    </optgroup>
+                    <optgroup label="Johor">
+                        <option value="Batu Pahat">Batu Pahat</option>
+                        <option value="Johor Bahru">Johor Bahru</option>
+                        <option value="Kluang">Kluang</option>
+                        <option value="Kota Tinggi">Kota Tinggi</option>
+                        <option value="Mersing">Mersing</option>
+                        <option value="Muar">Muar</option>
+                        <option value="Segamat">Segamat</option>
+                    </optgroup>
+                    <optgroup label="Kedah">
+                        <option value="Alor Setar">Alor Setar</option>
+                        <option value="Sungai Petani">Sungai Petani</option>
+                    </optgroup>
+                    <optgroup label="Perlis">
+                        <option value="Kangar">Kangar</option>
+                    </optgroup>
+                    <optgroup label="Pahang">
+                        <option value="Bentong">Bentong</option>
+                        <option value="Kuantan">Kuantan</option>
+                        <option value="Mentakab">Mentakab</option>
+                        <option value="Raub">Raub</option>
+                    </optgroup>
+                    <optgroup label="Kelantan">
+                        <option value="Kota Bahru">Kota Bahru</option>
+                    </optgroup>
+                    <optgroup label="Terengganu">
+                        <option value="Kemaman">Kemaman</option>
+                        <option value="Kuala Terengganu">Kuala Terengganu</option>
+                    </optgroup>
+                    <optgroup label="Sabah">
+                        <option value="Kota Kinabalu">Kota Kinabalu</option>
+                        <option value="Lahad Datu">Lahad Datu</option>
+                        <option value="Labuan">Labuan</option>
+                        <option value="Sandakan">Sandakan</option>
+                        <option value="Tawau">Tawau</option>
+                    </optgroup>
+                    <optgroup label="Sarawak">
+                        <option value="Bintulu">Bintulu</option>
+                        <option value="Kuching">Kuching</option>
+                        <option value="Miri">Miri</option>
+                        <option value="Sibu">Sibu</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <!-- Conditional field 7: Type of Enquiry (shown if 'Y' is selected) -->
+            <div id="enquiryField" style="display: none;">
+                <label for="00NWJ000005H5q1">What is your type of enquiry?</label>
+                <select id="enquiry" name="00NWJ000005H5q1" title="Type of Enquiry" required>
+                    <option value="" disabled selected>Please select an enquiry type</option>
+                    <option value="New plan / certificate related">New plan / certificate related</option>
+                    <option value="Claims related / others">Claims related / others</option>
+                </select>
+            </div>
+
+            <!-- Consent Checkbox -->
+            <div>
+                <input type="checkbox" id="consent" name="00NWJ000005H5rd" value="1" required>
+                <label for="consent">
+                    I agree to the terms and conditions and consent to my data being processed.
+                </label>
+            </div>
+
+            <!-- Submit button -->
+            <input type="submit" name="submit">
+
+        </form>
+    </div>
+
+    <script>
+        // Get the radio buttons for existing customer
+        const isCustomerYes = document.getElementById('isCustomerYes');
+        const isCustomerNo = document.getElementById('isCustomerNo');
+        
+        // Get the conditional fields' containers
+        const locationField = document.getElementById('locationField');
+        const enquiryField = document.getElementById('enquiryField');
+
+        // Function to update the visibility of the conditional fields
+        function updateConditionalFields() {
+            if (isCustomerYes.checked) {
+                // If the user is an existing customer ('Y'), show the enquiry field and hide the location field
+                enquiryField.style.display = 'block';
+                locationField.style.display = 'none';
+                document.getElementById('enquiry').required = true;
+                document.getElementById('location').required = false;
+            } else if (isCustomerNo.checked) {
+                // If the user is not an existing customer ('N'), show the location field and hide the enquiry field
+                locationField.style.display = 'block';
+                enquiryField.style.display = 'none';
+                document.getElementById('location').required = true;
+                document.getElementById('enquiry').required = false;
+            } else {
+                // Hide both if neither is selected initially
+                locationField.style.display = 'none';
+                enquiryField.style.display = 'none';
             }
-
-            // Hide the add button after adding (will show again when new file is attached)
-            var addButton = document.getElementById('add-proof-relationship-btn');
-            addButton.style.display = 'none';
-
-            // Update button visibility based on current state
-            updateProofRelationshipButtonVisibility();
         }
 
-        function removeProofRelationshipItem(index) {
-            if (index === 0) return; // First item cannot be removed
+        // Add event listeners to the radio buttons to call the function when they are changed
+        isCustomerYes.addEventListener('change', updateConditionalFields);
+        isCustomerNo.addEventListener('change', updateConditionalFields);
 
-            console.log('Removing proof relationship file item ' + index);
-            var fileItem = document.getElementById('proof-relationship-item-' + index);
-            if (!fileItem) return;
-            
-            var fileInput = fileItem.querySelector('input[type="file"]');
-            if (!fileInput) return;
+        // Call the function on page load to set the initial state
+        updateConditionalFields();
+        
+        // Add a simple form submission listener for demonstration
+        document.getElementById('leadForm').addEventListener('submit', function(event) {
+            // This alert is here for demonstration purposes. In a real-world scenario, you would
+            // remove this and allow the form to submit to Salesforce.
+            alert('Form submitted successfully!');
+        });
+    </script>
 
-            // Clear the file input value to remove any attached file
-            // Setting value to empty string clears the file selection
-            fileInput.value = '';
-
-            // Remove required attribute
-            fileInput.removeAttribute('required');
-            fileInput.setAttribute('data-is-required', 'false');
-            fileInput.setAttribute('data-original-required', 'false');
-            fileInput.removeAttribute('data-parsley-required-message');
-            
-            // Remove the title element's data-required attribute
-            var title = fileItem.querySelector('.proof-relationship-title');
-            if (title) {
-                title.removeAttribute('data-required');
-            }
-
-            // Hide the file item
-            fileItem.style.display = 'none';
-
-            // Update button visibility
-            updateProofRelationshipButtonVisibility();
-        }
-
+</body>
+</html>
