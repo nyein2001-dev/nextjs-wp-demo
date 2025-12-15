@@ -99,10 +99,7 @@
 			</div>
 			
 			<!-- CITY PICKLIST (Salesforce field 00NWJ000005H5oP) -->
-			<div id="locationField">
-				<label for="location">City:</label>
-				<div id="cityPicklist"></div>
-			</div>
+			<div id="cityPicklist"></div>
 
             <!-- Conditional field 7: Type of Enquiry (shown if 'Y' is selected) -->
             <div id="enquiryField" style="display: none;">
@@ -232,11 +229,29 @@
 		function createCitySelect(cities) {
 			const cityPicklistContainer = document.getElementById("cityPicklist");
 			
-			const existingSelect = document.getElementById("location");
-			if (existingSelect) {
-				existingSelect.remove();
-			}
+			// Clear existing content
+			cityPicklistContainer.innerHTML = "";
 
+			// Create wrapper divs
+			const inputTextField = document.createElement("div");
+			inputTextField.className = "input-text-field";
+
+			const fieldItem = document.createElement("div");
+			fieldItem.className = "field-item";
+
+			const customDropdownSelect = document.createElement("div");
+			customDropdownSelect.className = "custom-dropdown-select";
+
+			const customDropdownSelectInner = document.createElement("div");
+			customDropdownSelectInner.className = "custom-dropdown-select__inner";
+
+			// Create label
+			const label = document.createElement("label");
+			label.className = "sr-only";
+			label.setAttribute("for", "location");
+			label.textContent = "City:";
+
+			// Create select element
 			const citySelect = document.createElement("select");
 			citySelect.id = "location";
 			citySelect.name = "00NWJ000005H5oP"; // Salesforce field name - CRITICAL for integration
@@ -248,6 +263,7 @@
 			citySelect.setAttribute("data-live-search", "true");
 			citySelect.setAttribute("aria-expanded", "true");
 
+			// Create default option
 			const defaultOption = document.createElement("option");
 			defaultOption.value = "";
 			defaultOption.disabled = true;
@@ -255,6 +271,7 @@
 			defaultOption.textContent = "Please select a city";
 			citySelect.appendChild(defaultOption);
 
+			// Create options for each city
 			if (cities && cities.length > 0) {
 				cities.forEach(function(city) {
 					const option = document.createElement("option");
@@ -264,7 +281,13 @@
 				});
 			}
 
-			cityPicklistContainer.appendChild(citySelect);
+			// Build the structure: input-text-field > field-item > custom-dropdown-select > custom-dropdown-select__inner > label + select
+			customDropdownSelectInner.appendChild(label);
+			customDropdownSelectInner.appendChild(citySelect);
+			customDropdownSelect.appendChild(customDropdownSelectInner);
+			fieldItem.appendChild(customDropdownSelect);
+			inputTextField.appendChild(fieldItem);
+			cityPicklistContainer.appendChild(inputTextField);
 		}
 
 		// Function to load cities based on selected state
