@@ -229,6 +229,19 @@
 		function createCitySelect(cities) {
 			const cityPicklistContainer = document.getElementById("cityPicklist");
 			
+			// Destroy existing select library instance before removing (if using Bootstrap Select or similar)
+			const existingSelect = document.getElementById("location");
+			if (existingSelect) {
+				// Try to destroy Bootstrap Select if it exists
+				if (typeof jQuery !== 'undefined' && jQuery(existingSelect).data('selectpicker')) {
+					jQuery(existingSelect).selectpicker('destroy');
+				}
+				// Try to destroy if using native selectpicker method
+				if (existingSelect.selectpicker) {
+					existingSelect.selectpicker('destroy');
+				}
+			}
+			
 			// Clear existing content
 			cityPicklistContainer.innerHTML = "";
 
@@ -289,6 +302,37 @@
 			fieldItem.appendChild(customDropdownSelect);
 			inputTextField.appendChild(fieldItem);
 			cityPicklistContainer.appendChild(inputTextField);
+
+			// Re-initialize select library after DOM is ready
+			setTimeout(function() {
+				const newSelect = document.getElementById("location");
+				if (newSelect) {
+					// Try to initialize Bootstrap Select if jQuery is available
+					if (typeof jQuery !== 'undefined' && typeof jQuery.fn.selectpicker !== 'undefined') {
+						jQuery(newSelect).selectpicker();
+					}
+					// Try native selectpicker initialization
+					if (typeof selectpicker !== 'undefined') {
+						selectpicker(newSelect);
+					}
+					// Check for custom initialization functions (common patterns)
+					if (typeof initSelectDropdown === 'function') {
+						initSelectDropdown(newSelect);
+					}
+					if (typeof initializeSelect === 'function') {
+						initializeSelect(newSelect);
+					}
+					// Trigger custom event for any custom initialization
+					const initEvent = new CustomEvent('selectInit', { detail: { element: newSelect } });
+					document.dispatchEvent(initEvent);
+					// Dispatch event on the element for any element-specific listeners
+					newSelect.dispatchEvent(new Event('DOMContentLoaded'));
+					// Also try to trigger any attribute-based initialization by toggling the attribute
+					if (newSelect.hasAttribute('data-select-dropdown')) {
+						newSelect.setAttribute('data-select-dropdown', '');
+					}
+				}
+			}, 10);
 		}
 
 		// Function to load cities based on selected state
