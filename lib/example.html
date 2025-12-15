@@ -101,9 +101,7 @@
 			<!-- CITY PICKLIST (Salesforce field 00NWJ000005H5oP) -->
 			<div id="locationField">
 				<label for="location">City:</label>
-				<select id="location" name="00NWJ000005H5oP" title="City" required>
-					<option value="" disabled selected>Please select a city</option>
-				</select>
+				<div id="cityPicklist"></div>
 			</div>
 
             <!-- Conditional field 7: Type of Enquiry (shown if 'Y' is selected) -->
@@ -141,17 +139,23 @@
 
         // Function to update the visibility of the conditional fields
         function updateConditionalFields() {
+            const citySelect = document.getElementById('location');
+            
             if (isCustomerYes.checked) {
                 // If the user is an existing customer ('Y'), show the enquiry field and hide the location field
                 enquiryField.style.display = 'block';
                 //locationField.style.display = 'none';
                 document.getElementById('enquiry').required = true;
-                document.getElementById('location').required = false;
+                if (citySelect) {
+                    citySelect.required = false;
+                }
             } else if (isCustomerNo.checked) {
                 // If the user is not an existing customer ('N'), show the location field and hide the enquiry field
                 //locationField.style.display = 'block';
                 enquiryField.style.display = 'none';
-                document.getElementById('location').required = true;
+                if (citySelect) {
+                    citySelect.required = true;
+                }
                 document.getElementById('enquiry').required = false;
             } else {
                 // Hide both if neither is selected initially
@@ -168,11 +172,14 @@
         updateConditionalFields();
         
         // Add a simple form submission listener for demonstration
-        document.getElementById('leadForm').addEventListener('submit', function(event) {
-            // This alert is here for demonstration purposes. In a real-world scenario, you would
-            // remove this and allow the form to submit to Salesforce.
-            alert('Form submitted successfully!');
-        });
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(event) {
+                // This alert is here for demonstration purposes. In a real-world scenario, you would
+                // remove this and allow the form to submit to Salesforce.
+                alert('Form submitted successfully!');
+            });
+        }
     </script>
 	
 	<script>
@@ -222,74 +229,63 @@
 			"Sarawak": ["Bintulu", "Kuching", "Miri", "Sibu"]
 		};
 
+		function createCitySelect(cities) {
+			const cityPicklistContainer = document.getElementById("cityPicklist");
+			
+			const existingSelect = document.getElementById("location");
+			if (existingSelect) {
+				existingSelect.remove();
+			}
+
+			const citySelect = document.createElement("select");
+			citySelect.id = "location";
+			citySelect.name = "00NWJ000005H5oP"; // Salesforce field name - CRITICAL for integration
+			citySelect.title = "City";
+			citySelect.required = true;
+			citySelect.className = "w-100";
+			citySelect.setAttribute("data-select-dropdown", "");
+			citySelect.setAttribute("data-style", "");
+			citySelect.setAttribute("data-live-search", "true");
+			citySelect.setAttribute("aria-expanded", "true");
+
+			const defaultOption = document.createElement("option");
+			defaultOption.value = "";
+			defaultOption.disabled = true;
+			defaultOption.selected = true;
+			defaultOption.textContent = "Please select a city";
+			citySelect.appendChild(defaultOption);
+
+			if (cities && cities.length > 0) {
+				cities.forEach(function(city) {
+					const option = document.createElement("option");
+					option.value = city;
+					option.textContent = city;
+					citySelect.appendChild(option);
+				});
+			}
+
+			cityPicklistContainer.appendChild(citySelect);
+		}
+
 		// Function to load cities based on selected state
 		function loadCities() {
 			const stateValue = document.getElementById("00NWJ000005V1JV").value;
+			const cities = cityData[stateValue] || [];
+			createCitySelect(cities);
+			
 			const citySelect = document.getElementById("location");
-
-			citySelect.innerHTML = "<option value='' disabled selected>Please select a city</option>";
-
-			if (cityData[stateValue]) {
-				cityData[stateValue].forEach(function(city) {
-					citySelect.innerHTML += `<option value="${city}">${city}</option>`;
-				});
+			if (citySelect) {
+				const isCustomerNo = document.getElementById('isCustomerNo');
+				citySelect.required = isCustomerNo ? isCustomerNo.checked : true;
 			}
 		}
+
+		document.addEventListener("DOMContentLoaded", function() {
+			createCitySelect([]);
+		});
 	</script>
 
 
 
 </body>
 </html>
-
-
-if (cityData[stateValue]) {
-    cityData[stateValue].forEach(function(city) {
-        citySelect.innerHTML += '<option value="' + city + '">' + city + '</option>';
-    });
-}
-
-if (cityData[stateValue]) {
-    cityData[stateValue].forEach(function(city) {
-        var option = document.createElement('option');
-        option.value = city;
-        option.textContent = city;
-        citySelect.appendChild(option);
-    });
-}
-
-
-<div class="input-text-field" id="cityField">
-				<div class="field-item">
-					<div class="custom-dropdown-select" style="position: relative !important; overflow: visible !important;">
-						<div class="custom-dropdown-select__inner" style="position: relative !important; overflow: visible !important;">
-							<label class="sr-only" for="location">City</label>
-							<select class="w-100" data-select-dropdown data-style data-live-search="true" id="location" name="00NWJ000005H5oP" title="City" required style="display: block !important; visibility: visible !important;">
-								<option value="" disabled selected>Please select a city</option>
-							</select>
-						</div>
-					</div>
-				</div>
-			</div>
-
-if (typeof $ !== 'undefined' && $.fn.selectpicker) {
-				$(citySelect).selectpicker('refresh');
-				$(citySelect).selectpicker('render');
-			}
-
-
-// Force trigger change event to refresh custom dropdown
-			const event = new Event('change', { bubbles: true });
-			citySelect.dispatchEvent(event);
-			
-			// Alternative: Trigger via jQuery if available
-			if (typeof $ !== 'undefined') {
-				$(citySelect).trigger('change');
-			}
-			
-			// Force re-render by toggling a class
-			citySelect.parentElement.classList.remove('initialized');
-			citySelect.parentElement.classList.add('initialized');
-
-console.log(typeof $);
-   console.log(typeof jQuery);
