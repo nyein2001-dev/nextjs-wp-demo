@@ -99,7 +99,12 @@
 			</div>
 			
 			<!-- CITY PICKLIST (Salesforce field 00NWJ000005H5oP) -->
-			<div id="cityPicklist"></div>
+			<div id="locationField">
+				<label for="location">City:</label>
+				<select id="location" name="00NWJ000005H5oP" title="City" required>
+					<option value="" disabled selected>Please select a city</option>
+				</select>
+			</div>
 
             <!-- Conditional field 7: Type of Enquiry (shown if 'Y' is selected) -->
             <div id="enquiryField" style="display: none;">
@@ -136,23 +141,17 @@
 
         // Function to update the visibility of the conditional fields
         function updateConditionalFields() {
-            const citySelect = document.getElementById('location');
-            
             if (isCustomerYes.checked) {
                 // If the user is an existing customer ('Y'), show the enquiry field and hide the location field
                 enquiryField.style.display = 'block';
                 //locationField.style.display = 'none';
                 document.getElementById('enquiry').required = true;
-                if (citySelect) {
-                    citySelect.required = false;
-                }
+                document.getElementById('location').required = false;
             } else if (isCustomerNo.checked) {
                 // If the user is not an existing customer ('N'), show the location field and hide the enquiry field
                 //locationField.style.display = 'block';
                 enquiryField.style.display = 'none';
-                if (citySelect) {
-                    citySelect.required = true;
-                }
+                document.getElementById('location').required = true;
                 document.getElementById('enquiry').required = false;
             } else {
                 // Hide both if neither is selected initially
@@ -169,14 +168,11 @@
         updateConditionalFields();
         
         // Add a simple form submission listener for demonstration
-        const form = document.querySelector('form');
-        if (form) {
-            form.addEventListener('submit', function(event) {
-                // This alert is here for demonstration purposes. In a real-world scenario, you would
-                // remove this and allow the form to submit to Salesforce.
-                alert('Form submitted successfully!');
-            });
-        }
+        document.getElementById('leadForm').addEventListener('submit', function(event) {
+            // This alert is here for demonstration purposes. In a real-world scenario, you would
+            // remove this and allow the form to submit to Salesforce.
+            alert('Form submitted successfully!');
+        });
     </script>
 	
 	<script>
@@ -226,138 +222,22 @@
 			"Sarawak": ["Bintulu", "Kuching", "Miri", "Sibu"]
 		};
 
-		function createCitySelect(cities) {
-			const cityPicklistContainer = document.getElementById("cityPicklist");
-			
-			// Destroy existing select library instance before removing (if using Bootstrap Select or similar)
-			const existingSelect = document.getElementById("location");
-			if (existingSelect) {
-				// Try to destroy Bootstrap Select if it exists
-				if (typeof jQuery !== 'undefined' && jQuery(existingSelect).data('selectpicker')) {
-					jQuery(existingSelect).selectpicker('destroy');
-				}
-				// Try to destroy if using native selectpicker method
-				if (existingSelect.selectpicker) {
-					existingSelect.selectpicker('destroy');
-				}
-			}
-			
-			// Clear existing content
-			cityPicklistContainer.innerHTML = "";
-
-			// Create wrapper divs
-			const inputTextField = document.createElement("div");
-			inputTextField.className = "input-text-field";
-            inputTextField.id = "locationField";
-
-			const fieldItem = document.createElement("div");
-			fieldItem.className = "field-item";
-
-			const customDropdownSelect = document.createElement("div");
-			customDropdownSelect.className = "custom-dropdown-select";
-
-			const customDropdownSelectInner = document.createElement("div");
-			customDropdownSelectInner.className = "custom-dropdown-select__inner";
-
-			// Create label
-			const label = document.createElement("label");
-			label.className = "sr-only";
-			label.setAttribute("for", "location");
-			label.textContent = "City:";
-
-			// Create select element
-			const citySelect = document.createElement("select");
-			citySelect.id = "location";
-			citySelect.name = "00NWJ000005H5oP"; // Salesforce field name - CRITICAL for integration
-			citySelect.title = "City";
-			citySelect.required = true;
-			citySelect.className = "w-100";
-			citySelect.setAttribute("data-select-dropdown", "");
-			citySelect.setAttribute("data-style", "");
-			citySelect.setAttribute("data-live-search", "true");
-			citySelect.setAttribute("aria-expanded", "true");
-
-			// Create default option
-			const defaultOption = document.createElement("option");
-			defaultOption.value = "";
-			defaultOption.disabled = true;
-			defaultOption.selected = true;
-			defaultOption.textContent = "Please select a city";
-			citySelect.appendChild(defaultOption);
-
-			// Create options for each city
-			if (cities && cities.length > 0) {
-				cities.forEach(function(city) {
-					const option = document.createElement("option");
-					option.value = city;
-					option.textContent = city;
-					citySelect.appendChild(option);
-				});
-			}
-
-			// Build the structure: input-text-field > field-item > custom-dropdown-select > custom-dropdown-select__inner > label + select
-			customDropdownSelectInner.appendChild(label);
-			customDropdownSelectInner.appendChild(citySelect);
-			customDropdownSelect.appendChild(customDropdownSelectInner);
-			fieldItem.appendChild(customDropdownSelect);
-			inputTextField.appendChild(fieldItem);
-			cityPicklistContainer.appendChild(inputTextField);
-
-			// Re-initialize select library after DOM is ready
-			setTimeout(function() {
-				const newSelect = document.getElementById("location");
-				if (newSelect) {
-					// Try to initialize Bootstrap Select if jQuery is available
-					if (typeof jQuery !== 'undefined' && typeof jQuery.fn.selectpicker !== 'undefined') {
-						jQuery(newSelect).selectpicker();
-					}
-					// Try native selectpicker initialization
-					if (typeof selectpicker !== 'undefined') {
-						selectpicker(newSelect);
-					}
-					// Check for custom initialization functions (common patterns)
-					if (typeof initSelectDropdown === 'function') {
-						initSelectDropdown(newSelect);
-					}
-					if (typeof initializeSelect === 'function') {
-						initializeSelect(newSelect);
-					}
-					// Trigger custom event for any custom initialization
-					const initEvent = new CustomEvent('selectInit', { detail: { element: newSelect } });
-					document.dispatchEvent(initEvent);
-					// Dispatch event on the element for any element-specific listeners
-					newSelect.dispatchEvent(new Event('DOMContentLoaded'));
-					// Also try to trigger any attribute-based initialization by toggling the attribute
-					if (newSelect.hasAttribute('data-select-dropdown')) {
-						newSelect.setAttribute('data-select-dropdown', '');
-					}
-				}
-			}, 10);
-		}
-
 		// Function to load cities based on selected state
 		function loadCities() {
 			const stateValue = document.getElementById("00NWJ000005V1JV").value;
-			const cities = cityData[stateValue] || [];
-			createCitySelect(cities);
-			
 			const citySelect = document.getElementById("location");
-			if (citySelect) {
-				const isCustomerNo = document.getElementById('isCustomerNo');
-				citySelect.required = isCustomerNo ? isCustomerNo.checked : true;
+
+			citySelect.innerHTML = "<option value='' disabled selected>Please select a city</option>";
+
+			if (cityData[stateValue]) {
+				cityData[stateValue].forEach(function(city) {
+					citySelect.innerHTML += `<option value="${city}">${city}</option>`;
+				});
 			}
 		}
-
-		document.addEventListener("DOMContentLoaded", function() {
-			createCitySelect([]);
-		});
 	</script>
 
 
 
 </body>
 </html>
-
-https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2025_PRULink-Application-Form-for-Top-up-v4.pdf
-
-https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/customer-information-update-form.pdf
