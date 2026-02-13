@@ -243,3 +243,12 @@ https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2025_P
 	https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/customer-information-update-form.pdf
 </body>
 </html>
+
+<script>
+    // Target by Salesforce field name
+    const enquiryField = document.querySelector('[name="00NWJ000005H5q1"]');
+
+    enquiryField.addEventListener('change', function () {
+        console.log("Type of Enquiry selected:", this.value);
+    });
+</script>
