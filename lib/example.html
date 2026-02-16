@@ -261,39 +261,33 @@ fitri.afiq@gravitas.my<!DOCTYPE html>
         "Sarawak": ["Bintulu", "Kuching", "Miri", "Sibu"]
     };
 
-   // Make the init reusable — call this on page load AND after loadCities()
-function initDropdowns(scope) {
-    var $scope = scope ? $(scope) : $(document);
-    $scope.find('[data-select-dropdown]').each(function() {
-        // ... your existing custom dropdown init logic
-    });
-}
-
-// On page load
-$(document).ready(function() {
-    initDropdowns();
-});
-
-// Updated loadCities
-function loadCities() {
+   function loadCities() {
     const stateValue = document.getElementById("00NWJ000005V1JV").value;
     const citySelect = document.getElementById("location");
 
-    // Update native select
-    citySelect.innerHTML = "<option value='' disabled selected data-hidden='true'>Please select a city</option>";
+    // Remove all options
+    while (citySelect.options.length > 0) {
+        citySelect.remove(0);
+    }
+
+    // Add default option
+    const defaultOption = new Option("Please select a city", "");
+    defaultOption.disabled = true;
+    defaultOption.selected = true;
+    citySelect.add(defaultOption);
+
     if (cityData[stateValue]) {
         cityData[stateValue].forEach(function(city) {
-            citySelect.innerHTML += `<option value="${city}">${city}</option>`;
+            citySelect.add(new Option(city, city));
         });
     }
 
-    // Destroy old plugin UI on this element only
-    const $wrapper = $(citySelect).closest('.custom-dropdown-select');
-    $wrapper.find(':not(select)').not('label').remove(); // remove generated elements
-    $(citySelect).show(); // restore native select visibility
+    // 🔥 IMPORTANT PART
+    citySelect.dispatchEvent(new Event("change", { bubbles: true }));
 
-    // Reinit only the city dropdown
-    initDropdowns($wrapper[0]);
+    // Also try forcing blur
+    citySelect.dispatchEvent(new Event("blur", { bubbles: true }));
 }
+
 </script>
 
