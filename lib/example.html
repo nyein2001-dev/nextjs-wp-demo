@@ -241,3 +241,54 @@ fitri.afiq@gravitas.my<!DOCTYPE html>
 
 </body>
 </html>
+
+
+
+<script>
+    const cityData = {
+        "KL & Selangor": ["Banting", "Kajang", "Klang Valley", "Kuala Selangor"],
+        "Perak": ["Ipoh", "Sitiawan", "Taiping", "Teluk Intan"],
+        "Penang": ["Penang Island", "Seberang Perai"],
+        "Melaka": ["Melaka"],
+        "Negeri Sembilan": ["Bahau", "Seremban"],
+        "Johor": ["Batu Pahat", "Johor Bahru", "Kluang", "Kota Tinggi", "Mersing", "Muar", "Segamat"],
+        "Kedah": ["Alor Setar", "Sungai Petani"],
+        "Perlis": ["Kangar"],
+        "Pahang": ["Bentong", "Kuantan", "Mentakab", "Raub"],
+        "Kelantan": ["Kota Bahru"],
+        "Terengganu": ["Kemaman", "Kuala Terengganu"],
+        "Sabah": ["Kota Kinabalu", "Lahad Datu", "Labuan", "Sandakan", "Tawau"],
+        "Sarawak": ["Bintulu", "Kuching", "Miri", "Sibu"]
+    };
+
+    function loadCities() {
+        const stateValue = document.getElementById("00NWJ000005V1JV").value;
+        const citySelect = document.getElementById("location");
+
+        // Clear existing options
+        citySelect.innerHTML = "";
+
+        // Add default option
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.text = "Please select a city";
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        citySelect.appendChild(defaultOption);
+
+        if (cityData[stateValue]) {
+            cityData[stateValue].forEach(function(city) {
+                const option = document.createElement("option");
+                option.value = city;
+                option.text = city;
+                citySelect.appendChild(option);
+            });
+        }
+
+        // IMPORTANT: Refresh custom dropdown
+        if ($(citySelect).data('selectpicker')) {
+            $(citySelect).selectpicker('refresh');
+        }
+    }
+</script>
+
