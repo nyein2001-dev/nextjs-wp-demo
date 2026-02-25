@@ -1,4 +1,4 @@
-fitri.afiq@gravitas.my<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,46 +12,49 @@ fitri.afiq@gravitas.my<!DOCTYPE html>
         <h1>PruBSN Takaful Enquiry</h1>
         
         <!-- The form itself -->
-        <form action="https://test.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8&orgId=00DWJ000005CytZ" method="POST">
+        <form action="https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8&orgId=00DHr0000077xXi" method="POST">
 
             <!-- Hidden Salesforce fields -->
-            <input type="hidden" name="oid" value="00DWJ000005CytZ">
-            <input type="hidden" name="retURL" value="https://www.prubsn.com.my/">
+            <input type="hidden" name="oid" value="00DHr0000077xXi">
+			<input type="hidden" name="retURL" value="https://www.prubsn.com.my/">
 			
 			<select  id="lead_source" name="lead_source" style="display:none;">
 				<option value="">--None--</option>
 				<option value="Website" selected>Website</option>
 			</select><br>
 			
-			<input type="hidden" name="debug" value=1>
-			<input type="hidden" name="debugEmail"value="nyein.chan@gravitas.my">
+			<!--<input type="hidden" name="debug" value=1>
+			<input type="hidden" name="debugEmail"value="tham@lavaprotocols.com">-->
 			
 			<!-- Hidden fields for UTM & Campaign tracking -->
-			<input type="hidden" id="00NWJ000005RA5F" name="00NWJ000005RA5F" maxlength="255" size="20" /> <!-- utm_source -->
-			<input type="hidden" id="00NWJ000005RAOb" name="00NWJ000005RAOb" maxlength="255" size="20" /> <!-- utm_medium -->
-			<input type="hidden" id="00NWJ000005RARp" name="00NWJ000005RARp" maxlength="255" size="20" /> <!-- campaign -->
-			<input type="hidden" id="00NWJ000005RAtF" name="00NWJ000005RAtF" maxlength="255" size="20" /> <!-- utm_term -->
-			<input type="hidden" id="00NWJ000005RBHR" name="00NWJ000005RBHR" maxlength="255" size="20" /> <!-- utm_content -->
+			<input type="hidden" id="00Ncx000002dTe0" name="00Ncx000002dTe0" maxlength="255" size="20" /> <!-- utm_source -->
+			<input type="hidden" id="00Ncx000002dTdz" name="00Ncx000002dTdz" maxlength="255" size="20" /> <!-- utm_medium -->
+			<input type="hidden" id="00Ncx000002dTdx" name="00Ncx000002dTdx" maxlength="255" size="20" /> <!-- campaign -->
+			<input type="hidden" id="00Ncx000002dTe1" name="00Ncx000002dTe1" maxlength="255" size="20" /> <!-- utm_term -->
+			<input type="hidden" id="00Ncx000002dTdy" name="00Ncx000002dTdy" maxlength="255" size="20" /> <!-- utm_content -->
 
-			<select id="Campaign_ID" name="Campaign_ID" style="display:none;">
+			<!--<select id="Campaign_ID" name="Campaign_ID" style="display:none;">
 			  <option value="">--None--</option>
 			  <option value="701WJ00000Lo5el">MgM Campaign Sep'25</option>
-			</select>
+			</select>-->
 			
             <!-- Existing Customer Question (radio buttons) -->
             <div>
                 <label>Are you an existing PruBSN Takaful customer?</label>
                 <div>
                     <div>
-                        <input type="radio" id="isCustomerYes" name="isCustomer" value="Y" required>
+                        <input type="radio" id="isCustomerYes" name="existingCustomerRadio" value="Y" required>
                         <label for="isCustomerYes">Y</label>
                     </div>
                     <div>
-                        <input type="radio" id="isCustomerNo" name="isCustomer" value="N" required>
+                        <input type="radio" id="isCustomerNo" name="existingCustomerRadio" value="N" required>
                         <label for="isCustomerNo">N</label>
                     </div>
                 </div>
             </div>
+
+			<!-- Hidden Salesforce Checkbox Field -->
+			<input type="hidden" id="sfExistingCustomer" name="00Ncx000002dTdr" value="">
 
             <!-- Full Name field -->
             <div>
@@ -74,13 +77,13 @@ fitri.afiq@gravitas.my<!DOCTYPE html>
             <!-- IC Number field with placeholder -->
             <div>
                 <label for="icNumber">IC Number:</label>
-                <input id="icNumber" maxlength="12" name="00NWJ000005H5tF" type="text" placeholder="e.g. 990909109191 (no hyphens)" required>
+                <input id="icNumber" maxlength="12" name="00Ncx000002giwL" type="text" placeholder="e.g. 990909109191 (no hyphens)" required>
             </div>
 			
-			<!-- STATE PICKLIST (Salesforce field 00NWJ000005V1JV) -->
+			<!-- STATE PICKLIST (Salesforce field 00Ncx000002dTdv) -->
 			<div id="locationField">
-				<label for="00NWJ000005V1JV">State:</label>
-				<select id="00NWJ000005V1JV" name="00NWJ000005V1JV" title="State" required onchange="loadCities()">
+				<label for="00Ncx000002dTdv">State:</label>
+				<select id="00Ncx000002dTdv" name="00Ncx000002dTdv" title="State" required onchange="loadCities()">
 					<option value="" disabled selected>Please select a state</option>
 					<option value="KL & Selangor">KL & Selangor</option>
 					<option value="Perak">Perak</option>
@@ -98,18 +101,18 @@ fitri.afiq@gravitas.my<!DOCTYPE html>
 				</select>
 			</div>
 			
-			<!-- CITY PICKLIST (Salesforce field 00NWJ000005H5oP) -->
+			<!-- CITY PICKLIST (Salesforce field 00Ncx000002dTe7) -->
 			<div id="locationField">
 				<label for="location">City:</label>
-				<select id="location" name="00NWJ000005H5oP" title="City" required>
+				<select id="location" name="00Ncx000002dTe7" title="City" required>
 					<option value="" disabled selected>Please select a city</option>
 				</select>
 			</div>
 
             <!-- Conditional field 7: Type of Enquiry (shown if 'Y' is selected) -->
             <div id="enquiryField" style="display: none;">
-                <label for="00NWJ000005H5q1">What is your type of enquiry?</label>
-                <select id="enquiry" name="00NWJ000005H5q1" title="Type of Enquiry" required>
+                <label for="00Ncx000002dTdw">What is your type of enquiry?</label>
+                <select id="enquiry" name="00Ncx000002dTdw" title="Type of Enquiry" required>
                     <option value="" disabled selected>Please select an enquiry type</option>
                     <option value="New plan / certificate related">New plan / certificate related</option>
                     <option value="Claims related / others">Claims related / others</option>
@@ -118,7 +121,7 @@ fitri.afiq@gravitas.my<!DOCTYPE html>
 
             <!-- Consent Checkbox -->
             <div>
-                <input type="checkbox" id="consent" name="00NWJ000005H5rd" value="1" required>
+                <input type="checkbox" id="consent" name="00Ncx000002dTe2" value="1" required>
                 <label for="consent">
                     I agree to the terms and conditions and consent to my data being processed.
                 </label>
@@ -131,41 +134,44 @@ fitri.afiq@gravitas.my<!DOCTYPE html>
     </div>
 
     <script>
-        // Get the radio buttons for existing customer
-        const isCustomerYes = document.getElementById('isCustomerYes');
-        const isCustomerNo = document.getElementById('isCustomerNo');
-        
-        // Get the conditional fields' containers
-        //const locationField = document.getElementById('locationField');
-        const enquiryField = document.getElementById('enquiryField');
+        // 1. Get the elements by their ID
+		const isCustomerYes = document.getElementById('isCustomerYes');
+		const isCustomerNo = document.getElementById('isCustomerNo');
+		const enquiryField = document.getElementById('enquiryField');
+		const sfField = document.getElementById('sfExistingCustomer');
+		const enquirySelect = document.getElementById('enquiry');
 
-        // Function to update the visibility of the conditional fields
-        function updateConditionalFields() {
-            if (isCustomerYes.checked) {
-                // If the user is an existing customer ('Y'), show the enquiry field and hide the location field
-                enquiryField.style.display = 'block';
-                //locationField.style.display = 'none';
-                document.getElementById('enquiry').required = true;
-                document.getElementById('location').required = false;
-            } else if (isCustomerNo.checked) {
-                // If the user is not an existing customer ('N'), show the location field and hide the enquiry field
-                //locationField.style.display = 'block';
-                enquiryField.style.display = 'none';
-                document.getElementById('location').required = true;
-                document.getElementById('enquiry').required = false;
-            } else {
-                // Hide both if neither is selected initially
-                //locationField.style.display = 'none';
-                enquiryField.style.display = 'none';
-            }
-        }
+		// 2. The toggle function
+		function updateConditionalFields() {
 
-        // Add event listeners to the radio buttons to call the function when they are changed
-        isCustomerYes.addEventListener('change', updateConditionalFields);
-        isCustomerNo.addEventListener('change', updateConditionalFields);
+			if (isCustomerYes.checked) {
 
-        // Call the function on page load to set the initial state
-        updateConditionalFields();
+				// Show enquiry
+				enquiryField.style.display = 'block';
+				enquirySelect.required = true;
+
+				// Set Salesforce checkbox TRUE
+				sfField.value = "1";
+
+			} else if (isCustomerNo.checked) {
+
+				// Hide enquiry
+				enquiryField.style.display = 'none';
+				enquirySelect.required = false;
+				enquirySelect.value = "";
+
+				// Set Salesforce checkbox FALSE
+				sfField.value = "";
+
+			}
+		}
+
+		// 3. Re-attach listeners to the new IDs
+		isCustomerYes.addEventListener('change', updateConditionalFields);
+		isCustomerNo.addEventListener('change', updateConditionalFields);
+
+		// 4. Run once on load
+		updateConditionalFields();
         
         // Add a simple form submission listener for demonstration
         document.getElementById('leadForm').addEventListener('submit', function(event) {
@@ -183,14 +189,14 @@ fitri.afiq@gravitas.my<!DOCTYPE html>
 
 	  document.addEventListener("DOMContentLoaded", function () {
 		// ✅ UTM mapping
-		document.getElementById("00NWJ000005RA5F").value = getQueryParam("utm_source");   // Source
-		document.getElementById("00NWJ000005RAOb").value = getQueryParam("utm_medium");   // Medium
-		document.getElementById("00NWJ000005RAtF").value = getQueryParam("utm_term");     // Term
-		document.getElementById("00NWJ000005RBHR").value = getQueryParam("utm_content");  // Content
-		document.getElementById("00NWJ000005RARp").value = getQueryParam("utm_campaign"); // Campaign
+		document.getElementById("00Ncx000002dTe0").value = getQueryParam("utm_source");   // Source
+		document.getElementById("00Ncx000002dTdz").value = getQueryParam("utm_medium");   // Medium
+		document.getElementById("00Ncx000002dTe1").value = getQueryParam("utm_term");     // Term
+		document.getElementById("00Ncx000002dTdy").value = getQueryParam("utm_content");  // Content
+		document.getElementById("00Ncx000002dTdx").value = getQueryParam("utm_campaign"); // Campaign
 
 		// ✅ Campaign_ID dropdown selection
-		let campaignParam = getQueryParam("campaign");  // reads ?campaign=...
+		/*let campaignParam = getQueryParam("campaign");  // reads ?campaign=...
 		let selectField = document.getElementById("Campaign_ID");
 
 		if (campaignParam && selectField) {
@@ -200,7 +206,7 @@ fitri.afiq@gravitas.my<!DOCTYPE html>
 		  if (optionToSelect) {
 			optionToSelect.selected = true;
 		  }
-		}
+		}*/
 	  });
 	</script>
 	
@@ -224,7 +230,7 @@ fitri.afiq@gravitas.my<!DOCTYPE html>
 
 		// Function to load cities based on selected state
 		function loadCities() {
-			const stateValue = document.getElementById("00NWJ000005V1JV").value;
+			const stateValue = document.getElementById("00Ncx000002dTdv").value;
 			const citySelect = document.getElementById("location");
 
 			citySelect.innerHTML = "<option value='' disabled selected>Please select a city</option>";
@@ -241,13 +247,3 @@ fitri.afiq@gravitas.my<!DOCTYPE html>
 
 </body>
 </html>
-
-
-
-Change text for ms
-1. IC Number -> No MyKad/No Pasport
-2. State -> Negeri
-3. Please select a city -> Sila pilih bandar anda
-
-for english, just use the same text from original script
-
