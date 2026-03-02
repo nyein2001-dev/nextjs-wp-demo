@@ -1,259 +1,126 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PruBSN Takaful Enquiry Form</title>
-</head>
-<body>
+Referrer
+1
 
-    <!-- Main form container -->
-    <div>
-        <h1>PruBSN Takaful Enquiry</h1>
-        
-        <!-- The form itself -->
-        <form action="https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8&orgId=00DHr0000077xXi" method="POST">
+You’re All Set.
+Start Sharing and Earn Rewards!
 
-            <!-- Hidden Salesforce fields -->
-            <input type="hidden" name="oid" value="00DHr0000077xXi">
-			<input type="hidden" name="retURL" value="https://www.prubsn.com.my/">
-			
-			<select  id="lead_source" name="lead_source" style="display:none;">
-				<option value="">--None--</option>
-				<option value="Website" selected>Website</option>
-			</select><br>
-			
-			<!--<input type="hidden" name="debug" value=1>
-			<input type="hidden" name="debugEmail"value="tham@lavaprotocols.com">-->
-			
-			<!-- Hidden fields for UTM & Campaign tracking -->
-			<input type="hidden" id="00Ncx000002dTe0" name="00Ncx000002dTe0" maxlength="255" size="20" /> <!-- utm_source -->
-			<input type="hidden" id="00Ncx000002dTdz" name="00Ncx000002dTdz" maxlength="255" size="20" /> <!-- utm_medium -->
-			<input type="hidden" id="00Ncx000002dTdx" name="00Ncx000002dTdx" maxlength="255" size="20" /> <!-- campaign -->
-			<input type="hidden" id="00Ncx000002dTe1" name="00Ncx000002dTe1" maxlength="255" size="20" /> <!-- utm_term -->
-			<input type="hidden" id="00Ncx000002dTdy" name="00Ncx000002dTdy" maxlength="255" size="20" /> <!-- utm_content -->
+Thank you for becoming a PruBSN referrer. Your unique referral link is ready to share with friends and family.
 
-			<!--<select id="Campaign_ID" name="Campaign_ID" style="display:none;">
-			  <option value="">--None--</option>
-			  <option value="701WJ00000Lo5el">MgM Campaign Sep'25</option>
-			</select>-->
-			
-            <!-- Existing Customer Question (radio buttons) -->
-            <div>
-                <label>Are you an existing PruBSN Takaful customer?</label>
-                <div>
-                    <div>
-                        <input type="radio" id="isCustomerYes" name="existingCustomerRadio" value="Y" required>
-                        <label for="isCustomerYes">Y</label>
-                    </div>
-                    <div>
-                        <input type="radio" id="isCustomerNo" name="existingCustomerRadio" value="N" required>
-                        <label for="isCustomerNo">N</label>
-                    </div>
-                </div>
-            </div>
+By sharing this link, you’re helping someone take a meaningful first step toward takaful protection. And as a thank-you, you’ll be rewarded with RM100 Touch ‘n Go e-voucher* for every successful referral.
 
-			<!-- Hidden Salesforce Checkbox Field -->
-			<input type="hidden" id="sfExistingCustomer" name="00Ncx000002dTdr" value="">
+*Terms & Conditions apply.
 
-            <!-- Full Name field -->
-            <div>
-                <label for="last_name">Full Name:</label>
-                <input id="last_name" maxlength="80" name="last_name" type="text" placeholder="John Doe" required>
-            </div>
+Your unique referral link
+[link]
+For Referrer - Thank You page [EN]
+Member-Get-Member
+Member-Get-Member Campaign Terms & Conditions
+(click to download doc)
+Hassle-Free Sign-UpGet started with your friend’s unique referral link—fast, simple, and secure.
+ 
+Exclusive Takaful ProtectionUnlock valuable takaful coverage when you join the PruBSN family.
 
-            <!-- Phone Number field (Malaysian only) -->
-            <div>
-                <label for="phone">Phone Number (Malaysia):</label>
-                <input id="phone" maxlength="40" name="phone" type="tel" placeholder="e.g. 0123456789" required>
-            </div>
+2
 
-            <!-- Email Address field -->
-            <div>
-                <label for="email">Email Address:</label>
-                <input id="email" maxlength="80" name="email" type="email" placeholder="johndoe@example.com" required>
-            </div>
+Mula Berkongsi dan Terima Ganjaran!
 
-            <!-- IC Number field with placeholder -->
-            <div>
-                <label for="icNumber">IC Number:</label>
-                <input id="icNumber" maxlength="12" name="00Ncx000002giwL" type="text" placeholder="e.g. 990909109191 (no hyphens)" required>
-            </div>
-			
-			<!-- STATE PICKLIST (Salesforce field 00Ncx000002dTdv) -->
-			<div id="locationField">
-				<label for="00Ncx000002dTdv">State:</label>
-				<select id="00Ncx000002dTdv" name="00Ncx000002dTdv" title="State" required onchange="loadCities()">
-					<option value="" disabled selected>Please select a state</option>
-					<option value="KL & Selangor">KL & Selangor</option>
-					<option value="Perak">Perak</option>
-					<option value="Penang">Penang</option>
-					<option value="Melaka">Melaka</option>
-					<option value="Negeri Sembilan">Negeri Sembilan</option>
-					<option value="Johor">Johor</option>
-					<option value="Kedah">Kedah</option>
-					<option value="Perlis">Perlis</option>
-					<option value="Pahang">Pahang</option>
-					<option value="Kelantan">Kelantan</option>
-					<option value="Terengganu">Terengganu</option>
-					<option value="Sabah">Sabah</option>
-					<option value="Sarawak">Sarawak</option>
-				</select>
-			</div>
-			
-			<!-- CITY PICKLIST (Salesforce field 00Ncx000002dTe7) -->
-			<div id="locationField">
-				<label for="location">City:</label>
-				<select id="location" name="00Ncx000002dTe7" title="City" required>
-					<option value="" disabled selected>Please select a city</option>
-				</select>
-			</div>
+Terima kasih kerana menjadi perujuk PruBSN. Pautan rujukan unik anda kini sedia untuk dikongsi bersama rakan dan ahli keluarga.
 
-            <!-- Conditional field 7: Type of Enquiry (shown if 'Y' is selected) -->
-            <div id="enquiryField" style="display: none;">
-                <label for="00Ncx000002dTdw">What is your type of enquiry?</label>
-                <select id="enquiry" name="00Ncx000002dTdw" title="Type of Enquiry" required>
-                    <option value="" disabled selected>Please select an enquiry type</option>
-                    <option value="New plan / certificate related">New plan / certificate related</option>
-                    <option value="Claims related / others">Claims related / others</option>
-                </select>
-            </div>
+Dengan berkongsi pautan ini, anda membantu seseorang memulakan langkah pertama yang bermakna ke arah perlindungan takaful. Sebagai tanda penghargaan, anda akan menerima RM100 e‑baucar Touch ’n Go* bagi setiap rujukan yang berjaya.
 
-            <!-- Consent Checkbox -->
-            <div>
-                <input type="checkbox" id="consent" name="00Ncx000002dTe2" value="1" required>
-                <label for="consent">
-                    I agree to the terms and conditions and consent to my data being processed.
-                </label>
-            </div>
+*Tertakluk kepada Terma & Syarat.
 
-            <!-- Submit button -->
-            <input type="submit" name="submit">
+Pautan rujukan unik anda
+[link]
+For Referrer - Thank You page [BM]
+Member-Get-Member
+Kempen Member-Get-Member Terma & Syarat
+(click to download doc)
+Hassle-Free Sign-UpGet started with your friend’s unique referral link—fast, simple, and secure.
+ 
+Exclusive Takaful ProtectionUnlock valuable takaful coverage when you join the PruBSN family.
 
-        </form>
-    </div>
+3
 
-    <script>
-        // 1. Get the elements by their ID
-		const isCustomerYes = document.getElementById('isCustomerYes');
-		const isCustomerNo = document.getElementById('isCustomerNo');
-		const enquiryField = document.getElementById('enquiryField');
-		const sfField = document.getElementById('sfExistingCustomer');
-		const enquirySelect = document.getElementById('enquiry');
+Referee
+4
 
-		// 2. The toggle function
-		function updateConditionalFields() {
+For Referee - Form page [EN]
+Member-Get-Member
+Why PruBSNIs The Right Fit For You.
 
-			if (isCustomerYes.checked) {
+A Trusted Takaful Partner20 years protecting Malaysian families. Recognised as Best Family Takaful Operator for 12 consecutive years.
 
-				// Show enquiry
-				enquiryField.style.display = 'block';
-				enquirySelect.required = true;
+Shariah-Compliant CoverageFrom health protection to wealth planning, our Shariah‑compliant takaful solutions support you to lead your life with certainty.
 
-				// Set Salesforce checkbox TRUE
-				sfField.value = "1";
+Professional Takaful Consultants
+Make confident choices to protect you and your loved ones with our experienced consultants.
+Member-Get-Member Campaign Terms & Conditions
+(click to download doc)
+You’ve Been Referred, Let’s Begin!
 
-			} else if (isCustomerNo.checked) {
+You’ve been invited to experience PruBSN’s trusted takaful protection—because good things are meant to be shared. When a recommendation comes your way, it’s often a thoughtful nudge to explore something meaningful.
 
-				// Hide enquiry
-				enquiryField.style.display = 'none';
-				enquirySelect.required = false;
-				enquirySelect.value = "";
+Register your details below and a Takaful Consultant will contact you to understand your needs and share suitable options, with no obligation to proceed.
 
-				// Set Salesforce checkbox FALSE
-				sfField.value = "";
+[FORM FIELDS]
+Hassle-Free Sign-UpGet started with your friend’s unique referral link—fast, simple, and secure.
+ 
+Exclusive Takaful ProtectionUnlock valuable takaful coverage when you join the PruBSN family.
 
-			}
-		}
+5
 
-		// 3. Re-attach listeners to the new IDs
-		isCustomerYes.addEventListener('change', updateConditionalFields);
-		isCustomerNo.addEventListener('change', updateConditionalFields);
+For Referee - Form page [BM]
+Member-Get-Member
+Mengapa PruBSNPilihan Tepat Untuk Anda.
 
-		// 4. Run once on load
-		updateConditionalFields();
-        
-        // Add a simple form submission listener for demonstration
-        document.getElementById('leadForm').addEventListener('submit', function(event) {
-            // This alert is here for demonstration purposes. In a real-world scenario, you would
-            // remove this and allow the form to submit to Salesforce.
-            alert('Form submitted successfully!');
-        });
-    </script>
-	
-	<script>
-	  function getQueryParam(name) {
-		let params = new URLSearchParams(window.location.search);
-		return params.get(name) || "";
-	  }
+Rakan Takaful Yang Dipercayai20 tahun melindungi keluarga Malaysia. Diiktiraf sebagai Pengendali Takaful Keluarga Terbaik selama 12 tahun berturut‑turut.
 
-	  document.addEventListener("DOMContentLoaded", function () {
-		// ✅ UTM mapping
-		document.getElementById("00Ncx000002dTe0").value = getQueryParam("utm_source");   // Source
-		document.getElementById("00Ncx000002dTdz").value = getQueryParam("utm_medium");   // Medium
-		document.getElementById("00Ncx000002dTe1").value = getQueryParam("utm_term");     // Term
-		document.getElementById("00Ncx000002dTdy").value = getQueryParam("utm_content");  // Content
-		document.getElementById("00Ncx000002dTdx").value = getQueryParam("utm_campaign"); // Campaign
+Perlindungan Patuh SyariahPenyelesaian takaful patuh Syariah untuk kesihatan dan perancangan kewangan bagi menyokong anda untuk menjalani kehidupan dengan lebih berani.
 
-		// ✅ Campaign_ID dropdown selection
-		/*let campaignParam = getQueryParam("campaign");  // reads ?campaign=...
-		let selectField = document.getElementById("Campaign_ID");
+Perunding Takaful Profesional
+Dapatkan bimbingan untuk membuat keputusan dengan yakin bagi melindungi diri anda dan insan tersayang. bersama Perunding Takaful kami yang berpengalaman.
+Kempen Member-Get-Member Terma & Syarat
+(click to download doc)
+Anda Telah Dirujuk, Jom Kita Mulakan!
 
-		if (campaignParam && selectField) {
-		  let optionToSelect = Array.from(selectField.options).find(
-			opt => opt.value === campaignParam
-		  );
-		  if (optionToSelect) {
-			optionToSelect.selected = true;
-		  }
-		}*/
-	  });
-	</script>
-	
-	<script>
-		// State → City Mapping
-		const cityData = {
-			"KL & Selangor": ["Banting", "Kajang", "Klang Valley", "Kuala Selangor"],
-			"Perak": ["Ipoh", "Sitiawan", "Taiping", "Teluk Intan"],
-			"Penang": ["Penang Island", "Seberang Perai"],
-			"Melaka": ["Melaka"],
-			"Negeri Sembilan": ["Bahau", "Seremban"],
-			"Johor": ["Batu Pahat", "Johor Bahru", "Kluang", "Kota Tinggi", "Mersing", "Muar", "Segamat"],
-			"Kedah": ["Alor Setar", "Sungai Petani"],
-			"Perlis": ["Kangar"],
-			"Pahang": ["Bentong", "Kuantan", "Mentakab", "Raub"],
-			"Kelantan": ["Kota Bahru"],
-			"Terengganu": ["Kemaman", "Kuala Terengganu"],
-			"Sabah": ["Kota Kinabalu", "Lahad Datu", "Labuan", "Sandakan", "Tawau"],
-			"Sarawak": ["Bintulu", "Kuching", "Miri", "Sibu"]
-		};
+Anda telah dijemput untuk meneroka perlindungan takaful PruBSN yang dipercayai—kerana perkara baik wajar dikongsi. Apabila sesuatu cadangan sampai kepada anda, ia selalunya satu galakan yang bermakna untuk meneroka sesuatu yang bernilai.
 
-		// Function to load cities based on selected state
-		function loadCities() {
-			const stateValue = document.getElementById("00Ncx000002dTdv").value;
-			const citySelect = document.getElementById("location");
+Daftarkan maklumat anda di bawah dan Perunding Takaful kami akan menghubungi anda untuk memahami keperluan anda serta berkongsi pilihan yang sesuai, tanpa sebarang kewajipan untuk meneruskan.
 
-			citySelect.innerHTML = "<option value='' disabled selected>Please select a city</option>";
+[FORM FIELDS]
+Hassle-Free Sign-UpGet started with your friend’s unique referral link—fast, simple, and secure.
+ 
+Exclusive Takaful ProtectionUnlock valuable takaful coverage when you join the PruBSN family.
 
-			if (cityData[stateValue]) {
-				cityData[stateValue].forEach(function(city) {
-					citySelect.innerHTML += `<option value="${city}">${city}</option>`;
-				});
-			}
-		}
-	</script>
+6
 
+For Referee – Thank You page [EN]
+Member-Get-Member
+Thank You For Your Interest!
 
+Our Takaful Consultant will reach out to listen, understand what matters to you, and share information that may be relevant to your needs. There’s no obligation — just a conversation to help you gain clarity and confidence.
 
-</body>
-</html>
+Meanwhile, you may explore our products and services here.
 
----
-**Referrer:**
-- Form: https://10.193.16.22:451/ms/referrer-form
-- Thank You page: https://10.193.16.22:451/ms/referrer-form/thank-you
+[CTA] https://www.prubsn.com.my/en/all-basic-plans/
+Hassle-Free Sign-UpGet started with your friend’s unique referral link—fast, simple, and secure.
+ 
+Exclusive Takaful ProtectionUnlock valuable takaful coverage when you join the PruBSN family.
 
-**Referee:**
-- Form: https://10.193.16.22:451/ms/referee-form
-- Thank You page: https://10.193.16.22:451/ms/referee-form/thank-you
+7
 
+For Referee – Thank You page [BM]
+Member-Get-Member
+Terima Kasih Atas Minat Anda!
+
+Perunding Takaful kami akan menghubungi anda untuk mendengar, memahami perkara yang penting bagi anda, serta berkongsi maklumat yang relevan dengan keperluan anda. Tiada kewajipan — sekadar satu perbincangan untuk membantu anda mendapatkan kefahaman dan keyakinan.
+
+Sementara itu, anda boleh meneroka produk dan perkhidmatan kami di sini.
+
+[CTA] https://www.prubsn.com.my/en/all-basic-plans/
+Hassle-Free Sign-UpGet started with your friend’s unique referral link—fast, simple, and secure.
+ 
+Exclusive Takaful ProtectionUnlock valuable takaful coverage when you join the PruBSN family.
+
+8
