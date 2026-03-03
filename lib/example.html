@@ -124,3 +124,43 @@ Hassle-Free Sign-UpGet started with your friend’s unique referral link—fast
 Exclusive Takaful ProtectionUnlock valuable takaful coverage when you join the PruBSN family.
 
 8
+
+
+
+
+
+<div onclick="downloadDoc()" style="cursor:pointer; display:inline-block;">
+    <table>
+        <tr>
+            <td>
+                📄
+            </td>
+            <td>
+                <div><strong>Member-Get-Member</strong></div>
+                <div><strong>Campaign Terms & Conditions</strong></div>
+                <div>(Click to download doc)</div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<script>
+function downloadDoc() {
+    const fileUrl = "https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2022_Policy-Amendment-Request-Form-for-Individual-PO-FILLABLE-v2.pdf";
+
+    fetch(fileUrl)
+        .then(response => response.blob())
+        .then(blob => {
+            const link = document.createElement("a");
+            link.href = window.URL.createObjectURL(blob);
+            link.download = "Member-Get-Member-Campaign-Terms.pdf";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        })
+        .catch(error => {
+            alert("Download failed.");
+            console.error(error);
+        });
+}
+</script>
