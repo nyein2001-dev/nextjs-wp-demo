@@ -129,38 +129,76 @@ Exclusive Takaful ProtectionUnlock valuable takaful coverage when you join the 
 
 
 
-<div onclick="downloadDoc()" style="cursor:pointer; display:inline-block;">
-    <table>
-        <tr>
-            <td>
-                📄
-            </td>
-            <td>
-                <div><strong>Member-Get-Member</strong></div>
-                <div><strong>Campaign Terms & Conditions</strong></div>
-                <div>(Click to download doc)</div>
-            </td>
-        </tr>
-    </table>
-</div>
 
-<script>
-function downloadDoc() {
-    const fileUrl = "https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/2022_Policy-Amendment-Request-Form-for-Individual-PO-FILLABLE-v2.pdf";
+    <div onclick="window.open('https://www.prulifeuk.com.ph/export/sites/prudential-ph/en/.galleries/pdf/01-Partial-Benefits-Payout-Form.pdf','_blank')"
+         style="width:520px;
+                background-color:#efefef;
+                padding:20px 25px;
+                display:flex;
+                align-items:center;
+                cursor:pointer;">
 
-    fetch(fileUrl)
-        .then(response => response.blob())
-        .then(blob => {
-            const link = document.createElement("a");
-            link.href = window.URL.createObjectURL(blob);
-            link.download = "Member-Get-Member-Campaign-Terms.pdf";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        })
-        .catch(error => {
-            alert("Download failed.");
-            console.error(error);
-        });
-}
-</script>
+        <!-- OUTER SQUARE -->
+        <div style="width:70px;
+                    height:70px;
+                    background-color:#e3e3e3;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    margin-right:20px;">
+
+            <!-- WHITE CIRCLE -->
+            <div style="width:50px;
+                        height:50px;
+                        background-color:#ffffff;
+                        border-radius:50%;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;">
+
+                <!-- DOCUMENT ICON -->
+                <div style="width:22px;
+                            height:28px;
+                            border:2px solid #e4002b;
+                            position:relative;
+                            box-sizing:border-box;">
+
+                    <!-- folded corner -->
+                    <div style="position:absolute;
+                                top:-2px;
+                                right:-2px;
+                                width:10px;
+                                height:10px;
+                                background:#ffffff;
+                                border-left:2px solid #e4002b;
+                                border-bottom:2px solid #e4002b;
+                                transform:rotate(45deg);">
+                    </div>
+
+                    <!-- lines -->
+                    <div style="position:absolute; top:8px; left:4px; right:4px; height:2px; background:#e4002b;"></div>
+                    <div style="position:absolute; top:14px; left:4px; right:4px; height:2px; background:#e4002b;"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TEXT SECTION -->
+        <div>
+            <div style="font-weight:bold;
+                        font-size:18px;
+                        color:#000000;
+                        line-height:1.3;">
+                Member-Get-Member<br>
+                Campaign Terms & Conditions
+            </div>
+
+            <div style="color:#e4002b;
+                        font-style:italic;
+                        font-size:15px;
+                        margin-top:5px;">
+                (Click to download doc)
+            </div>
+        </div>
+
+    </div>
