@@ -1,66 +1,117 @@
-https://www.prubsn.com.my/referred?referralID=28063f3b-484d-4f47-8240-99e8ccd8188e&campaignID=7011p00000046jUAAQ
 
-?referralID=REF12345&campaignID=701WJ00000Lo5el 
-
-Thank you for you submission : https://www.prubsn.com.my/submmision?referralID=28063f3b-484d-4f47-8240-99e8ccd8188e&campaignID=7011p00000046jUAAQ
-
-referralID=28063f3b-484d-4f47-8240-99e8ccd8188e
-
-I/We have read, understood and given my/our consent for Prudential BSN Takaful Berhad to collect, use and disclose my/our personal data in accordance to the Privacy Policy given*.
-
-https://www.prubsn.com.my/en/privacy-policy/
-
-Change text for ms
-1. IC Number -> No MyKad/No Pasport
-2. State -> Negeri
-3. Please select a city -> Sila pilih bandar anda
-
-for english, just use the same text from original script
+        <!-- The form itself — starts as Salesforce Web-to-Lead -->
+        <form
+            id="leadForm"
+            action="https://test.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8&orgId=00DWJ000005CytZ"
+            method="POST"
+            data-mode="salesforce">
 
 
-const label = document.querySelector('label[for="location"]');
-const labelText = label.textContent;
+            
+            <!-- Submit button wrapper — toggled by JS -->
+            <div id="submitWrapper">
+                <!-- Default: Salesforce submit button -->
+                <input id="submitSalesforce" type="submit" name="submit">
 
-console.log(labelText); // City
+                <!-- CMS submit button (hidden by default) -->
+                <button
+                    id="submitCMS"
+                    form="leadForm"
+                    class="cta-primary submit-form"
+                    type="submit"
+                    style="display:none;">
+                    <span>${content.value.GeneralForm.value.SubmitButtonText}</span>
+                </button>
+            </div>
 
-<div style="font-size:54px;line-height:1.1;">
-    <span style="font-weight:800;color:#000;">Why Prudential</span><br>
-    <span style="font-weight:300;color:#000;">Is The Right Fit For</span>
-  </div>
 
-<div style="display:inline-block;background:#fff;border-radius:12px;padding:32px 40px;box-shadow:0 2px 12px rgba(0,0,0,0.07);">
 
-  <!-- Label -->
-  <p style="margin:0 0 8px;font-size:11px;font-weight:700;color:#555;letter-spacing:0.08em;text-transform:uppercase;">
-    Option A &nbsp;·&nbsp; Download Link Style
-  </p>
+            
+    <script>
+        // ─── Element references ────────────────────────────────────────────────────
+        var form            = document.getElementById('leadForm');
+        var isCustomerYes   = document.getElementById('isCustomerYes');
+        var isCustomerNo    = document.getElementById('isCustomerNo');
+        var enquiryField    = document.getElementById('enquiryField');
+        var enquirySelect   = document.getElementById('enquiry');
+        var submitSalesforce = document.getElementById('submitSalesforce');
+        var submitCMS        = document.getElementById('submitCMS');
 
-  <!-- Download link -->
-  <a
-    href="https://www.prubsn.com.my/export/sites/prudential-pbtb/en/.galleries/pdf/PruBSN_Protect-Prosper-Preserve_A5Flyer_ENG.pdf"
-    download
-    aria-label="Download Member-Get-Member Campaign Terms and Conditions"
-    style="display:inline-flex;align-items:center;gap:10px;color:#8B0000;text-decoration:none;font-weight:700;font-size:15px;"
-  >
-    <!-- Icon -->
-    <span style="display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-      <svg
-        width="20" height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        style="display:block;"
-      >
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <polyline points="7 10 12 15 17 10"/>
-        <line x1="12" y1="15" x2="12" y2="3"/>
-      </svg>
-    </span>
+        // ─── Form mode configurations ──────────────────────────────────────────────
+        var SALESFORCE_CONFIG = {
+            action      : 'https://test.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8&orgId=00DWJ000005CytZ',
+            method      : 'POST',
+            // custom data-* attributes to REMOVE when in Salesforce mode
+            removeAttrs : ['data-submit-form', 'data-url-submit', 'data-analytics', 'data-url-redirect', 'data-method']
+        };
 
-    Member-Get-Member Campaign Terms &amp; Conditions
-  </a>
+        var CMS_CONFIG = {
+            // data-* attributes to SET when in CMS mode
+            'data-submit-form' : '',                                          // presence-only flag
+            'data-url-submit'  : '<cms:link>../action/contact-form.jsp</cms:link>',
+            'data-analytics'   : '{"event":"formStarts","formName":"Contact us form mm","formType":"Contact us form mm"}',
+            'data-url-redirect': '<cms:link> ${content.value.GeneralForm.value.SuccessPageLink} </cms:link>',
+            'data-method'      : 'POST'
+        };
 
-</div>
+        // ─── Core switching function ───────────────────────────────────────────────
+        function switchFormMode(mode) {
+            if (mode === 'cms') {
+                // 1. Remove the Salesforce action so the CMS handler takes over
+                form.removeAttribute('action');
+
+                // 2. Apply all CMS data-* attributes
+                Object.keys(CMS_CONFIG).forEach(function(attr) {
+                    form.setAttribute(attr, CMS_CONFIG[attr]);
+                });
+
+                // 3. Toggle submit buttons
+                submitSalesforce.style.display = 'none';
+                submitCMS.style.display        = '';
+
+            } else {
+                // 1. Restore Salesforce action
+                form.setAttribute('action', SALESFORCE_CONFIG.action);
+                form.setAttribute('method', SALESFORCE_CONFIG.method);
+
+                // 2. Remove all CMS data-* attributes
+                SALESFORCE_CONFIG.removeAttrs.forEach(function(attr) {
+                    form.removeAttribute(attr);
+                });
+
+                // 3. Toggle submit buttons
+                submitSalesforce.style.display = '';
+                submitCMS.style.display        = 'none';
+            }
+        }
+
+        // ─── Enquiry select listener ───────────────────────────────────────────────
+        enquirySelect.addEventListener('change', function() {
+            if (this.value === 'Claims related / others') {
+                switchFormMode('cms');
+            } else {
+                switchFormMode('salesforce');
+            }
+        });
+
+        // ─── Existing customer radio logic ────────────────────────────────────────
+        function updateConditionalFields() {
+            if (isCustomerYes.checked) {
+                enquiryField.style.display = 'block';
+                enquirySelect.required     = true;
+                document.getElementById('location').required = false;
+            } else if (isCustomerNo.checked) {
+                enquiryField.style.display = 'none';
+                enquirySelect.required     = false;
+                document.getElementById('location').required = true;
+
+                // Reset enquiry & revert form to Salesforce mode when hidden
+                enquirySelect.value = '';
+                switchFormMode('salesforce');
+            } else {
+                enquiryField.style.display = 'none';
+                switchFormMode('salesforce');
+            }
+        }
+
+        
