@@ -1,71 +1,73 @@
+
 	<script>
-	  document.addEventListener('DOMContentLoaded', function () {
-	    var form = document.getElementById('form');
-	    var enquirySelect = document.getElementById('enquiry');
-	    var isCustomerYesEl = document.getElementById('isCustomerYes');
-	    var isCustomerNoEl = document.getElementById('isCustomerNo');
+  document.addEventListener('DOMContentLoaded', function () {
+    var form = document.getElementById('form');
+    var enquirySelect = document.getElementById('enquiry');
+    var isCustomerYesEl = document.getElementById('isCustomerYes');
+    var isCustomerNoEl = document.getElementById('isCustomerNo');
 
-	    var SF_ACTION = 'https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8&orgId=00DHr0000077xXi';
+    var SF_ACTION = 'https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8&orgId=00DHr0000077xXi';
 
-	    function setContactForm() {
-	      form.removeAttribute('action');
-	      form.removeAttribute('method');
-	      form.setAttribute('data-submit-form', '');
-	      form.setAttribute('data-url-submit', '<cms:link>../action/contact-form.jsp</cms:link>');
-	      form.setAttribute('data-analytics', '{"event":"formStarts","formName":"Contact us form mm","formType":"Contact us mm"}');
-	      form.setAttribute('data-url-redirect', '<cms:link>${content.value.GeneralForm.value.SuccessPageLink}</cms:link>');
-	      form.setAttribute('data-method', 'POST');
-	    }
+    function setContactForm() {
+      form.removeAttribute('action');
+      form.removeAttribute('method');
+      form.setAttribute('data-submit-form', '');
+      form.setAttribute('data-url-submit', '<cms:link>../action/contact-form.jsp</cms:link>');
+      form.setAttribute('data-analytics', '{"event":"formStarts","formName":"Contact us form mm","formType":"Contact us mm"}');
+      form.setAttribute('data-url-redirect', '<cms:link>${content.value.GeneralForm.value.SuccessPageLink}</cms:link>');
+      form.setAttribute('data-method', 'POST');
+    }
 
-	    function setSalesforce() {
-	      form.removeAttribute('data-submit-form');
-	      form.removeAttribute('data-url-submit');
-	      form.removeAttribute('data-analytics');
-	      form.removeAttribute('data-url-redirect');
-	      form.removeAttribute('data-method');
-	      form.setAttribute('action', SF_ACTION);
-	      form.setAttribute('method', 'POST');
-	    }
+    function setSalesforce() {
+      form.removeAttribute('data-submit-form');
+      form.removeAttribute('data-url-submit');
+      form.removeAttribute('data-analytics');
+      form.removeAttribute('data-url-redirect');
+      form.removeAttribute('data-method');
+      form.setAttribute('action', SF_ACTION);
+      form.setAttribute('method', 'POST');
+    }
 
-	    function updateFormTarget() {
-	      var isNoPolicyHolder = isCustomerNoEl && isCustomerNoEl.checked;
-	      var selectedText = (enquirySelect && enquirySelect.selectedIndex >= 0 && enquirySelect.options[enquirySelect.selectedIndex])
-	        ? enquirySelect.options[enquirySelect.selectedIndex].text
-	        : '';
-	      
-	      // Clean whitespace to ensure accurate evaluation
-	      selectedText = selectedText.replace(/^\s+|\s+$/g, '');
-	      var isClaims = (selectedText === 'Claims related / others');
+    function updateFormTarget() {
+      var isNoPolicyHolder = isCustomerNoEl && isCustomerNoEl.checked;
+      var selectedText = (enquirySelect && enquirySelect.selectedIndex >= 0 && enquirySelect.options[enquirySelect.selectedIndex])
+        ? enquirySelect.options[enquirySelect.selectedIndex].text
+        : '';
+      var isClaims = (selectedText === 'Claims related / others');
 
-	      if (isClaims && !isNoPolicyHolder) {
-	        setContactForm();
-	      } else {
-	        //setSalesforce();
-	      }
-	    }
+      if (isClaims && !isNoPolicyHolder) {
+        setContactForm();
+      } else {
+        //setSalesforce();
+      }
+    }
 
-	    // Ensure proper initialization on page load (handles pre-filled/cached values)
-	    updateFormTarget();
+    // Call setContactForm unconditionally first. This ensures any OpenCms 
+    // script that binds its AJAX handler on DOMContentLoaded will pick up the 'data-submit-form' attribute.
+    setContactForm();
 
-	    if (enquirySelect) {
-	      enquirySelect.addEventListener('change', updateFormTarget);
-	    }
-	    if (isCustomerYesEl) {
-	      isCustomerYesEl.addEventListener('change', updateFormTarget);
-	    }
-	    if (isCustomerNoEl) {
-	      isCustomerNoEl.addEventListener('change', updateFormTarget);
-	    }
+    // Immediately call updateFormTarget right after to evaluate and apply the actual initial state based on current selections.
+    updateFormTarget();
 
-	    // Ensure the form ALWAYS has a valid submission configuration at the exact moment of submit
-	    // This acts as a fallback/guarantee if custom dropdown UI plugins block native 'change' events
-	    if (form) {
-	      form.addEventListener('submit', function() {
-	        updateFormTarget();
-	      });
-	    }
-	  });
-	</script>
+    // Add a capture-phase submit listener. When Salesforce is uncommented, this prevents 
+    // the OpenCms script from intercepting and breaking standard Salesforce form submissions.
+    form.addEventListener('submit', function (e) {
+      if (!form.hasAttribute('data-submit-form')) {
+        e.stopImmediatePropagation();
+      }
+    }, true);
+
+    if (enquirySelect) {
+      enquirySelect.addEventListener('change', updateFormTarget);
+    }
+    if (isCustomerYesEl) {
+      isCustomerYesEl.addEventListener('change', updateFormTarget);
+    }
+    if (isCustomerNoEl) {
+      isCustomerNoEl.addEventListener('change', updateFormTarget);
+    }
+  });
+</script>
 
 
 <form id="form">
