@@ -1,3 +1,71 @@
+	<script>
+	  document.addEventListener('DOMContentLoaded', function () {
+	    var form = document.getElementById('form');
+	    var enquirySelect = document.getElementById('enquiry');
+	    var isCustomerYesEl = document.getElementById('isCustomerYes');
+	    var isCustomerNoEl = document.getElementById('isCustomerNo');
+
+	    var SF_ACTION = 'https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8&orgId=00DHr0000077xXi';
+
+	    function setContactForm() {
+	      form.removeAttribute('action');
+	      form.removeAttribute('method');
+	      form.setAttribute('data-submit-form', '');
+	      form.setAttribute('data-url-submit', '<cms:link>../action/contact-form.jsp</cms:link>');
+	      form.setAttribute('data-analytics', '{"event":"formStarts","formName":"Contact us form mm","formType":"Contact us mm"}');
+	      form.setAttribute('data-url-redirect', '<cms:link>${content.value.GeneralForm.value.SuccessPageLink}</cms:link>');
+	      form.setAttribute('data-method', 'POST');
+	    }
+
+	    function setSalesforce() {
+	      form.removeAttribute('data-submit-form');
+	      form.removeAttribute('data-url-submit');
+	      form.removeAttribute('data-analytics');
+	      form.removeAttribute('data-url-redirect');
+	      form.removeAttribute('data-method');
+	      form.setAttribute('action', SF_ACTION);
+	      form.setAttribute('method', 'POST');
+	    }
+
+	    function updateFormTarget() {
+	      var isNoPolicyHolder = isCustomerNoEl && isCustomerNoEl.checked;
+	      var selectedText = (enquirySelect && enquirySelect.selectedIndex >= 0 && enquirySelect.options[enquirySelect.selectedIndex])
+	        ? enquirySelect.options[enquirySelect.selectedIndex].text
+	        : '';
+	      
+	      // Clean whitespace to ensure accurate evaluation
+	      selectedText = selectedText.replace(/^\s+|\s+$/g, '');
+	      var isClaims = (selectedText === 'Claims related / others');
+
+	      if (isClaims && !isNoPolicyHolder) {
+	        setContactForm();
+	      } else {
+	        //setSalesforce();
+	      }
+	    }
+
+	    // Ensure proper initialization on page load (handles pre-filled/cached values)
+	    updateFormTarget();
+
+	    if (enquirySelect) {
+	      enquirySelect.addEventListener('change', updateFormTarget);
+	    }
+	    if (isCustomerYesEl) {
+	      isCustomerYesEl.addEventListener('change', updateFormTarget);
+	    }
+	    if (isCustomerNoEl) {
+	      isCustomerNoEl.addEventListener('change', updateFormTarget);
+	    }
+
+	    // Ensure the form ALWAYS has a valid submission configuration at the exact moment of submit
+	    // This acts as a fallback/guarantee if custom dropdown UI plugins block native 'change' events
+	    if (form) {
+	      form.addEventListener('submit', function() {
+	        updateFormTarget();
+	      });
+	    }
+	  });
+	</script>
 
 
 <form id="form">
