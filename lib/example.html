@@ -1,117 +1,58 @@
 
-        <!-- The form itself — starts as Salesforce Web-to-Lead -->
-        <form
-            id="leadForm"
-            action="https://test.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8&orgId=00DWJ000005CytZ"
-            method="POST"
-            data-mode="salesforce">
 
+<form id="form">
 
-            
-            <!-- Submit button wrapper — toggled by JS -->
-            <div id="submitWrapper">
-                <!-- Default: Salesforce submit button -->
-                <input id="submitSalesforce" type="submit" name="submit">
+<script>
+  /*
+   * Dynamically assign form data attributes at page load.
+   * ES5-only: no arrow functions, no const/let, no template literals.
+   * <cms:link> and ${...} expressions below are resolved SERVER-SIDE by the
+   * JSP engine before this script ever reaches the browser, so the rendered
+   * output contains plain resolved strings — not tag markup.
+   */
+  document.addEventListener('DOMContentLoaded', function () {
 
-                <!-- CMS submit button (hidden by default) -->
-                <button
-                    id="submitCMS"
-                    form="leadForm"
-                    class="cta-primary submit-form"
-                    type="submit"
-                    style="display:none;">
-                    <span>${content.value.GeneralForm.value.SubmitButtonText}</span>
-                </button>
-            </div>
+    /* Locate the form by its stable id */
+    var form = document.getElementById('form');
 
+    /* Guard: exit silently if the form element is not present */
+    if (!form) { return; }
 
+    /*
+     * data-submit-form
+     * Boolean presence attribute — equivalent to the bare attribute in HTML.
+     * setAttribute with an empty string preserves the original semantics.
+     */
+    form.setAttribute('data-submit-form', '');
 
-            
-    <script>
-        // ─── Element references ────────────────────────────────────────────────────
-        var form            = document.getElementById('leadForm');
-        var isCustomerYes   = document.getElementById('isCustomerYes');
-        var isCustomerNo    = document.getElementById('isCustomerNo');
-        var enquiryField    = document.getElementById('enquiryField');
-        var enquirySelect   = document.getElementById('enquiry');
-        var submitSalesforce = document.getElementById('submitSalesforce');
-        var submitCMS        = document.getElementById('submitCMS');
+    /*
+     * data-url-submit
+     * <cms:link> is resolved server-side to an absolute/relative URL string.
+     * The rendered JS will contain the plain URL, e.g. "/sites/default/action/contact-form.jsp"
+     */
+    form.setAttribute('data-url-submit', '<cms:link>../action/contact-form.jsp</cms:link>');
 
-        // ─── Form mode configurations ──────────────────────────────────────────────
-        var SALESFORCE_CONFIG = {
-            action      : 'https://test.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8&orgId=00DWJ000005CytZ',
-            method      : 'POST',
-            // custom data-* attributes to REMOVE when in Salesforce mode
-            removeAttrs : ['data-submit-form', 'data-url-submit', 'data-analytics', 'data-url-redirect', 'data-method']
-        };
+    /*
+     * data-analytics
+     * The JSON value contains double-quote characters, so the surrounding JS
+     * string uses single quotes to avoid any escaping conflict.
+     * This mirrors the original single-quoted HTML attribute approach.
+     */
+    form.setAttribute('data-analytics', '{"event":"formStarts","formName":"Contact us form mm","formType":"Contact us mm"}');
 
-        var CMS_CONFIG = {
-            // data-* attributes to SET when in CMS mode
-            'data-submit-form' : '',                                          // presence-only flag
-            'data-url-submit'  : '<cms:link>../action/contact-form.jsp</cms:link>',
-            'data-analytics'   : '{"event":"formStarts","formName":"Contact us form mm","formType":"Contact us form mm"}',
-            'data-url-redirect': '<cms:link> ${content.value.GeneralForm.value.SuccessPageLink} </cms:link>',
-            'data-method'      : 'POST'
-        };
+    /*
+     * data-url-redirect
+     * <cms:link> wraps a JSP EL expression; both are evaluated server-side.
+     * The EL resolves first (to a path string), then <cms:link> converts it
+     * to a fully qualified CMS-managed URL before output reaches the browser.
+     */
+    form.setAttribute('data-url-redirect', '<cms:link>${content.value.GeneralForm.value.SuccessPageLink}</cms:link>');
 
-        // ─── Core switching function ───────────────────────────────────────────────
-        function switchFormMode(mode) {
-            if (mode === 'cms') {
-                // 1. Remove the Salesforce action so the CMS handler takes over
-                form.removeAttribute('action');
+    /*
+     * data-method
+     * Plain string — no server-side interpolation required.
+     */
+    form.setAttribute('data-method', 'POST');
 
-                // 2. Apply all CMS data-* attributes
-                Object.keys(CMS_CONFIG).forEach(function(attr) {
-                    form.setAttribute(attr, CMS_CONFIG[attr]);
-                });
-
-                // 3. Toggle submit buttons
-                submitSalesforce.style.display = 'none';
-                submitCMS.style.display        = '';
-
-            } else {
-                // 1. Restore Salesforce action
-                form.setAttribute('action', SALESFORCE_CONFIG.action);
-                form.setAttribute('method', SALESFORCE_CONFIG.method);
-
-                // 2. Remove all CMS data-* attributes
-                SALESFORCE_CONFIG.removeAttrs.forEach(function(attr) {
-                    form.removeAttribute(attr);
-                });
-
-                // 3. Toggle submit buttons
-                submitSalesforce.style.display = '';
-                submitCMS.style.display        = 'none';
-            }
-        }
-
-        // ─── Enquiry select listener ───────────────────────────────────────────────
-        enquirySelect.addEventListener('change', function() {
-            if (this.value === 'Claims related / others') {
-                switchFormMode('cms');
-            } else {
-                switchFormMode('salesforce');
-            }
-        });
-
-        // ─── Existing customer radio logic ────────────────────────────────────────
-        function updateConditionalFields() {
-            if (isCustomerYes.checked) {
-                enquiryField.style.display = 'block';
-                enquirySelect.required     = true;
-                document.getElementById('location').required = false;
-            } else if (isCustomerNo.checked) {
-                enquiryField.style.display = 'none';
-                enquirySelect.required     = false;
-                document.getElementById('location').required = true;
-
-                // Reset enquiry & revert form to Salesforce mode when hidden
-                enquirySelect.value = '';
-                switchFormMode('salesforce');
-            } else {
-                enquiryField.style.display = 'none';
-                switchFormMode('salesforce');
-            }
-        }
-
-        
+  });
+</script>
