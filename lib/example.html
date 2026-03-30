@@ -1,5 +1,4 @@
-
-	<script>
+<script>
   document.addEventListener('DOMContentLoaded', function () {
     var form = document.getElementById('form');
     var enquirySelect = document.getElementById('enquiry');
@@ -10,7 +9,7 @@
 
     function setContactForm() {
       form.removeAttribute('action');
-      form.removeAttribute('method');
+      form.setAttribute('method', 'POST');
       form.setAttribute('data-submit-form', '');
       form.setAttribute('data-url-submit', '<cms:link>../action/contact-form.jsp</cms:link>');
       form.setAttribute('data-analytics', '{"event":"formStarts","formName":"Contact us form mm","formType":"Contact us mm"}');
@@ -42,20 +41,8 @@
       }
     }
 
-    // Call setContactForm unconditionally first. This ensures any OpenCms 
-    // script that binds its AJAX handler on DOMContentLoaded will pick up the 'data-submit-form' attribute.
-    setContactForm();
-
-    // Immediately call updateFormTarget right after to evaluate and apply the actual initial state based on current selections.
     updateFormTarget();
-
-    // Add a capture-phase submit listener. When Salesforce is uncommented, this prevents 
-    // the OpenCms script from intercepting and breaking standard Salesforce form submissions.
-    form.addEventListener('submit', function (e) {
-      if (!form.hasAttribute('data-submit-form')) {
-        e.stopImmediatePropagation();
-      }
-    }, true);
+    //setSalesforce();
 
     if (enquirySelect) {
       enquirySelect.addEventListener('change', updateFormTarget);
@@ -68,7 +55,6 @@
     }
   });
 </script>
-
 
 <form id="form">
 
