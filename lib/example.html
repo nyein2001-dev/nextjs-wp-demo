@@ -1,55 +1,124 @@
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    var form = document.getElementById('form');
+    var form          = document.getElementById('form');
     var enquirySelect = document.getElementById('enquiry');
     var isCustomerYesEl = document.getElementById('isCustomerYes');
-    var isCustomerNoEl = document.getElementById('isCustomerNo');
+    var isCustomerNoEl  = document.getElementById('isCustomerNo');
 
     var SF_ACTION = 'https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8&orgId=00DHr0000077xXi';
+    var CF_ACTION = '<cms:link>../action/contact-form.jsp</cms:link>';
 
+    /* ------------------------------------------------------------------ */
+    /* setContactForm                                                       */
+    /* Sets the form to POST to contact-form.jsp via the pbtb data-*       */
+    /* attributes AND via native action/method so no fallback to GET.      */
+    /* novalidate is mandatory here: Parsley owns validation in this path. */
+    /* ------------------------------------------------------------------ */
     function setContactForm() {
-      form.removeAttribute('action');
-      form.removeAttribute('method');
+      /* Native attributes — prevent any GET / current-page fallback */
+      form.setAttribute('action',     CF_ACTION);
+      form.setAttribute('method',     'POST');
+      form.setAttribute('novalidate', '');
+
+      /* pbtb framework attributes */
       form.setAttribute('data-submit-form', '');
-      form.setAttribute('data-url-submit', '<cms:link>../action/contact-form.jsp</cms:link>');
-      form.setAttribute('data-analytics', '{"event":"formStarts","formName":"Contact us form mm","formType":"Contact us mm"}');
-      form.setAttribute('data-url-redirect', '<cms:link>${content.value.GeneralForm.value.SuccessPageLink}</cms:link>');
-      form.setAttribute('data-method', 'POST');
+      form.setAttribute('data-url-submit',  CF_ACTION);
+      form.setAttribute('data-method',      'POST');
+      form.setAttribute('data-analytics',   '{"event":"formStarts","formName":"Contact us form mm","formType":"Contact us mm"}');
+      form.setAttribute('data-url-redirect','<cms:link>${content.value.GeneralForm.value.SuccessPageLink}</cms:link>');
     }
 
+    /* ------------------------------------------------------------------ */
+    /* setSalesforce                                                        */
+    /* Tears down every contact-form attribute cleanly before switching.   */
+    /* novalidate must be removed so Salesforce's native validation works. */
+    /* ------------------------------------------------------------------ */
     function setSalesforce() {
+      /* Remove all pbtb / contact-form attributes */
       form.removeAttribute('data-submit-form');
       form.removeAttribute('data-url-submit');
+      form.removeAttribute('data-method');
       form.removeAttribute('data-analytics');
       form.removeAttribute('data-url-redirect');
-      form.removeAttribute('data-method');
+
+      /* Remove novalidate — Salesforce path uses native HTML5 validation */
+      form.removeAttribute('novalidate');
+
+      /* Native attributes for direct Salesforce POST */
       form.setAttribute('action', SF_ACTION);
       form.setAttribute('method', 'POST');
     }
 
-    function shouldUseContactForm() {
+    /* ------------------------------------------------------------------ */
+    /* updateFormTarget                                                     */
+    /* Rule: Claims + policy-holder=Y  → contact-form.jsp                 */
+    /*       Everything else           → Salesforce                        */
+    /* ------------------------------------------------------------------ */
+    function updateFormTarget() {
       var isNoPolicyHolder = isCustomerNoEl && isCustomerNoEl.checked;
-      var selectedText = '';
-      if (enquirySelect && enquirySelect.selectedIndex >= 0 && enquirySelect.options[enquirySelect.selectedIndex]) {
+      var selectedText     = '';
+
+      if (enquirySelect && enquirySelect.selectedIndex >= 0) {
         selectedText = enquirySelect.options[enquirySelect.selectedIndex].text;
       }
-      var isClaims = (selectedText === 'Claims related / others');
-      return (isClaims && !isNoPolicyHolder);
-    }
 
-    function updateFormTarget() {
-      if (shouldUseContactForm()) {
+      var isClaims = (selectedText === 'Claims related / others');
+
+      if (isClaims && !isNoPolicyHolder) {
         setContactForm();
       } else {
-        //setSalesforce();
+        setSalesforce();
       }
     }
 
-    // Initialize form target on page load
-    setContactForm();
-    updateFormTarget();
+    /* ------------------------------------------------------------------ */
+    /* Submit guard                                                         */
+    /* Enforces POST and prevents query-string submission if the pbtb      */
+    /* framework has not yet cancelled the native event itself.            */
+    /* ------------------------------------------------------------------ */
+    form.addEventListener('submit', function (e) {
+      /* Only intervene when the form is in contact-form.jsp mode */
+      if (form.hasAttribute('data-submit-form')) {
+        /* Guarantee method is POST before the pbtb handler fires */
+        form.method = 'POST';
 
-    // Attach change listeners
+        /* Belt-and-braces: if pbtb did NOT already preventDefault,
+           do it ourselves and POST manually via XHR.               */
+        if (!e.defaultPrevented) {
+          e.preventDefault();
+
+          var url      = form.getAttribute('data-url-submit') || CF_ACTION;
+          var redirect = form.getAttribute('data-url-redirect') || '';
+          var params   = [];
+          var elements = form.elements;
+
+          for (var i = 0; i < elements.length; i++) {
+            var el = elements[i];
+            if (!el.name || el.disabled) { continue; }
+            if ((el.type === 'radio' || el.type === 'checkbox') && !el.checked) { continue; }
+            params.push(encodeURIComponent(el.name) + '=' + encodeURIComponent(el.value));
+          }
+
+          var xhr = new XMLHttpRequest();
+          xhr.open('POST', url, true);
+          xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+              if (redirect) {
+                window.location.href = redirect;
+              }
+            }
+          };
+          xhr.send(params.join('&'));
+        }
+      }
+    });
+
+    /* ------------------------------------------------------------------ */
+    /* Initialise and bind                                                  */
+    /* ------------------------------------------------------------------ */
+    setSalesforce(); /* default state on page load */
+
     if (enquirySelect) {
       enquirySelect.addEventListener('change', updateFormTarget);
     }
@@ -59,35 +128,6 @@
     if (isCustomerNoEl) {
       isCustomerNoEl.addEventListener('change', updateFormTarget);
     }
-
-    // Fallback submit handler for contact-form.jsp submission
-    form.addEventListener('submit', function (e) {
-      if (form.hasAttribute('data-submit-form')) {
-        var urlSubmit = form.getAttribute('data-url-submit');
-        var urlRedirect = form.getAttribute('data-url-redirect');
-        var methodAttr = form.getAttribute('data-method') || 'POST';
-
-        if (urlSubmit) {
-          e.preventDefault();
-
-          var formData = new FormData(form);
-          var xhr = new XMLHttpRequest();
-          xhr.open(methodAttr, urlSubmit, true);
-          xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-              if (xhr.status === 200) {
-                if (urlRedirect) {
-                  window.location.href = urlRedirect;
-                }
-              } else {
-                alert('Form submission failed. Please try again.');
-              }
-            }
-          };
-          xhr.send(formData);
-        }
-      }
-    });
   });
 </script>
 
