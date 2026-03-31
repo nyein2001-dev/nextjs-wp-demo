@@ -9,7 +9,7 @@
 
     function setContactForm() {
       form.removeAttribute('action');
-      form.setAttribute('method', 'POST');
+      form.removeAttribute('method');
       form.setAttribute('data-submit-form', '');
       form.setAttribute('data-url-submit', '<cms:link>../action/contact-form.jsp</cms:link>');
       form.setAttribute('data-analytics', '{"event":"formStarts","formName":"Contact us form mm","formType":"Contact us mm"}');
@@ -27,23 +27,29 @@
       form.setAttribute('method', 'POST');
     }
 
-    function updateFormTarget() {
+    function shouldUseContactForm() {
       var isNoPolicyHolder = isCustomerNoEl && isCustomerNoEl.checked;
-      var selectedText = (enquirySelect && enquirySelect.selectedIndex >= 0 && enquirySelect.options[enquirySelect.selectedIndex])
-        ? enquirySelect.options[enquirySelect.selectedIndex].text
-        : '';
+      var selectedText = '';
+      if (enquirySelect && enquirySelect.selectedIndex >= 0 && enquirySelect.options[enquirySelect.selectedIndex]) {
+        selectedText = enquirySelect.options[enquirySelect.selectedIndex].text;
+      }
       var isClaims = (selectedText === 'Claims related / others');
+      return (isClaims && !isNoPolicyHolder);
+    }
 
-      if (isClaims && !isNoPolicyHolder) {
+    function updateFormTarget() {
+      if (shouldUseContactForm()) {
         setContactForm();
       } else {
         //setSalesforce();
       }
     }
 
+    // Initialize form target on page load
+    setContactForm();
     updateFormTarget();
-    //setSalesforce();
 
+    // Attach change listeners
     if (enquirySelect) {
       enquirySelect.addEventListener('change', updateFormTarget);
     }
@@ -53,6 +59,35 @@
     if (isCustomerNoEl) {
       isCustomerNoEl.addEventListener('change', updateFormTarget);
     }
+
+    // Fallback submit handler for contact-form.jsp submission
+    form.addEventListener('submit', function (e) {
+      if (form.hasAttribute('data-submit-form')) {
+        var urlSubmit = form.getAttribute('data-url-submit');
+        var urlRedirect = form.getAttribute('data-url-redirect');
+        var methodAttr = form.getAttribute('data-method') || 'POST';
+
+        if (urlSubmit) {
+          e.preventDefault();
+
+          var formData = new FormData(form);
+          var xhr = new XMLHttpRequest();
+          xhr.open(methodAttr, urlSubmit, true);
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+              if (xhr.status === 200) {
+                if (urlRedirect) {
+                  window.location.href = urlRedirect;
+                }
+              } else {
+                alert('Form submission failed. Please try again.');
+              }
+            }
+          };
+          xhr.send(formData);
+        }
+      }
+    });
   });
 </script>
 
