@@ -1,15 +1,10 @@
-This page is currently being developed and is not yet available. We appreciate your patience
+<%
+    String transactionParam = request.getParameter("transaction");
+    boolean isPolicyLinking = "policy_linking".equalsIgnoreCase(transactionParam);
 
-Change Beneficiary
-Change Method of Payment to Auto-Debit-Arrangement (ADA) or Direct debit
-Change Method of Payment to Credit Card or Credit Card enrollment
-Change Payment Frequency
-Feedback
-Follow-up Request
-Fund Switch or Premium Redirection
-Other questions
-Partial withdrawal
-Pay Premium
-PRUServices Policy Linking
-Update Mobile number or Email address
-Update Residential or Correspondence Address
+    // Get the current CMS page URI (e.g. "/en/policyservices/index.html")
+    String currentUri = cms.getRequestContext().getUri();
+
+    // Pre-Java 7 safe: use indexOf instead of contains()
+    boolean isPolicyServices = (currentUri != null && currentUri.indexOf("policyservices") >= 0);
+%>
