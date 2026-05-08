@@ -8,3 +8,20 @@
     // Pre-Java 7 safe: use indexOf instead of contains()
     boolean isPolicyServices = (currentUri != null && currentUri.indexOf("policyservices") >= 0);
 %>
+
+    <%-- Pre-resolve the CMS logo link into a plain variable first --%>
+<c:set var="logoLink">
+    <cms:link>${utilityBar.value.Logo.value.LogoLink}</cms:link>
+</c:set>
+
+<%-- Then pick the correct href cleanly --%>
+<c:set var="resolvedLogoHref" 
+       value="${isPolicyServices ? 'https://www.prulifeuk.com.ph/en/' : logoLink}" />
+
+<a class="header__logo" 
+   href="${resolvedLogoHref}" 
+   title="...">
+    <img class="lazyload" 
+         src="<cms:link>/system/modules/com.prudential.v2.global/resources/images/spinner.gif</cms:link>"
+         data-src="..." />
+</a>
