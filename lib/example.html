@@ -4,8 +4,8 @@
             org.opencms.main.OpenCms,
             org.opencms.publish.CmsPublishManager,
             org.opencms.publish.CmsPublishJobEnqueued,
+            org.opencms.publish.CmsPublishJobRunning,
             org.opencms.lock.CmsLock,
-            org.opencms.lock.CmsLockType,
             java.util.List,
             java.util.Iterator"
 %>
@@ -16,50 +16,62 @@ String resourcePath = "/sites/prudential-ph/en/index.html";
 
 out.println("<pre>");
 
-// Step 1: Confirm it is a publish lock
-CmsLock lock = cms.getLock(resourcePath);
-out.println("Lock type     : " + lock.getType());
-out.println("Is publish    : " + lock.getType().isPublish());
-out.println("Lock user ID  : " + lock.getUserId());
+// Step 1: Diagnose lock type
+try {
+    CmsLock lock = cms.getLock(resourcePath);
+    out.println("Lock type     : " + lock.getType());
+    out.println("Is publish    : " + lock.getType().isPublish());
+    out.println("Lock user ID  : " + lock.getUserId());
+} catch (Exception e) {
+    out.println("getLock error : " + e.getMessage());
+}
 
-// Step 2: Get the publish manager and abort all queued jobs
+// Step 2: Inspect publish queue
 CmsPublishManager pm = OpenCms.getPublishManager();
 List enqueuedJobs = pm.getPublishQueue();
 out.println("Jobs in queue : " + enqueuedJobs.size());
 
-if (enqueuedJobs.isEmpty()) {
-    out.println("Queue is empty. The lock may be a ghost publish lock.");
-    out.println("Trying direct abort of current running job...");
-    try {
-        CmsPublishJobEnqueued running = pm.getCurrentPublishJob();
-        if (running != null) {
-            pm.abortPublishJob(cms, running, true);
-            out.println("Aborted running job: " + running.getPublishHistoryId());
-        } else {
-            out.println("No current running job found either.");
-        }
-    } catch (Exception e) {
-        out.println("Error aborting running job: " + e.getMessage());
-    }
-} else {
+// Step 3: Abort ALL enqueued (waiting) jobs
+// NOTE: abortPublishJob() only works on CmsPublishJobEnqueued, NOT CmsPublishJobRunning
+if (!enqueuedJobs.isEmpty()) {
     Iterator it = enqueuedJobs.iterator();
     while (it.hasNext()) {
         CmsPublishJobEnqueued job = (CmsPublishJobEnqueued) it.next();
-        out.println("Found queued job: " + job.getPublishHistoryId()
-                    + " by user: " + job.getUserName());
+        out.println("Enqueued job  : " + job.getPublishHistoryId()
+                    + " | project: " + job.getProjectName());
         try {
             pm.abortPublishJob(cms, job, true);
-            out.println("  -> Aborted successfully.");
+            out.println("  -> ABORTED successfully.");
         } catch (Exception e) {
-            out.println("  -> Error: " + e.getMessage());
+            out.println("  -> Abort error: " + e.getMessage());
         }
     }
+} else {
+    out.println("No enqueued jobs found.");
 }
 
-// Step 3: Verify lock is gone
-CmsLock lockAfter = cms.getLock(resourcePath);
-out.println("Lock after abort: " + lockAfter.getType());
-out.println(lockAfter.isNullLock() ? "SUCCESS: File is now unlocked!" : "Still locked.");
+// Step 4: Check if there is a RUNNING job (different class — cannot be aborted via API)
+// CmsPublishJobRunning is NOT CmsPublishJobEnqueued — they are sibling subclasses
+CmsPublishJobRunning runningJob = pm.getCurrentPublishJob();
+if (runningJob != null) {
+    out.println("Running job   : " + runningJob.getPublishHistoryId()
+                + " | project: " + runningJob.getProjectName());
+    out.println("WARNING: A RUNNING job cannot be aborted via abortPublishJob().");
+    out.println("This is a GHOST publish lock — the job ran but its lock was never cleared.");
+    out.println("Solution: Use Admin UI > Database Mgmt > Remove Publish Locks, OR restart Tomcat.");
+} else {
+    out.println("No running job found.");
+    out.println("This is a GHOST publish lock (job finished/crashed, lock stuck in DB).");
+}
+
+// Step 5: Re-check lock after abort attempts
+try {
+    CmsLock lockAfter = cms.getLock(resourcePath);
+    out.println("Lock after    : " + lockAfter.getType());
+    out.println(lockAfter.isNullLock() ? "SUCCESS: File is now unlocked!" : "STILL LOCKED: " + lockAfter.getType());
+} catch (Exception e) {
+    out.println("Post-check error: " + e.getMessage());
+}
 
 out.println("</pre>");
 %>
