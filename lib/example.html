@@ -1,27 +1,7 @@
+<%@page session="false" buffer="none" import="org.opencms.jsp.CmsJspActionElement" %>
 <%
-    String transactionParam = request.getParameter("transaction");
-    boolean isPolicyLinking = "policy_linking".equalsIgnoreCase(transactionParam);
-
-    // Get the current CMS page URI (e.g. "/en/policyservices/index.html")
-    String currentUri = cms.getRequestContext().getUri();
-
-    // Pre-Java 7 safe: use indexOf instead of contains()
-    boolean isPolicyServices = (currentUri != null && currentUri.indexOf("policyservices") >= 0);
+CmsJspActionElement jsp = new CmsJspActionElement(pageContext, request, response);
+// Force unlock specifically /en/index.html
+jsp.getCmsObject().unlockResource("/sites/prudential-ph/en/index.html");
+out.println("Unlocked successfully.");
 %>
-
-    <%-- Pre-resolve the CMS logo link into a plain variable first --%>
-<c:set var="logoLink">
-    <cms:link>${utilityBar.value.Logo.value.LogoLink}</cms:link>
-</c:set>
-
-<%-- Then pick the correct href cleanly --%>
-<c:set var="resolvedLogoHref" 
-       value="${isPolicyServices ? 'https://www.prulifeuk.com.ph/en/' : logoLink}" />
-
-<a class="header__logo" 
-   href="${resolvedLogoHref}" 
-   title="...">
-    <img class="lazyload" 
-         src="<cms:link>/system/modules/com.prudential.v2.global/resources/images/spinner.gif</cms:link>"
-         data-src="..." />
-</a>
