@@ -1,16 +1,65 @@
-<%@page session="false" buffer="none" 
-        import="org.opencms.jsp.CmsJspActionElement,
-                org.opencms.file.CmsObject" %>
+<%@page session="false" buffer="none"
+    import="org.opencms.jsp.CmsJspActionElement,
+            org.opencms.file.CmsObject,
+            org.opencms.main.OpenCms,
+            org.opencms.publish.CmsPublishManager,
+            org.opencms.publish.CmsPublishJobEnqueued,
+            org.opencms.lock.CmsLock,
+            org.opencms.lock.CmsLockType,
+            java.util.List,
+            java.util.Iterator"
+%>
 <%
 CmsJspActionElement jsp = new CmsJspActionElement(pageContext, request, response);
 CmsObject cms = jsp.getCmsObject();
 String resourcePath = "/sites/prudential-ph/en/index.html";
 
-// First steal the lock (transfer it to the current user/project)
-cms.changeLock(resourcePath);
+out.println("<pre>");
 
-// Then unlock
-cms.unlockResource(resourcePath);
+// Step 1: Confirm it is a publish lock
+CmsLock lock = cms.getLock(resourcePath);
+out.println("Lock type     : " + lock.getType());
+out.println("Is publish    : " + lock.getType().isPublish());
+out.println("Lock user ID  : " + lock.getUserId());
 
-out.println("Lock stolen and released successfully.");
+// Step 2: Get the publish manager and abort all queued jobs
+CmsPublishManager pm = OpenCms.getPublishManager();
+List enqueuedJobs = pm.getPublishQueue();
+out.println("Jobs in queue : " + enqueuedJobs.size());
+
+if (enqueuedJobs.isEmpty()) {
+    out.println("Queue is empty. The lock may be a ghost publish lock.");
+    out.println("Trying direct abort of current running job...");
+    try {
+        CmsPublishJobEnqueued running = pm.getCurrentPublishJob();
+        if (running != null) {
+            pm.abortPublishJob(cms, running, true);
+            out.println("Aborted running job: " + running.getPublishHistoryId());
+        } else {
+            out.println("No current running job found either.");
+        }
+    } catch (Exception e) {
+        out.println("Error aborting running job: " + e.getMessage());
+    }
+} else {
+    Iterator it = enqueuedJobs.iterator();
+    while (it.hasNext()) {
+        CmsPublishJobEnqueued job = (CmsPublishJobEnqueued) it.next();
+        out.println("Found queued job: " + job.getPublishHistoryId()
+                    + " by user: " + job.getUserName());
+        try {
+            pm.abortPublishJob(cms, job, true);
+            out.println("  -> Aborted successfully.");
+        } catch (Exception e) {
+            out.println("  -> Error: " + e.getMessage());
+        }
+    }
+}
+
+// Step 3: Verify lock is gone
+CmsLock lockAfter = cms.getLock(resourcePath);
+out.println("Lock after abort: " + lockAfter.getType());
+out.println(lockAfter.isNullLock() ? "SUCCESS: File is now unlocked!" : "Still locked.");
+
+out.println("</pre>");
 %>
