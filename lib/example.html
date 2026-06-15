@@ -1,7 +1,16 @@
-<%@page session="false" buffer="none" import="org.opencms.jsp.CmsJspActionElement" %>
+<%@page session="false" buffer="none" 
+        import="org.opencms.jsp.CmsJspActionElement,
+                org.opencms.file.CmsObject" %>
 <%
 CmsJspActionElement jsp = new CmsJspActionElement(pageContext, request, response);
-// Force unlock specifically /en/index.html
-jsp.getCmsObject().unlockResource("/sites/prudential-ph/en/index.html");
-out.println("Unlocked successfully.");
+CmsObject cms = jsp.getCmsObject();
+String resourcePath = "/sites/prudential-ph/en/index.html";
+
+// First steal the lock (transfer it to the current user/project)
+cms.changeLock(resourcePath);
+
+// Then unlock
+cms.unlockResource(resourcePath);
+
+out.println("Lock stolen and released successfully.");
 %>
