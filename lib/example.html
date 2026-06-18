@@ -1,11 +1,11 @@
-<cms:link var="homeLink">/</cms:link>
-
 <%
     String currentUri = cms.getRequestContext().getUri();
 
-    if (currentUri != null && currentUri.indexOf("policyservices") >= 0) {
-        String homeLink = (String) pageContext.getAttribute("homeLink");
-        response.sendRedirect(homeLink);
+    boolean isPolicyServices =
+        (currentUri != null && currentUri.indexOf("policyservices") >= 0);
+
+    if (isPolicyServices) {
+        response.sendRedirect(cms.link("/"));
         return;
     }
 %>
