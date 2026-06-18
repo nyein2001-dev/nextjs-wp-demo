@@ -1,77 +1,11 @@
-<%@page session="false" buffer="none"
-    import="org.opencms.jsp.CmsJspActionElement,
-            org.opencms.file.CmsObject,
-            org.opencms.main.OpenCms,
-            org.opencms.publish.CmsPublishManager,
-            org.opencms.publish.CmsPublishJobEnqueued,
-            org.opencms.publish.CmsPublishJobRunning,
-            org.opencms.lock.CmsLock,
-            java.util.List,
-            java.util.Iterator"
-%>
 <%
-CmsJspActionElement jsp = new CmsJspActionElement(pageContext, request, response);
-CmsObject cms = jsp.getCmsObject();
-String resourcePath = "/sites/prudential-ph/en/index.html";
+    String currentUri = cms.getRequestContext().getUri();
 
-out.println("<pre>");
+    boolean isPolicyServices =
+        (currentUri != null && currentUri.indexOf("policyservices") >= 0);
 
-// Step 1: Diagnose lock type
-try {
-    CmsLock lock = cms.getLock(resourcePath);
-    out.println("Lock type     : " + lock.getType());
-    out.println("Is publish    : " + lock.getType().isPublish());
-    out.println("Lock user ID  : " + lock.getUserId());
-} catch (Exception e) {
-    out.println("getLock error : " + e.getMessage());
-}
-
-// Step 2: Inspect publish queue
-CmsPublishManager pm = OpenCms.getPublishManager();
-List enqueuedJobs = pm.getPublishQueue();
-out.println("Jobs in queue : " + enqueuedJobs.size());
-
-// Step 3: Abort ALL enqueued (waiting) jobs
-// NOTE: abortPublishJob() only works on CmsPublishJobEnqueued, NOT CmsPublishJobRunning
-if (!enqueuedJobs.isEmpty()) {
-    Iterator it = enqueuedJobs.iterator();
-    while (it.hasNext()) {
-        CmsPublishJobEnqueued job = (CmsPublishJobEnqueued) it.next();
-        out.println("Enqueued job  : " + job.getPublishHistoryId()
-                    + " | project: " + job.getProjectName());
-        try {
-            pm.abortPublishJob(cms, job, true);
-            out.println("  -> ABORTED successfully.");
-        } catch (Exception e) {
-            out.println("  -> Abort error: " + e.getMessage());
-        }
+    if (isPolicyServices) {
+        response.sendRedirect("/");
+        return;
     }
-} else {
-    out.println("No enqueued jobs found.");
-}
-
-// Step 4: Check if there is a RUNNING job (different class — cannot be aborted via API)
-// CmsPublishJobRunning is NOT CmsPublishJobEnqueued — they are sibling subclasses
-CmsPublishJobRunning runningJob = pm.getCurrentPublishJob();
-if (runningJob != null) {
-    out.println("Running job   : " + runningJob.getPublishHistoryId()
-                + " | project: " + runningJob.getProjectName());
-    out.println("WARNING: A RUNNING job cannot be aborted via abortPublishJob().");
-    out.println("This is a GHOST publish lock — the job ran but its lock was never cleared.");
-    out.println("Solution: Use Admin UI > Database Mgmt > Remove Publish Locks, OR restart Tomcat.");
-} else {
-    out.println("No running job found.");
-    out.println("This is a GHOST publish lock (job finished/crashed, lock stuck in DB).");
-}
-
-// Step 5: Re-check lock after abort attempts
-try {
-    CmsLock lockAfter = cms.getLock(resourcePath);
-    out.println("Lock after    : " + lockAfter.getType());
-    out.println(lockAfter.isNullLock() ? "SUCCESS: File is now unlocked!" : "STILL LOCKED: " + lockAfter.getType());
-} catch (Exception e) {
-    out.println("Post-check error: " + e.getMessage());
-}
-
-out.println("</pre>");
 %>
