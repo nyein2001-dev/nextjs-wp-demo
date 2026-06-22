@@ -1,11 +1,13 @@
 <%
     String currentUri = cms.getRequestContext().getUri();
 
-    boolean isPolicyServices =
-        (currentUri != null && currentUri.indexOf("policyservices") >= 0);
+    boolean redirectToMain =
+        "/en".equals(currentUri)
+        || "/en/".equals(currentUri)
+        || (currentUri != null && currentUri.startsWith("/en/policyservices"));
 
-    if (isPolicyServices) {
-        response.sendRedirect(cms.link("/"));
+    if (redirectToMain) {
+        response.sendRedirect("/en/main");
         return;
     }
 %>
